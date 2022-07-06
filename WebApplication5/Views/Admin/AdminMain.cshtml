@@ -1,0 +1,24 @@
+﻿
+@{
+    ViewData["Title"] = "AdminMain";
+    string logs = string.Empty;
+    string logsForCheck = ViewData["Logs"] as string;
+    if (!string.IsNullOrEmpty(logsForCheck)) logs = logsForCheck;
+}
+
+<h3>Администрирование портала</h3>
+@if (ViewData["Information"] != null)
+{
+@Html.Partial("PartialInformation", ViewData["Information"]);
+}
+@if (ViewData["FailMes"] != null)
+{
+@Html.Partial("PartialError", ViewData["FailMes"]);
+}
+<a class="btn btn-default" asp-controller="Admin" asp-action="ImportUsersFromAD"><i></i>Импортировать пользователей</a>
+<a class="btn btn-default" asp-controller="Admin" asp-action="UploadToExcel"><i></i>Выгрузить пользователей из AD</a>
+<a class="btn btn-default" asp-controller="Admin" asp-action="UploadWorkLogs"><i></i>Выгрузить все поданные трудозатраты</a>
+<a class="btn btn-default" asp-controller="AvevaLic" asp-action="Index"><i></i>Добавить/Просмотреть хост для AvevaLic</a>
+<br />
+<br />
+

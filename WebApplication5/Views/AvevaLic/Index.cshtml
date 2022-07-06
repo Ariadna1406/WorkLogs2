@@ -1,0 +1,77 @@
+﻿
+@model List<Licence>
+@{
+
+    ViewData["Title"] = "Учёт лицензий в AVEVA";
+    bool? filterRows=false;
+    if (ViewData["FilterRows"] != null) filterRows = ViewData["FilterRows"] as bool?;
+    int counter = 1;
+}
+<br>
+<h3>Мониторинг лицензий AVEVA</h3>
+<br>
+<link rel="stylesheet" href="~/css/ProjectsIndex.css">
+<input type="hidden" id="FilterRows" name="FilterRows" value="@filterRows.ToString()" />
+<table id="WorkLogs" class="QualityBook" width="100%">
+    <tr class="header">
+        <th style="padding: 10px 15px;">№</th>
+        <th style="padding: 10px 15px;">Имя хоста</th>
+        <th style="padding: 10px 15px;">Дата добавления</th>
+        <th style="padding: 10px 15px;">Прописан сервер лицензий да/нет <a class="btn btn-default" onclick="filterRows()"><i></i>Отфильтровать</a></th>
+        <th style="padding: 10px 15px;">Дата записи</th>
+
+    </tr>
+    @{
+        if (Model != null && Model.Count > 0)
+        {
+            foreach (var lic in Model)
+            {
+
+                <tr>
+                    <td>@counter</td>                    
+                    <td>@lic.HostName</td>
+                    <td>@lic.AddUserDate</td>
+                    <td>@lic.Status</td>
+                    <td>@lic.LicApplyDate</td>
+                </tr>
+                counter++;
+            }
+        }
+    }
+</table>
+
+<p></p>
+<h3>Добавить новый хост для лицензий Aveva</h3>
+@if (ViewData["SuccessMes"] != null)
+{
+    @Html.Partial("PartialInformation", ViewData["SuccessMes"]);
+}
+@if (ViewData["FailMes"] != null)
+{
+    @Html.Partial("PartialError", ViewData["FailMes"]);
+}
+<table class="QualityBook" width="40%">
+    <tr>
+        <td>Имя хоста:</td>
+        <td><input name="HostName" id="HostName"></input></td>
+    </tr>
+    <tr>
+        <td>
+            <a class="btn btn-default" onclick="createHost()"><i></i>Добавить новый хост</a>
+        </td>
+    </tr>
+</table>
+<script>
+ function createHost() {
+     var hostName = document.getElementById('HostName').value;       
+     window.location.href = '/AvevaLic/CreateNewHost/GetData?HostName=' + hostName;
+
+    };
+
+    function filterRows() {
+        var filterRows = document.getElementById('FilterRows').value;
+        window.location.href = '/AvevaLic/FilterRows/GetData?filterRows=' + filterRows;
+
+    };
+    </script>
+

@@ -1,0 +1,98 @@
+﻿@using WebApplication5.Models;
+@model Corrections;
+@{
+    var cor = ViewData["Corrections"] as Corrections;
+    var project = cor.Project;
+    var userList = ViewData["Users"] as List<User>;
+    ViewData["Title"] = String.Format("{0}. Добавить повторное замечание", project.InternalNum);
+}
+<link rel="stylesheet" href="~/css/AddNewRemark.css" />
+<br>
+<br>
+
+<h3 class="header">Добавить повторное замечание</h3>
+
+
+<form asp-controller="Corrections" asp-action="ReopenCorPost" method="post" enctype="multipart/form-data">
+
+    <table class="AddNewRemark">
+        <tr>
+            <td><div>Проект:</td>
+            <td> @String.Format("{0} - {1}", project.InternalNum, project.FullName)</div></td>
+            <input type="hidden" name="ProjectId" value="@project.Id"></input>
+        </tr>
+        <tr>
+            <td>Номер замечания: </td>
+            <td> @cor.CorNumber <input type="hidden" asp-for="CorNumber" value="@cor.CorNumber"></input> </td>
+        </tr>
+        <tr>
+            <td class="CorText"> Текст замечания </td>
+            <td>
+                <textarea rows="3" cols="80" asp-for="CorBodyText" >@cor.CorBodyText   11111</textarea>
+                <span asp-validation-for="CorBodyText"></span>
+            </td>
+        </tr>
+
+
+        <tr>
+            <td>
+
+                <div class="editor-label">
+                    <p> Дата предыдущего замечания: @cor.RecieveDate </p>
+                    Дата получения повторного замечания:
+                </div>
+            </td>
+            <td>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.CorTerm);
+                    @Html.ValidationMessageFor(model => model.CorTerm);
+                </div>
+            </td>
+        </tr>
+
+        <tr>
+            <td>Выберите исполнителя замечания:</td>
+            <td>
+                <input list="my-list" name="selectedUser">
+                <datalist id="my-list">
+                    @foreach (var user in userList)
+                    {
+                    <option>@user.FullName</option>
+                    }
+                </datalist>
+                <span asp-validation-for="Executor" class="text-danger"></span>
+            </td>
+            </td>
+        <tr>
+            <br>
+            <br>
+        </tr>
+        <td> <label asp-for="ImageFile">Скриншот предыдущего замечания</label></td>
+        <td>
+            <img src="~/images/@(cor.ImageLink)" asp-append-version="true" width="400" height="300" onclick="changeSizeImage(this)" />
+        </td>
+        <tr>
+        </tr>
+        <td> <label asp-for="ImageFile">Скриншот повторного замечания</label></td>
+        <td>
+            <input class="input-file" asp-for="ImageFile" accept="image/*"></input>
+            <span asp-validation-for="ImageFile" class="text-danger"></span>
+        </td>
+        <tr>
+    </table>
+    <br><br>
+    <input type="submit" value="Создать новое замечание">
+</form>
+
+
+
+
+
+<style>
+
+</style>
+</div>
+
+
+
+

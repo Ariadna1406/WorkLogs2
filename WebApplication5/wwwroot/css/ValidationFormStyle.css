@@ -1,0 +1,22 @@
+﻿body {
+}
+
+.CorText {
+    vertical-align: central
+}
+
+.field-validation-error {
+}
+
+.input-validation-error {
+    color: red;
+    background-color: lightcoral
+}
+
+.validation-summary-errors {
+    color: red;
+}
+
+.field-validation-error {
+    color: red;
+}

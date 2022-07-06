@@ -1,0 +1,25 @@
+﻿table {
+    border-spacing: 10px;
+    border-collapse: separate;
+}
+
+.input-validation-error {
+    border: 1px solid #f00;
+    color: red
+}
+
+.input-validation-valid {
+    display: none
+}
+
+.validation-summary-errors {
+    color: red
+}
+
+/*
+.header1 {
+    font: 700;
+    color: red;
+}
+
+    */

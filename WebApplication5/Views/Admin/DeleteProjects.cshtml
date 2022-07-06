@@ -1,0 +1,56 @@
+﻿
+@model List<Project>
+@{
+    var context = ViewData["Context"] as AppDbContext;
+    ViewData["Title"] = "Все проекты";
+                DateTime newDate = DateTime.Now.Date;
+               
+            }
+<br>
+<h3>Все проекты</h3>
+<br>
+<link rel="stylesheet" href="~/css/Index.css">
+
+<table class="ProjectSetTable">
+    <tr>
+        <th class="ProjIdInternal">Внутренний номер проекта</th>
+        <th class="ProjectName">Наименование проекта</th>
+        <th class="ScreenShot">Вид объекта</th>        
+        <th class="ProjectStatus">Удалить проект</th>
+    </tr>
+    
+ @foreach (var project in Model)
+ {
+     
+     var corSet = context.Cors.Where(x => x.Project.Id == project.Id);
+     var corDoneSet = corSet.Where(x => x.Status == Corrections.CorStatus.CorrectedByExecutor);
+     //String path = String.Format("<img src=\"~\\images\\{0}\" />", cor.ImageLink);
+    <tr>
+       <td>@project.InternalNum</td>
+        <td>@project.FullName</td>
+        <td></td>        
+        <td>          
+                  <ul class="nav navbar-nav">
+                      <li><a asp-route-Id="@project.Id" asp-controller="Admin" asp-action="DeleteSelectedProject">Удалить проект</a></li>                    
+                     
+                  </ul>
+        </td> 
+        <td>@project.Manager.FullName</td>
+    </tr>
+ }
+
+
+</table>
+        
+            
+ 
+
+            <script>
+                <script language="JavaScript">
+                    var bigsize = "300"; //Размер большой картинки
+                    var smallsize = "150"; //Размер маленькой картинки
+                    function changeSizeImage(im) {
+              if(im.height == bigsize) im.height = smallsize;
+                    else im.height = bigsize;
+}
+            </script>

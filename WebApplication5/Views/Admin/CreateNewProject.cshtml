@@ -1,0 +1,76 @@
+﻿
+@model Project
+@{
+
+    ViewData["Title"] = "CreateNewProject";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<link rel="stylesheet" href="~/css/CreateNewProject1.css">
+
+<br /><br />
+<h3 class="header1">Создать новый проект</h3>
+<br /><br />
+
+<div asp-validation-summary="All"></div>
+<form asp-controller="Admin" asp-action="CreateNewProject" method="post" enctype="multipart/form-data">
+    <div asp-validation-summary="ModelOnly"></div>
+    <table>
+        <tr>
+            <td width="250"><label class="ProjectIdInternal">Внутренний номер проекта</label></td>
+            <td width="500"><input type="text" class="IntNum" asp-for="InternalNum"></td>
+        </tr>
+        <tr>
+            <td width="250">
+                <label class="ProjectNameLabel">Наименование проекта</label>
+            </td>
+
+            <td width="900">  <input type="text" class="FullName" asp-for="FullName" size="100"></td>
+
+        </tr>
+        <tr>
+            <td width="250">
+                <label class="ProjectNameLabel">Номер договора</label>
+            </td>
+
+            <td width="500">  <input type="text" class="ProjectName" asp-for="ContractNumber"></td>
+
+        </tr>
+        <tr>
+            <td width="250">
+                <label class="ProjectNameLabel">Короткое наименование проекта</label>
+            </td>
+
+            <td width="500">  <input type="text" class="ProjectName" asp-for="ContractNumber" size="50"></td>
+
+        </tr>
+
+        <tr>
+            <td width="250">
+
+
+                </select>
+                <label class="ProjectNameLabel">Менеджер проекта</label>
+            </td>
+
+            <td width="500">
+                
+                <input list="my-list" name="selectedUser">
+                <datalist id="my-list">
+                    @foreach (var user in ViewData["Users"] as List<User>)
+                    {
+                        <option>@user.FullName</option>
+                    }                
+                </datalist>
+             
+
+            </td>
+        </tr>
+        <tr>
+            <td>Показывать в быстром доступе</td>
+            <td>@Html.CheckBox("ShowInMenuBar")</td>
+                </tr>
+    </table>
+
+    <input type="submit" value="Создать новый проект">
+</form>
+

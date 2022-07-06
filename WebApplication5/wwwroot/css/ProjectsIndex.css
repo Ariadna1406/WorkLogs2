@@ -1,0 +1,65 @@
+﻿
+.QualityBook {
+    background: #f5ffff;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+    .QualityBook td {
+        border: 1px solid #e3eef7;
+        padding: 10px 15px;
+        position: relative;
+        transition: all 0.5s ease;
+    }
+
+    .QualityBook tr:nth-child(odd) {
+        background: #ebf3f9;
+    }
+
+#Message {
+    font-size: 16px;
+    color: brown;
+    font-weight:bold
+}
+
+
+#SelectedTaskList {
+    width: 500px;
+}
+
+#SelectedProject {
+    width: 500px;
+}
+
+#SelectedKindOfAct {
+    width: 500px;
+}
+
+#Welcome{
+    font-size : 16px;
+    color : brown;
+}
+
+#TaskList {
+    width: 500px;
+}
+
+.field-validation-error {
+}
+
+
+
+
+
+.input-validation-error {
+    color: red;
+    background-color: lightcoral
+}
+
+.validation-summary-errors {
+    color: red;
+}
+
+.field-validation-error {
+    color: red;
+}

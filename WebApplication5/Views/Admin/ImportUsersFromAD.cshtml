@@ -1,0 +1,88 @@
+﻿@model List<User>
+@{
+    int count = 0;
+}
+<br>
+<br>
+<style>
+    .FullName {
+        width: 50px
+    }
+
+    td {
+        text-align: center;
+    }
+
+    th {
+        text-align: center;
+        color: brown;
+        font-size: large
+    }
+</style>
+@if (ViewData["Information"] != null)
+{
+    @Html.Partial("PartialInformation", ViewData["Information"]);
+}
+<form asp-action="ImportUsersPost" method="post">
+    <input type="submit" value="Импортировать пользователей" />
+    <br><br />
+    <p></p>
+    <table class="tableForImport" border="1" align="center" width="100%">
+        <tr>
+            <th width="50px"><input type="checkbox" id="CheckAll" /></th>
+            <th>Номер</th>
+            <th>Полное имя пользователя</th>
+            <th>Логин</th>
+            <th>Электронная почта</th>
+            <th>Отдел</th>
+        </tr>
+        @if (Model.Count > 0)
+        {
+            foreach (var user in Model)
+            {
+
+                <tr>
+                    <td><input type="checkbox" name="users[@count].NeedToImport" value="true" /></td>
+                    <td>@count</td>
+                    <td class="FullName"> <input type="text" size="50" name="users[@count].FullName" value="@user.FullName" readonly="readonly" /></td>
+                    <td>
+                        <input type="text" name="users[@count].Login" value="@user.Login" readonly="readonly">
+                        <input type="hidden" name="users[@count].AD_GUID" value="@user.AD_GUID" readonly="readonly">
+                        <input type="hidden" name="users[@count].Department.Id" value="@user.Department.Id" readonly="readonly">
+                        
+                    </td>
+                    <td>
+                        <input type="text" name="users[@count].Email" value="@user.Email" readonly="readonly">
+                    </td>
+                    <td><input type="text" name="users[@count].Department.Name" value="@user.Department.Name" readonly="readonly"></td>
+
+                </tr>
+                count++;
+            }
+        }
+        else
+        {
+            <tr width="100%">
+                Новых пользователей для импорта не найдено
+            </tr>
+        }
+
+
+    </table>
+</form>
+
+<script src="~/js/jQ.js"></script>
+
+<script>
+    $('#CheckAll').click(function Check() {
+        if ($('#CheckAll').is(':checked')) {
+            alert("11111");
+            // Отметить все
+            $('body input:checkbox').prop('checked', true);
+
+        } else {
+            // Снять все
+            $('body input:checkbox').prop('checked', false);
+        }
+    });
+</script>

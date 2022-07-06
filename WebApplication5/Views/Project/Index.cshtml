@@ -1,0 +1,30 @@
+﻿
+@model IOrderedQueryable<Project>
+@{
+
+    ViewData["Title"] = "Проекты";
+
+}
+<br>
+<h3>Проекты</h3>
+<br>
+<link rel="stylesheet" href="~/css/ProjectsIndex.css">
+
+<table id="WorkLogs" class="QualityBook" width="100%">
+    <tr class="header">
+        <th style="padding: 10px 15px;">Акроним проекта</th>
+        <th style="padding: 10px 15px;">Внутренний номер проекта</th>
+        <th style="padding: 10px 15px;">Наименование проекта</th>
+        <th style="padding: 10px 15px;">Кол-во элементов трубопровода</th>
+
+    </tr>
+    @foreach (var project in Model)
+    {
+<tr>
+    <td>@project.AvevaAcronym</td>
+    <td>@project.InternalNum</td>
+    <td>@project.FullName</td>
+    <td>@project.AvevaElemAmount</td>
+</tr>
+            }
+        </table>

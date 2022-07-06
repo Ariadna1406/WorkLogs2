@@ -1,0 +1,83 @@
+﻿
+@model Response
+@{
+    Project project = ViewData["Project"] as Project;
+    ViewData["Title"] = "2602-3 \"Завод масел\"";
+    DateTime newDate = DateTime.Now.Date;
+    var cor = ViewData["Corrections"] as Corrections;
+
+    string GetStatus(Corrections.CorStatus status)
+    {
+        switch (status)
+        {
+            case Corrections.CorStatus.New:
+                return "Новая";
+            case Corrections.CorStatus.CorrectedByExecutor:
+                return "Исправлено исполнителем";
+            case Corrections.CorStatus.CheckedByBim:
+                return "Проверено BIM-менеджером";
+            case Corrections.CorStatus.Done:
+                return "Снято";
+            case Corrections.CorStatus.NewAgain:
+                return "Повторное";
+
+        }
+        return "Не найдено";
+
+    }
+}
+<link rel="stylesheet" href="~/css/ApproveCor.css">
+<br>
+<h3>@String.Format("Замечание № {0}", cor.CorNumber.ToString()) </h3>
+
+<table id="Corrections" class="QualityBook" width="100%" >
+    <tr>
+        <td>Текст замечания</td>
+        <td>@cor.CorBodyText</td>
+    </tr>
+    <tr>
+        <td>Скриншот</td>
+        <td><img src="~/images/@(cor.ImageLink)" asp-append-version="true" width="400" height="300" onclick="changeSizeImage(this)" /></td>
+    </tr>
+    <tr>
+        <td>Текущий статус замечания</td>
+        <td>@GetStatus(cor.Status)</td>
+    </tr>   
+</table>
+
+<table id="Response" class="QualityBook" width="100%">
+    <form asp-controller="Corrections" asp-action="ApproveCorPost" method="post" enctype="multipart/form-data" asp-route-Id="@cor.Id">
+        <div asp-validation-summary="ModelOnly"></div>
+        <div></div>
+        <input type="hidden" name="corId" value="@cor.Id"></input>
+
+        <br><br>
+            <tr>
+                <td>  <label class="RemarkText1" asp-for="@Model.Text">Текст ответа</label></td>
+
+                <td>
+                    <textarea readonly="readonly" rows="3" cols="80" asp-for="@Model.Text"></textarea>
+                    <p><span asp-validation-for="@Model.Text"></span></p>
+                </td>
+<tr>
+        <tr>
+        <td><b>Скриншот устранения</b></td>
+            <td>
+        <div><img src="~/images/@(Model.ImageLink)" asp-append-version="true" width="400" height="300" onclick="changeSizeImage(this)" /></div>
+                </td>
+            </tr>
+        <tr>
+
+            <td> <input type="submit" value="Согласовать">
+            </td>
+            </tr>
+</form>
+</table>
+
+
+
+
+
+
+
+

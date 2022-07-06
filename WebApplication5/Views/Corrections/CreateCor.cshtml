@@ -1,0 +1,88 @@
+﻿@using WebApplication5.Models;
+@model Corrections;
+@{
+    var project = ViewData["Project"] as Project;
+    ViewData["Title"] = String.Format("{0}. Добавить новое замечание", project.InternalNum);
+}
+<link rel="stylesheet" href="~/css/AddNewRemark.css" />
+<br>
+<br>
+
+<h3 class="header">Добавить новое замечание</h3>
+
+
+<form asp-controller="Corrections" asp-action="CreateRemark" method="post" enctype="multipart/form-data">
+
+    <table class="AddNewRemark">
+        <tr>
+            <td><div>Проект:</td>
+            <td> @String.Format("{0} - {1}", project.InternalNum, project.FullName)</div></td>
+            <input type="hidden" name="ProjectId" value="@project.Id"></input>
+        </tr>
+        <tr>
+            <td>Номер замечания: </td>
+            <td> @ViewBag.NewId <input type="hidden" asp-for="CorNumber" value=@ViewBag.NewId></input> </td>
+        </tr>
+        <tr>
+            <td class="CorText"> Текст замечания</td>
+            <td>
+                <textarea rows="3" cols="80" asp-for="CorBodyText"></textarea>
+                <span asp-validation-for="CorBodyText"></span>
+            </td>
+        </tr>
+
+
+        <tr>
+            <td>
+                <div class="editor-label">
+                    Дата получения замечания:
+                </div>
+            </td>
+            <td>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.CorTerm);
+                    @Html.ValidationMessageFor(model => model.CorTerm);
+                    </div>
+            </td>
+        </tr>
+        
+        <tr>
+            <td>Выберите исполнителя замечания:</td>
+            <td>
+                <input list="my-list" name="selectedUser">
+                <datalist id="my-list">
+                    @foreach (var user in ViewData["Users"] as List<User>)
+                    {
+                        <option>@user.FullName</option>
+                    }
+                </datalist>
+                <span asp-validation-for="Executor" class="text-danger"></span>
+            </td>
+            </td>
+            <tr>
+        <br>
+        <br>
+                </tr>
+        <td> <label asp-for="ImageFile">Скриншот</label></td>
+        <td>
+            <input class="input-file" asp-for="ImageFile" accept="image/*"></input>
+            <span asp-validation-for="ImageFile" class="text-danger"></span>
+        </td>
+        <tr>
+    </table>
+    <br><br>
+    <input type="submit" value="Создать новое замечание">
+</form>
+
+
+
+
+
+<style>
+
+</style>
+</div>
+
+
+
+

@@ -1,0 +1,17 @@
+﻿@model List<string>
+
+    <table class="alert" style="width: 100%; background-color:lightgreen">
+        <tbody>
+            <tr>
+                <td style="padding:5px;">
+                    <img src="~/icons/Information.png" style="border-width:0px;" alt="Информация">
+                </td>
+                <td align="left" style="font-weight:bold;width:100%;padding:5px; text-align : left">
+                    @foreach (var line in Model)
+                    {
+                        <p>@line</p>
+                    }
+                </td>
+            </tr>
+        </tbody>
+    </table>

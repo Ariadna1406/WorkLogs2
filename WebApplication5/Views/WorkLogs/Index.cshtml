@@ -1,0 +1,242 @@
+﻿
+@model WorkLogs
+@{
+
+    ViewData["Title"] = "Отчёт по трудозатратам";
+
+    User curUser = ViewData["CurUser"] as User;
+    var IsShowingBalance = ViewData["IsShowingBalance"] as bool?;
+    var workLogsLast30 = ViewData["WorkLogsLast30"] as List<WorkLogs>;
+    var date = Model.DateOfReport.Date;
+    var primaTaskList = ViewData["PrimaTask"] as List<PrimaTask>;
+    var dateTimeRightFormat = String.Format("{0}-{1}-{2}T00:00:00.000", date.Year, date.Month<10? "0"+ date.Month.ToString() : date.Month.ToString(), date.Day<10? "0"+date.Day.ToString() : date.Day.ToString());
+    //string prjName = string.Empty; var selectedTask = string.Empty; var kindOfAct = string.Empty; var workTimeSpan = "0:00"; string comment = string.Empty;
+    string prjName = ViewData["projectName"] as string ; string selectedTask = ViewData["selectedTaskList"] as string; string kindOfAct = ViewData["selectedKindOfAct"] as string ; string workTimeSpan = ViewData["workTimeSpan"] as string ; string comment = ViewData["comment"] as string ;
+    int count = 0;
+    var totalWorkTime= ViewData["TodayWorkTimeAmount"] as TimeSpan?;
+    bool? isShowingBalance=false;
+    if (ViewData["IsShowingBalance"]!=null) isShowingBalance = ViewData["IsShowingBalance"] as bool?;
+}
+<br>
+<h3>Отчёт по трудозатратам</h3>
+<br>
+<link rel="stylesheet" href="~/css/WorkLogsIndex.css">
+
+<p id="Welcome">Добрый день, @curUser.FullName !</p>
+@if (ViewData["SuccessMes"] != null)
+{
+    @Html.Partial("PartialInformation", ViewData["SuccessMes"]);
+}
+@if (ViewData["FailMes"] != null)
+{
+    @Html.Partial("PartialError", ViewData["FailMes"]);
+}
+<!--form asp-controller="WorkLogs" asp-action="SelectProject" method="post" enctype="multipart/form-data"-->
+@*Html.DropDownList("team", ViewData["CurProjectsSelList"] as SelectList, htmlAttributes: new { @class = "form-control" })*@
+<!--input type="submit" value="Подать трудозатраты">-->
+<!--/form-->
+<table id="WorkLogs" class="QualityBook" width="100%">
+
+    <div asp-validation-summary="ModelOnly"></div>
+    <tr>
+        <td>
+            <div class="editor-label">
+                Дата отчета:
+            </div>
+        </td>
+        <td>
+            <div class="editor-field">
+
+                @*Html.EditorFor(model => model.DateOfReport)*@
+
+                <input class="text-box single-line" data-val="true" data-val-required="The DateOfReport field is required." id="DateOfReport" name="DateOfReport" type="datetime-local" value="@dateTimeRightFormat">
+
+                @Html.ValidationMessageFor(model => model.DateOfReport)
+            </div>
+        </td>
+    </tr>
+
+    <tr>
+        <td>Проект:</td>
+        <td>
+            <input list="projectList" name="selectedProject" id="SelectedProject" value="@prjName" autocomplete="off">
+            <datalist id="projectList">
+                @foreach (var project in ViewData["CurProjects"] as List<Project>)
+                    {
+                <option id="id_@project.Id">@String.Format("{0}", project.InternalNum, @project.ShortName)</option>
+                    }
+            </datalist>
+            <span asp-validation-for="Proj_id" class="text-danger"></span>
+
+        </td>
+    </tr>
+
+    <form asp-controller="WorkLogs" asp-action="SendWorkLogs" method="post" enctype="multipart/form-data">
+    <tr>
+        <td>Наименование задачи:</td>
+        <td>
+            <input list="TaskList" name="selectedTaskList" id="SelectedTaskList" value="@selectedTask" autocomplete="off">
+            <datalist id="TaskList">
+                @foreach (var task in primaTaskList)
+                {
+                <option class="@task.ProjId" id="@task.ProjId">@task.TaskName</option>
+                }
+            </datalist>
+            <span asp-validation-for="KindOfAct" class="text-danger"></span>
+            <input type="hidden" id="projectName" name="projectName" value="" />
+            <input type="hidden" id="dateOfReportVal" name="dateOfReportVal" value="" />
+            <input type="hidden" id="isShowingBalance" name="isShowingBalance" value="@isShowingBalance.ToString()" />
+        </td>
+
+    </tr>
+
+    <tr>
+        <td>Вид деятельности:</td>
+        <td>
+            <input list="KindOfAct" name="selectedKindOfAct" id="SelectedKindOfAct" value="@kindOfAct" autocomplete="off">
+            <datalist id="KindOfAct">
+                @foreach (var kind in ViewData["KindOfAct"] as List<KindOfAct>)
+                {
+                <option>@kind.Name</option>
+                }
+            </datalist>
+            <span asp-validation-for="KindOfAct" class="text-danger"></span>
+        </td>
+
+    <tr>
+        <td>Отработанное время:</td>
+        <td>
+            <input type="text" name="workTimeSpan" id="workTimeSpan" value="@workTimeSpan" />
+            Формат ввода - ч:мм (пример - 7:30)
+        </td>
+    </tr>
+    <tr>
+        <td>Комментарий:</td>
+        <td>
+            <textarea rows="3" cols="68" name="comment" id="comment">@comment</textarea>            
+            (Необязательное поле)
+        </td>
+    </tr>
+
+    <tr>
+
+        <td>
+            <input type="submit" value="Подать трудозатраты" onclick="onclickProj()">
+        </td>
+    </tr>
+    </form>
+</table>
+<br>
+
+<a class="btn btn-default" onclick="Show()"><i></i> Показать баланс рабочего времени</a>
+<br>
+@if (IsShowingBalance.HasValue && IsShowingBalance.Value)
+{
+<br>
+<table class="QualityBook" width="84%"><tr><td style="font-size:16px; color:brown">Общее поданное время за текущий день:</td><td style="font-size:16px; color:brown; font-weight:bold ">@totalWorkTime.ToString()</td></tr></table>
+<br>
+<table id="WorkLogsLast30" class="QualityBook" width="100%">
+    <tr style="padding: 10px 15px;"  > 
+        <th width="10%" style="align-content: center; padding: 10px 15px;">Проект</th>
+        <th width="40%" style="align-content: center; padding: 10px 15px;">Наименование задачи</th>
+        <th width="15%" style="align-content: center; padding: 10px 15px;">Дата отчёта</th>
+        <th width="10%" style="align-content: center; padding: 10px 15px;">Кол-во списанного времени</th>
+        <th width="15%" style="align-content: center; padding: 10px 15px;">Комментарий</th>
+        <th width="10%" style="align-content: center; padding: 10px 15px;">Действия</th>
+    </tr>
+    @if (workLogsLast30.Count > 0) {
+    @foreach (var workLog in workLogsLast30)
+    {
+<tr>
+    <td>@workLog.ProjName</td>
+    <td>@workLog.TaskName</td>
+    <td>@workLog.DateOfReport.ToShortDateString()</td>
+    <td>@workLog.WorkTime</td>
+    <td>@workLog.Comment</td>
+    <td><a class="btn btn-default" onclick="Delete(@workLog.Id)"><i></i> Удалить </a></td>
+</tr>
+    }
+    }
+    else{
+    <br>
+        <p id="Message"><b>У вас нет поданных трудозатрат за последние 30 дней</b></p>
+    <br>
+    }
+</table>        
+}
+
+<script>
+
+    document.getElementById("SelectedProject").addEventListener("input", onSel, false);
+
+    function onclickProj() {
+
+        var selProject = document.getElementById("SelectedProject").value;
+        document.getElementById("projectName").value = selProject;
+
+
+        var dateOfRep = document.getElementById("DateOfReport").value;
+        document.getElementById("dateOfReportVal").value = dateOfRep;
+    };
+
+    function onSel() {
+        
+        var val = document.getElementById('SelectedProject').value;
+        var date = document.getElementById('DateOfReport').value;
+        var task = document.getElementById('SelectedTaskList').value;
+        var kindOfAct = document.getElementById('SelectedKindOfAct').value;
+        var workTime = document.getElementById('workTimeSpan').value;
+        var comment = document.getElementById('comment').value;
+        var listValue = document.getElementById('projectList').options;
+        for (var i = 0; i < listValue.length; i++) {
+            if (listValue[i].value == val) {
+                window.location.href = '/WorkLogs/SelectProject/GetData?selectedProject=' + val + '&DateOfReport=' + date + '&selectedTaskList=' + task + '&selectedKindOfAct=' + kindOfAct + '&workTimeSpan=' + workTime + '&isShowingBalance=' + isShowingBalance + '&comment=' + comment; //'http://localhost:4443/WorkLogs/SelectProject/GetData?selectedProject=' + val + '&DateOfReport=' + date; //  'https://report.oilpro.ru/WorkLogs/SelectProject/GetData?selectedProject=' + val + '&DateOfReport=27.05.2022'; //'WorkLogs/SelectProject/GetData?selectedProject=2600';// + val;
+                document.getElementById("ShowWorkLogsBalance").setAttribute("asp-route-projectName", val);
+               
+            }
+        }
+    };
+
+    function Show() {
+        var val = document.getElementById('SelectedProject').value;
+        var date = document.getElementById('DateOfReport').value;
+        var task = document.getElementById('SelectedTaskList').value;
+        var kindOfAct = document.getElementById('SelectedKindOfAct').value;
+        var workTime = document.getElementById('workTimeSpan').value;
+        var isShowingBalance = document.getElementById('isShowingBalance').value;
+        var comment = document.getElementById('comment').value;
+        window.location.href = '/WorkLogs/ShowWorkLogsBalance/GetData?projectName=' + val + '&DateOfReport=' + date + '&selectedTaskList=' + task + '&selectedKindOfAct=' + kindOfAct + '&workTimeSpan=' + workTime + '&isShowingBalance=' + isShowingBalance + '&comment=' + comment;
+        
+    };
+
+    function Delete(Id) {
+        var val = document.getElementById('SelectedProject').value;
+        var date = document.getElementById('DateOfReport').value;
+        var task = document.getElementById('SelectedTaskList').value;
+        var kindOfAct = document.getElementById('SelectedKindOfAct').value;
+        var workTime = document.getElementById('workTimeSpan').value;
+        var isShowingBalance = document.getElementById('isShowingBalance').value;
+        var comment = document.getElementById('comment').value;
+        window.location.href = '/WorkLogs/DeleteWorkLog/GetData?IdStr=' + Id + '&projectName=' + val + '&DateOfReport=' + date + '&selectedTaskList=' + task + '&selectedKindOfAct=' + kindOfAct + '&workTimeSpan=' + workTime + '&isShowingBalance=' + isShowingBalance + '&comment=' + comment;
+
+    };
+
+
+
+
+
+    //$(document).on('change', 'input', function () {
+    //    var options = $('SelectedProject')[0].options;
+    //    var val = $(this).val();
+    //    for (var i = 0; i < options.length; i++) {
+    //        if (options[i].value === val) {
+    //            alert(val);
+    //            break;
+    //        }
+    //    }
+    //});
+
+    function Show1() {       
+       
+    };
+</script>

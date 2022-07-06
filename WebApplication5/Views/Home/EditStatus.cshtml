@@ -1,0 +1,14 @@
+﻿@model Corrections
+@{
+    ViewData["Title"] = "EditStatus";
+}
+
+<h2>Редактировать статус</h2>
+
+<p>@Model.CorBodyText </p>
+<form asp-action="ChangeStatus" method="post" asp-controller="Home" asp-route-corId="@Model.Id">
+    @Html.DropDownList("Status", ViewBag.Statuses as SelectList)
+    
+    <input type="submit" value="Изменить" />
+
+</form>

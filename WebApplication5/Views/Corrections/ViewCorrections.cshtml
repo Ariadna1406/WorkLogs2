@@ -1,0 +1,103 @@
+﻿@model List<Corrections>
+@{    
+    Project project = ViewData["Project"] as Project;
+    ViewData["Title"] = "2602-3 \"Завод масел\"";
+    DateTime newDate = DateTime.Now.Date;
+
+    string GetStatus(Corrections.CorStatus status)
+    {
+        switch (status)
+        {
+            case Corrections.CorStatus.New:
+                return "Новая";
+            case Corrections.CorStatus.CorrectedByExecutor:
+                return "Исправлено исполнителем";
+            case Corrections.CorStatus.CheckedByBim:
+                return "Проверено BIM-менеджером";
+            case Corrections.CorStatus.Done:
+                return "Снято";
+            case Corrections.CorStatus.NewAgain:
+                return "Повторное";
+
+        }
+        return "Не найдено";
+
+    }
+}
+<br>
+<h3>@String.Format("Замечания к 3D модели по проекту {0} {1}", project.InternalNum, project.FullName) </h3>
+<br>
+<link rel="stylesheet" href="~/css/ViewCorrections.css">
+
+<table class="QualityBook" width="100%" cellspacing="0" cellpadding="4" border="1">
+    <tr>
+        <th width="10%">Номер</th>
+        <th width="5%">Дата получения</th>
+        <th width="30%">Содержание</th>
+        <th width="30%">Скриншот</th>
+        <th width="10%">Статус</th>
+        <th width="5%">Доступные действия</th>
+        <th width="40%">Ответственный исполнитель</th>
+    </tr>
+
+    @foreach (var cor in Model)
+    {
+        String path = String.Format("<img src=\"~\\images\\{0}\" />", cor.ImageLink);
+        <tr>
+            <td>@cor.CorNumber</td>
+            <td>@cor.CorTerm.ToShortDateString()</td>
+            <td>@cor.CorBodyText</td>
+            <td><img src="~/images/@(cor.ImageLink)" asp-append-version="true" width="400" height="300" onclick="changeSizeImage(this)" /></td>
+            <td>
+                @GetStatus(cor.Status)
+
+            </td>
+            <td>
+                @{
+                    switch (cor.Status)
+                    {
+                        case Corrections.CorStatus.New:
+                            <a asp-action="CompleteCor" asp-controller="Corrections" asp-route-Id="@cor.Id">Ответить на замечание</a>
+                            break;
+                        case Corrections.CorStatus.CorrectedByExecutor:
+                            <a asp-action="ApproveCor" asp-controller="Corrections" asp-route-Id="@cor.Id">Согласовать ответ исполнителя</a>
+                            break;
+                        case Corrections.CorStatus.CheckedByBim:
+                            <a asp-action="BimApproveCor" asp-controller="Corrections" asp-route-Id="@cor.Id">Согласовать ответ отдела</a>
+                            break;
+                        case Corrections.CorStatus.Done:
+                            <a asp-action="ReopenCor" asp-controller="Corrections" asp-route-Id="@cor.Id">Повторно открыть замечание</a>
+                            break;
+
+                    }
+                }
+
+            </td>
+            @{
+                            string executor;
+                            if (cor.Executor != null) executor = cor.Executor.FullName; else executor = string.Empty;
+                        }
+            <td>
+                @executor
+                </td >
+                </tr >
+            }
+
+</table>
+
+<br>
+<br>
+
+<a class="btn-link" asp-action="CreateCor" asp-controller="Corrections" asp-route-Id="@project.Id">Создать новое замечание</a>
+
+
+
+<script>
+    <script language="JavaScript">
+        var bigsize = "300"; //Размер большой картинки
+        var smallsize = "150"; //Размер маленькой картинки
+                    function changeSizeImage(im) {
+                        if(im.height == bigsize) im.height = smallsize;
+                        else im.height = bigsize;
+                    }
+</script>
