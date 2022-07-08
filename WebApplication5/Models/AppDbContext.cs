@@ -27,6 +27,7 @@ namespace WebApplication5.Models
         public DbSet<AvevaElemAmount> AvevaElemAmounts { get; set; }
 
         public DbSet<Licence> AvevaLicences { get; set; }
+        public DbSet<Role> Roles { get; set; }
 
         //protected override void OnModelCreating(ModelBuilder builder)
         //{

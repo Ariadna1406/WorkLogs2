@@ -17,6 +17,8 @@ namespace WebApplication5.Models
         public string AD_GUID { get; set; }
         public string Login { get; set; }
         public string Email { get; set; }
+                
+        public Role Role { get; set; }
         [NotMapped]
         public string PhoneNumber { get; set; }
         string fullName = string.Empty;
