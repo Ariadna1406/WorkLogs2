@@ -15,13 +15,22 @@ using System.IO;
 
 namespace WebApplication5.Controllers
 {
-    public class ProjectController : Controller
+    public class InstructController : Controller
     {
         AppDbContext context;
-        public ProjectController(AppDbContext appDbContext, IHostingEnvironment appEnv)
+        public InstructController(AppDbContext appDbContext, IHostingEnvironment appEnv)
         {
             context = appDbContext;
         }
+        public ViewResult Index()
+        {
+            if (IsAdminUser())
+            {
+                return View();
+            }
+            return View("/Views/Shared/PageIsInDev.cshtml");
+        }
+
         public bool IsAdminUser()
         {
             var winUs = GetLogin(HttpContext.User.Identity.Name);
@@ -43,34 +52,6 @@ namespace WebApplication5.Controllers
             }
             return login;
         }
-        public ViewResult Index()
-        {
-            var projectSet = context.ProjectSet.Where(x => x.Status == Status.NotInWork);
-            return View(projectSet);
-        }
 
-        public ViewResult Graphs(string prjAcr)
-        {
-            var elemSet = context.AvevaElemAmounts.Where(x => x.ProjectAcr == prjAcr).ToList();
-            //if (elemSet.Count > 0)
-            // {
-            ViewData["prjAcr"] = prjAcr;
-                return View(elemSet);
-            //}
-            //return View("/Views/Project/")
-        }
-
-        public string GetAvevaElemAmount(string avevaAcr)
-        {
-            string filePath = String.Format(@"\\it-andrey\ModelElemAmount\{0}\ElemAmount.txt", avevaAcr);
-            if (System.IO.File.Exists(filePath))
-            {
-                StreamReader sr = new StreamReader(filePath);
-                var line= sr.ReadLine();
-                sr.Close();
-                return line;
-            }
-            return string.Empty;
-        }
     }
 }

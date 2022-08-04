@@ -1,0 +1,41 @@
+﻿
+@model IOrderedQueryable<Project>
+@{
+
+    ViewData["Title"] = "Инструкции";
+
+}
+<br>
+<h3>Инструкции</h3>
+<br>
+<link rel="stylesheet" href="~/css/ProjectsIndex.css">
+<a href="~/Files/BIMPublisher.pdf"><i></i>BimPublisher</a>
+<div id="app">
+    <h3 v-text="headerNote"></h3>
+    <p><input v-model="x" /></p>
+    <p><input v-model="y" /></p>
+    <p>---------------------</p>
+    <p><span v-text="result"></p>
+</div>
+<script src="~/js/vue.js"></script>
+<script type="text/javascript">
+    var inst = new Vue({
+        el: '#app',
+        data: {
+            x: 0,  
+            y: 0,
+            lastRes : 0,
+            headerNote: 'Test note'
+        },
+        computed: {
+            result: function () {
+                let x = parseFloat(this.x)
+                let y = parseFloat(this.y)
+                this.lastRes = x + y
+                return this.lastRes
+                
+            }
+        }
+    })
+</script>
+

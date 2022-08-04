@@ -16,6 +16,7 @@
         <th style="padding: 10px 15px;">Внутренний номер проекта</th>
         <th style="padding: 10px 15px;">Наименование проекта</th>
         <th style="padding: 10px 15px;">Кол-во элементов трубопровода</th>
+        <th style="padding: 10px 15px;">Возможные действия</th>
 
     </tr>
     @foreach (var project in Model)
@@ -24,7 +25,8 @@
     <td>@project.AvevaAcronym</td>
     <td>@project.InternalNum</td>
     <td>@project.FullName</td>
-    <td>@project.AvevaElemAmount</td>
+    <td>@project.AvevaElemAmount </td>
+    <td><a class="btn btn-default" asp-controller="Project" asp-action="Graphs" asp-route-prjAcr="@project.AvevaAcronym"><i></i>Детализировать</a> </td>
 </tr>
             }
         </table>

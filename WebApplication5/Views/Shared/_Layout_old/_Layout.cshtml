@@ -21,27 +21,19 @@
 <body>
     <nav class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
-            <div class="navbar-collapse collapse">
+            <div class="navbar-collapse collapse">                           
 
-                <ul class="nav navbar-nav">
+                <ul class="nav navbar-nav">                  
                     <li><img src="~/images/logo-top.svg"></li>
-                    <li>
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Действия
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                            <li><a class="dropdown-item" href="#">Выдать задание в отдел</a></li>
-                            <li><a class="dropdown-item" asp-area="" asp-controller="WorkLogs" asp-action="Index">Подать трудозатраты</a></li>                            
-                        </ul>
-                    </li>
-                    <li><a asp-area="" asp-controller="Project" asp-action="Index">Проекты</a></li>
-                    <li><a asp-area="" asp-controller="Instruct" asp-action="Index">Инструкции</a></li>                    
+                    <li><a asp-area="" asp-controller="Project" asp-action="Index">Все проекты</a></li>
+                    <li><a asp-area="" asp-controller="Instruct" asp-action="Index">Инструкции</a></li>
+                    <li><a asp-area="" asp-controller="WorkLogs" asp-action="Index">Трудозатраты</a></li>
                     <li><a asp-area="" asp-controller="Admin" asp-action="AdminMain">Администрирование</a></li>
 
                 </ul>
             </div>
         </div>
-    </nav>
+    </nav>    
     <partial name="_CookieConsentPartial" />
 
     <div class="container body-content">
@@ -53,9 +45,5 @@
     </div>
 
     @RenderSection("Scripts", required: false)
-
-    <script src="~/lib/bootstrap-5.0.2-dist/js/popper.min.js"></script>
-    <script src="~/lib/bootstrap-5.0.2-dist/js/jquery.js"></script>
-    <script src="~/lib/bootstrap-5.0.2-dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

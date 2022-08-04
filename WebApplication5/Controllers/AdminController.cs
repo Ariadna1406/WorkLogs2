@@ -278,16 +278,27 @@ namespace WebApplication5.Controllers
 
         [HttpGet]
         public IActionResult AdminMain()
-        {
-            var winUs = GetLogin(HttpContext.User.Identity.Name);
-            var userSet = context.Users.Where(x => x.Login == winUs).Include(x => x.Role);
-            if (userSet.Count() > 0 && userSet.First().Role != null && userSet.First().Role.Name == "Admin")
+        {            
+            if (IsAdminUser())
             {                
                 return View("AdminMain");
             }
             return View("/Views/Shared/AccessDenied.cshtml");
         }
 
+        public bool IsAdminUser()
+        {
+            var winUs = GetLogin(HttpContext.User.Identity.Name);
+            var userSet = context.Users.Where(x => x.Login == winUs).Include(x => x.Role);
+            if (userSet.Count() > 0 && userSet.First().Role != null && userSet.First().Role.Name == "Admin")
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
         public string GetLogin(string login)
         {
             if (login.Contains("\\"))

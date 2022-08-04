@@ -17,6 +17,8 @@ namespace WebApplication5.Models
 
         public int PipeLineAmount { get; set; }
 
+        public string ProjectAcr { get; set; }
+
 
     }
 }

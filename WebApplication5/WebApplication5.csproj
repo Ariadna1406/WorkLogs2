@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <Content Remove="launchSettings.json" />
+    <Content Remove="wwwroot\Files\BIMPublisher.pdf" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,6 +41,9 @@
     <Content Update="Views\Home\NewPage1.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\Shared\PageIsInDev.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\Shared\PageNotFound.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
@@ -52,6 +56,38 @@
   <ItemGroup>
     <None Include="launchSettings.json" />
     <None Include="Views\AvevaLic\Index.cshtml" />
+    <None Include="wwwroot\Files\BIMPublisher.pdf" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\css\bootstrap-grid.css.map" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\css\bootstrap-grid.min.css.map" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\css\bootstrap-grid.rtl.css.map" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\css\bootstrap-grid.rtl.min.css.map" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\css\bootstrap-reboot.css.map" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\css\bootstrap-reboot.min.css.map" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\css\bootstrap-reboot.rtl.css.map" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\css\bootstrap-reboot.rtl.min.css.map" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\css\bootstrap-utilities.css.map" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\css\bootstrap-utilities.min.css.map" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\css\bootstrap-utilities.rtl.css.map" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\css\bootstrap-utilities.rtl.min.css.map" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\css\bootstrap.css.map" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\css\bootstrap.min.css.map" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\css\bootstrap.rtl.css.map" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\css\bootstrap.rtl.min.css.map" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\js\bootstrap.bundle.js" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\js\bootstrap.bundle.js.map" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\js\bootstrap.bundle.min.js" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\js\bootstrap.bundle.min.js.map" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\js\bootstrap.esm.js" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\js\bootstrap.esm.js.map" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\js\bootstrap.esm.min.js" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\js\bootstrap.esm.min.js.map" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\js\bootstrap.js" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\js\bootstrap.js.map" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\js\bootstrap.min.js" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\js\bootstrap.min.js.map" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\js\jquery-3.2.1.slim.min.js" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\js\jquery.js" />
+    <None Include="wwwroot\lib\bootstrap-5.0.2-dist\js\popper.min.js" />
   </ItemGroup>
 
 </Project>
