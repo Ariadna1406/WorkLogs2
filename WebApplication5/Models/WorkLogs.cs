@@ -24,20 +24,20 @@ namespace WebApplication5.Models
         public DateTime DateOfSendingReport { get; set; }
         public string Comment { get; set; }
 
-        public string Task_id { get; set; }
+        public string Taskrsrc_id { get; set; }
         [NotMapped]
         public string TaskName { get; set; }
 
         [Required(ErrorMessage = "Требуется заполнить кол-во отработанного времени")]
         public TimeSpan WorkTime { get; set; }
 
-        public WorkLogs(User userId, string proj_id, KindOfAct kindOfAct, DateTime dateOfReport, string task_id, TimeSpan workTime, string comment, DateTime dateOfSendingReport)
+        public WorkLogs(User userId, string proj_id, KindOfAct kindOfAct, DateTime dateOfReport, string taskrsrc_id, TimeSpan workTime, string comment, DateTime dateOfSendingReport)
         {
             User = userId;
             Proj_id = proj_id;
             KindOfAct = kindOfAct;
             DateOfReport = dateOfReport;
-            Task_id = task_id;
+            Taskrsrc_id = taskrsrc_id;
             WorkTime = workTime;
             Comment = comment;
             DateOfSendingReport = dateOfSendingReport;

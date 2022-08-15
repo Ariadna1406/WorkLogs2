@@ -7,9 +7,13 @@
     User curUser = ViewData["CurUser"] as User;
     var IsShowingBalance = ViewData["IsShowingBalance"] as bool?;
     var workLogsLast30 = ViewData["WorkLogsLast30"] as List<WorkLogs>;
-    var date = Model.DateOfReport.Date;
+    string dateTimeRightFormat = string.Empty;
+    if (Model != null)
+    {
+        var date = Model.DateOfReport.Date;        
+        dateTimeRightFormat = String.Format("{0}-{1}-{2}T00:00:00.000", date.Year, date.Month < 10 ? "0" + date.Month.ToString() : date.Month.ToString(), date.Day < 10 ? "0" + date.Day.ToString() : date.Day.ToString());
+    }
     var primaTaskList = ViewData["PrimaTask"] as List<PrimaTask>;
-    var dateTimeRightFormat = String.Format("{0}-{1}-{2}T00:00:00.000", date.Year, date.Month<10? "0"+ date.Month.ToString() : date.Month.ToString(), date.Day<10? "0"+date.Day.ToString() : date.Day.ToString());
     //string prjName = string.Empty; var selectedTask = string.Empty; var kindOfAct = string.Empty; var workTimeSpan = "0:00"; string comment = string.Empty;
     string prjName = ViewData["projectName"] as string ; string selectedTask = ViewData["selectedTaskList"] as string; string kindOfAct = ViewData["selectedKindOfAct"] as string ; string workTimeSpan = ViewData["workTimeSpan"] as string ; string comment = ViewData["comment"] as string ;
     int count = 0;
@@ -79,10 +83,11 @@
             <datalist id="TaskList">
                 @foreach (var task in primaTaskList)
                 {
-                <option class="@task.ProjId" id="@task.ProjId">@task.TaskName</option>
+                    <option class="@task.ProjId" id="@task.Taskrsrc_Id">@task.TaskName</option>
                 }
             </datalist>
             <span asp-validation-for="KindOfAct" class="text-danger"></span>
+            <input type="hidden" id="selectedTaskrsrcId" name="selectedTaskrsrcId" value="" />
             <input type="hidden" id="projectName" name="projectName" value="" />
             <input type="hidden" id="dateOfReportVal" name="dateOfReportVal" value="" />
             <input type="hidden" id="isShowingBalance" name="isShowingBalance" value="@isShowingBalance.ToString()" />
@@ -174,7 +179,8 @@
         var selProject = document.getElementById("SelectedProject").value;
         document.getElementById("projectName").value = selProject;
 
-
+        document.getElementById("selectedTaskrsrcId").value = getIdFromSel();
+        
         var dateOfRep = document.getElementById("DateOfReport").value;
         document.getElementById("dateOfReportVal").value = dateOfRep;
     };
@@ -183,7 +189,7 @@
         
         var val = document.getElementById('SelectedProject').value;
         var date = document.getElementById('DateOfReport').value;
-        var task = document.getElementById('SelectedTaskList').value;
+        var task = getIdFromSel(); //document.getElementById('SelectedTaskList').value;
         var kindOfAct = document.getElementById('SelectedKindOfAct').value;
         var workTime = document.getElementById('workTimeSpan').value;
         var comment = document.getElementById('comment').value;
@@ -196,6 +202,22 @@
             }
         }
     };
+
+    function getIdFromSel(){
+        var datalist = document.getElementById('TaskList')
+        var selVal = document.getElementById('SelectedTaskList').value
+        if (selVal != '') {
+            var optionsData = datalist.options
+            for (let i = 0; i < optionsData.length; i++) {
+                if (datalist.options[i].value == selVal) {
+                    return optionsData[i].id
+                }
+            }
+        }
+        else {
+            return '';
+        }
+    }
 
     function Show() {
         var val = document.getElementById('SelectedProject').value;

@@ -11,9 +11,12 @@ namespace WebApplication5.Models
     {
         [Key]
         public int Id { get; set; }
+        public string ProjName { get; set; }
+        public int ProjId { get; set; }
+        public string Task_Id { get; set; }       
         public string TaskName { get; set; }
-
-        public int ProjId { get; set; } 
+        public string Taskrsrc_Id { get; set; }
+        
 
         
     }

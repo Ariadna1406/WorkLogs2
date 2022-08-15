@@ -98,7 +98,7 @@ namespace WebApplication5.Controllers
                 }
                 ws.Cells[row, 1].Value = workLog.User.FullName;
                 ws.Cells[row, 2].Value = FindProjById(workLog.Proj_id);
-                ws.Cells[row, 3].Value = FindTaskById(workLog.Task_id);
+                ws.Cells[row, 3].Value = FindTaskById(workLog.Taskrsrc_id);
                 if (workLog.KindOfAct != null)
                 {
                     ws.Cells[row, 4].Value = workLog.KindOfAct.Name;
