@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebApplication5.Models;
 
 namespace WebApplication5.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220815133547__taskrsrc_renamed")]
+    partial class _taskrsrc_renamed
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -193,27 +195,6 @@ namespace WebApplication5.Migrations
                     b.ToTable("Roles");
                 });
 
-            modelBuilder.Entity("WebApplication5.Models.TeklaElemAmount", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("Date");
-
-                    b.Property<int>("ElemAmount");
-
-                    b.Property<string>("ProjectAcr");
-
-                    b.Property<int?>("ProjectId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProjectId");
-
-                    b.ToTable("TeklaElemAmounts");
-                });
-
             modelBuilder.Entity("WebApplication5.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -321,13 +302,6 @@ namespace WebApplication5.Migrations
                     b.HasOne("WebApplication5.Models.User", "Manager")
                         .WithMany()
                         .HasForeignKey("ManagerId");
-                });
-
-            modelBuilder.Entity("WebApplication5.Models.TeklaElemAmount", b =>
-                {
-                    b.HasOne("WebApplication5.Models.Project", "Project")
-                        .WithMany()
-                        .HasForeignKey("ProjectId");
                 });
 
             modelBuilder.Entity("WebApplication5.Models.User", b =>

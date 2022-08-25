@@ -1,4 +1,13 @@
-﻿<!DOCTYPE html>
+﻿@{ 
+    bool isHeadOfDepartment = false;
+    string myDepart = string.Empty;
+    var curUser = ViewData["curUser"] as User;
+    if (curUser != null)
+    {
+        isHeadOfDepartment = curUser.isHeadOfDepartment();        
+    }
+}
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -8,13 +17,13 @@
     <environment include="Development">
         <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
         <link rel="stylesheet" href="~/css/site.css" />
-        
+
     </environment>
     <environment exclude="Development">
         <link rel="stylesheet" href="~/css/bootstrap.min.css"
               asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
               asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
-        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />       
+        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
     </environment>
     <script src="~/js/vue.js"></script>
 </head>
@@ -31,14 +40,17 @@
     </a>
     <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
         <li><a class="dropdown-item" href="#">Выдать задание в отдел</a></li>-->
-                    <li><a class="dropdown-item" asp-area="" asp-controller="WorkLogs" asp-action="Index">Трудозатраты</a></li>
-                    <!-- </ul>-->
-                        </li>
-                        <li><a asp-area="" asp-controller="Project" asp-action="Index">Проекты</a></li>
-                        <li><a asp-area="" asp-controller="Instruct" asp-action="Index">Инструкции</a></li>
-                        <li><a asp-area="" asp-controller="Admin" asp-action="AdminMain">Администрирование</a></li>
+                    <li><a asp-area="" asp-controller="MyTasks" asp-action="Index">Мои задачи</a></li>
+                    <input id="isHeadOfDepart" value="@isHeadOfDepartment.ToString()" hidden>
+                    <li id="myDepart" class="hide"><a asp-area="" asp-controller="MyDepartment" asp-action="Index">Мой Отдел</a></li>
+                    <li><a asp-area="" asp-controller="WorkLogs" asp-action="Index">Трудозатраты</a></li>
 
-                    </ul>
+                    <!-- </ul>-->
+                    <li><a asp-area="" asp-controller="Project" asp-action="Index">Проекты</a></li>
+                    <li><a asp-area="" asp-controller="Instruct" asp-action="Index">Инструкции</a></li>
+                    <li><a asp-area="" asp-controller="Admin" asp-action="AdminMain">Администрирование</a></li>
+
+                </ul>
                 </div>
             </div>
         </nav>
@@ -53,6 +65,12 @@
         </div>
 
         @RenderSection("Scripts", required: false)
+    <script>
+        var showHOD = document.getElementById("isHeadOfDepart");
+        var myDepart = document.getElementById("myDepart");
+        if (showHOD.value=="True") myDepart.setAttribute("class", "show");
+        else myDepart.setAttribute("class", "hide")
+    </script>
 
         <script src="~/lib/bootstrap-5.0.2-dist/js/popper.min.js"></script>
         <script src="~/lib/bootstrap-5.0.2-dist/js/jquery.js"></script>

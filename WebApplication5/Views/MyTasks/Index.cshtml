@@ -1,0 +1,33 @@
+﻿@using WebApplication5.Models
+@model List<PrimaTask>
+@{
+
+    ViewData["Title"] = "Мои текущие задачи";
+
+}
+<br>
+<h3>Мои текущие задачи</h3>
+<br>
+<link rel="stylesheet" href="~/css/ProjectsIndex.css">
+
+<table id="WorkLogs" class="QualityBook" width="100%">
+    <tr class="header">
+        <th style="padding: 10px 15px;">Наименование проекта</th>
+        <th style="padding: 10px 15px;">Наименование задачи</th>
+        <th style="padding: 10px 15px;">Дата начала</th>
+        <th style="padding: 10px 15px;">Дата окончания</th>
+        <th style="padding: 10px 15px;">Возможные действия</th>
+
+    </tr>
+    @foreach (var primaTask in Model)
+    {
+<tr>
+    <td>@primaTask.ProjName </td>
+    <td>@primaTask.TaskName</td>
+    <td>@primaTask.StartDate</td>
+    <td>@primaTask.FinishDate</td>
+    <td><a class="btn btn-default" asp-controller="WorkLogs" asp-action="SelectProject" asp-route-selectedProject="@primaTask.ProjName "
+            asp-route-selectedTaskList="@primaTask.TaskName" asp-route-DateOfReport="@DateTime.Now.ToString()"><i></i>Отчитаться по задаче</a></td>
+</tr>
+            }
+        </table>

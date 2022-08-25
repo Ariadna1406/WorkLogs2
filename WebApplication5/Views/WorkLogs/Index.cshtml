@@ -10,12 +10,12 @@
     string dateTimeRightFormat = string.Empty;
     if (Model != null)
     {
-        var date = Model.DateOfReport.Date;        
+        var date = Model.DateOfReport.Date;
         dateTimeRightFormat = String.Format("{0}-{1}-{2}T00:00:00.000", date.Year, date.Month < 10 ? "0" + date.Month.ToString() : date.Month.ToString(), date.Day < 10 ? "0" + date.Day.ToString() : date.Day.ToString());
     }
     var primaTaskList = ViewData["PrimaTask"] as List<PrimaTask>;
     //string prjName = string.Empty; var selectedTask = string.Empty; var kindOfAct = string.Empty; var workTimeSpan = "0:00"; string comment = string.Empty;
-    string prjName = ViewData["projectName"] as string ; string selectedTask = ViewData["selectedTaskList"] as string; string kindOfAct = ViewData["selectedKindOfAct"] as string ; string workTimeSpan = ViewData["workTimeSpan"] as string ; string comment = ViewData["comment"] as string ;
+    string prjName = ViewData["projectName"] as string ; string selectedTask = ViewData["selectedTaskList"] as string; string kindOfAct = ViewData["selectedKindOfAct"] as string ; string workTimeHours = ViewData["workTimeHours"] as string; string workTimeMinutes= ViewData["workTimeMinutes"] as string; string comment = ViewData["comment"] as string ;
     int count = 0;
     var totalWorkTime= ViewData["TodayWorkTimeAmount"] as TimeSpan?;
     bool? isShowingBalance=false;
@@ -111,8 +111,8 @@
     <tr>
         <td>Отработанное время:</td>
         <td>
-            <input type="text" name="workTimeSpan" id="workTimeSpan" value="@workTimeSpan" />
-            Формат ввода - ч:мм (пример - 7:30)
+            <span id="Hours"><span> <input type="text" size="5" name="workTimeHours" id="workTimeHours" value="@workTimeHours" /> ч. <input size="5" type="text" name="workTimeMinutes" id="workTimeMinutes" value="@workTimeMinutes" /> мм.    
+                
         </td>
     </tr>
     <tr>
@@ -189,14 +189,15 @@
         
         var val = document.getElementById('SelectedProject').value;
         var date = document.getElementById('DateOfReport').value;
-        var task = getIdFromSel(); //document.getElementById('SelectedTaskList').value;
+        var task = document.getElementById('SelectedTaskList').value;
         var kindOfAct = document.getElementById('SelectedKindOfAct').value;
-        var workTime = document.getElementById('workTimeSpan').value;
+        var workTimeHours = document.getElementById('workTimeHours').value;
+        var workTimeMinutes = document.getElementById('workTimeMinutes').value;
         var comment = document.getElementById('comment').value;
         var listValue = document.getElementById('projectList').options;
         for (var i = 0; i < listValue.length; i++) {
             if (listValue[i].value == val) {
-                window.location.href = '/WorkLogs/SelectProject/GetData?selectedProject=' + val + '&DateOfReport=' + date + '&selectedTaskList=' + task + '&selectedKindOfAct=' + kindOfAct + '&workTimeSpan=' + workTime + '&isShowingBalance=' + isShowingBalance + '&comment=' + comment; //'http://localhost:4443/WorkLogs/SelectProject/GetData?selectedProject=' + val + '&DateOfReport=' + date; //  'https://report.oilpro.ru/WorkLogs/SelectProject/GetData?selectedProject=' + val + '&DateOfReport=27.05.2022'; //'WorkLogs/SelectProject/GetData?selectedProject=2600';// + val;
+                window.location.href = '/WorkLogs/SelectProject/GetData?selectedProject=' + val + '&DateOfReport=' + date + '&selectedTaskList=' + task + '&selectedKindOfAct=' + kindOfAct + '&workTimeHours=' + workTimeHours + '&workTimeMinutes=' + workTimeMinutes + '&isShowingBalance=' + isShowingBalance + '&comment=' + comment; //'http://localhost:4443/WorkLogs/SelectProject/GetData?selectedProject=' + val + '&DateOfReport=' + date; //  'https://report.oilpro.ru/WorkLogs/SelectProject/GetData?selectedProject=' + val + '&DateOfReport=27.05.2022'; //'WorkLogs/SelectProject/GetData?selectedProject=2600';// + val;
                 document.getElementById("ShowWorkLogsBalance").setAttribute("asp-route-projectName", val);
                
             }
@@ -224,10 +225,11 @@
         var date = document.getElementById('DateOfReport').value;
         var task = document.getElementById('SelectedTaskList').value;
         var kindOfAct = document.getElementById('SelectedKindOfAct').value;
-        var workTime = document.getElementById('workTimeSpan').value;
+        var workTimeHours = document.getElementById('workTimeHours').value;
+        var workTimeMinutes = document.getElementById('workTimeMinutes').value;
         var isShowingBalance = document.getElementById('isShowingBalance').value;
         var comment = document.getElementById('comment').value;
-        window.location.href = '/WorkLogs/ShowWorkLogsBalance/GetData?projectName=' + val + '&DateOfReport=' + date + '&selectedTaskList=' + task + '&selectedKindOfAct=' + kindOfAct + '&workTimeSpan=' + workTime + '&isShowingBalance=' + isShowingBalance + '&comment=' + comment;
+        window.location.href = '/WorkLogs/ShowWorkLogsBalance/GetData?projectName=' + val + '&DateOfReport=' + date + '&selectedTaskList=' + task + '&selectedKindOfAct=' + kindOfAct + '&workTimeHours=' + workTimeHours + '&workTimeMinutes=' + workTimeMinutes + '&isShowingBalance=' + isShowingBalance + '&comment=' + comment;
         
     };
 
@@ -236,10 +238,11 @@
         var date = document.getElementById('DateOfReport').value;
         var task = document.getElementById('SelectedTaskList').value;
         var kindOfAct = document.getElementById('SelectedKindOfAct').value;
-        var workTime = document.getElementById('workTimeSpan').value;
+        var workTimeHours = document.getElementById('workTimeHours').value;
+        var workTimeMinutes = document.getElementById('workTimeMinutes').value;
         var isShowingBalance = document.getElementById('isShowingBalance').value;
         var comment = document.getElementById('comment').value;
-        window.location.href = '/WorkLogs/DeleteWorkLog/GetData?IdStr=' + Id + '&projectName=' + val + '&DateOfReport=' + date + '&selectedTaskList=' + task + '&selectedKindOfAct=' + kindOfAct + '&workTimeSpan=' + workTime + '&isShowingBalance=' + isShowingBalance + '&comment=' + comment;
+        window.location.href = '/WorkLogs/DeleteWorkLog/GetData?IdStr=' + Id + '&projectName=' + val + '&DateOfReport=' + date + '&selectedTaskList=' + task + '&selectedKindOfAct=' + kindOfAct + '&workTimeHours=' + workTimeHours + '&workTimeMinutes=' + workTimeMinutes + '&isShowingBalance=' + isShowingBalance + '&comment=' + comment;
 
     };
 

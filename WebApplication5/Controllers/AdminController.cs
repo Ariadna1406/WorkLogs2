@@ -449,17 +449,17 @@ namespace WebApplication5.Controllers
                 foreach (var user in userGr.Children)
                 {                   
                     var us = user as DirectoryEntry;
-                    if (us.Name.Contains("Альберт"))
-                    {
-                        StreamWriter sw = new StreamWriter(@"D:\propSet.txt");
-                        foreach (PropertyValueCollection prop in us.Properties)
-                        {
+                    //if (us.Name.Contains("Альберт"))
+                    //{
+                    //    StreamWriter sw = new StreamWriter("");
+                    //    foreach (PropertyValueCollection prop in us.Properties)
+                    //    {
                            
-                                sw.WriteLine(String.Format("{0} - {1}", prop.PropertyName, prop.Value));
+                    //            sw.WriteLine(String.Format("{0} - {1}", prop.PropertyName, prop.Value));
                             
-                        }
-                        sw.Close();
-                    }
+                    //    }
+                    //    sw.Close();
+                    //}
                     var fullName = GetProperty("displayName", us);
                     var fullNameSplited = fullName.Split(' ').ToList();
                     if (fullNameSplited.Count == 3)
@@ -471,7 +471,7 @@ namespace WebApplication5.Controllers
                             MiddleName = fullNameSplited[2],
                             AD_GUID = us.NativeGuid,
                             Email = GetProperty("mail", us),
-                            Login = GetProperty("mailNickname", us),
+                            Login = GetProperty("sAMAccountName", us),
                             Department = FindOrCreateDepartment(GetProperty("department", us)),                            
                             FullName = String.Format("{0} {1} {2}", fullNameSplited[0], fullNameSplited[1], fullNameSplited[2]),
                             PhoneNumber = GetProperty("telephoneNumber", us)

@@ -23,7 +23,7 @@ namespace WebApplication5.Models
 
         public DateTime DateOfSendingReport { get; set; }
         public string Comment { get; set; }
-
+        public string Task_id { get; set; }
         public string Taskrsrc_id { get; set; }
         [NotMapped]
         public string TaskName { get; set; }
@@ -41,6 +41,7 @@ namespace WebApplication5.Models
             WorkTime = workTime;
             Comment = comment;
             DateOfSendingReport = dateOfSendingReport;
+            
         }
         public WorkLogs()
         {            

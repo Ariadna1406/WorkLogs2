@@ -25,6 +25,7 @@ namespace WebApplication5.Models
         public DbSet<WorkLogs> WorkLogs { get; set; }
 
         public DbSet<AvevaElemAmount> AvevaElemAmounts { get; set; }
+        public DbSet<TeklaElemAmount> TeklaElemAmounts { get; set; }
 
         public DbSet<Licence> AvevaLicences { get; set; }
         public DbSet<Role> Roles { get; set; }

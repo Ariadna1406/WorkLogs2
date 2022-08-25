@@ -12,12 +12,13 @@ using System.Text.RegularExpressions;
 using Aspose.Cells;
 using System.Data.SqlClient;
 using System.IO;
+using Microsoft.AspNetCore.Http;
 
 namespace WebApplication5.Controllers
-{
+{    
     public class ProjectController : Controller
     {
-        AppDbContext context;
+            AppDbContext context;
         public ProjectController(AppDbContext appDbContext, IHostingEnvironment appEnv)
         {
             context = appDbContext;
@@ -45,8 +46,28 @@ namespace WebApplication5.Controllers
         }
         public ViewResult Index()
         {
+            var curUser = WebApplication5.Models.User.GetUser(context, HttpContext);
+            ViewData["curUser"] = curUser;
+            List<ProjectWithElemAmount> projectWithElemAmounts = new List<ProjectWithElemAmount>();
             var projectSet = context.ProjectSet.Where(x => x.Status == Status.NotInWork);
-            return View(projectSet);
+            foreach (var prj in projectSet)
+            {
+                int avevaElemAmount = 0;
+                var avevaElemAmountSet = context.AvevaElemAmounts.Where(x => x.ProjectAcr == prj.AvevaAcronym);
+                if (avevaElemAmountSet.Count() > 0)
+                {
+                    avevaElemAmount = avevaElemAmountSet.Last().PipeLineAmount;
+                }
+
+                int teklaElemAmount = 0;
+                var teklaElemAmountSet = context.TeklaElemAmounts.Where(x => x.ProjectAcr == prj.AvevaAcronym);
+                if (teklaElemAmountSet.Count() > 0)
+                {
+                    teklaElemAmount = teklaElemAmountSet.Last().ElemAmount;
+                }
+                projectWithElemAmounts.Add(new ProjectWithElemAmount(prj, avevaElemAmount, teklaElemAmount));
+            }
+                return View(projectWithElemAmounts);
         }
 
         public ViewResult Graphs(string prjAcr)
@@ -55,7 +76,8 @@ namespace WebApplication5.Controllers
             //if (elemSet.Count > 0)
             // {
             ViewData["prjAcr"] = prjAcr;
-                return View(elemSet);
+            ViewData["TeklaElemList"]=context.TeklaElemAmounts.Where(x => x.ProjectAcr == prjAcr).ToList();
+            return View(elemSet);
             //}
             //return View("/Views/Project/")
         }

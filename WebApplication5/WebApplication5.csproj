@@ -10,6 +10,7 @@
   <ItemGroup>
     <Content Remove="launchSettings.json" />
     <Content Remove="wwwroot\Files\BIMPublisher.pdf" />
+    <Content Remove="wwwroot\Files\propSet.txt" />
   </ItemGroup>
 
   <ItemGroup>
@@ -57,6 +58,7 @@
     <None Include="launchSettings.json" />
     <None Include="Views\AvevaLic\Index.cshtml" />
     <None Include="wwwroot\Files\BIMPublisher.pdf" />
+    <None Include="wwwroot\Files\propSet.txt" />
     <None Include="wwwroot\lib\bootstrap-5.0.2-dist\css\bootstrap-grid.css.map" />
     <None Include="wwwroot\lib\bootstrap-5.0.2-dist\css\bootstrap-grid.min.css.map" />
     <None Include="wwwroot\lib\bootstrap-5.0.2-dist\css\bootstrap-grid.rtl.css.map" />

@@ -1,25 +1,47 @@
-﻿
-@model List<AvevaElemAmount>
+﻿@model List<AvevaElemAmount>
+
 @{
     //String dates = string.Empty;
-    String values = string.Empty;
-    List<DateTime> dates = new List<DateTime>();
-if (Model.Count>0){
-    foreach (var elemAm in Model)
+    string teklaValues = string.Empty;
+    List<DateTime> teklaDates = new List<DateTime>();
+    List<TeklaElemAmount> teklaElemAmounts = ViewData["TeklaElemList"] as List<TeklaElemAmount>;
+    if (teklaElemAmounts.Count > 0)
     {
-        dates.Add(elemAm.Date);
-        if (elemAm == Model.Last())
+        foreach (var elemAm in teklaElemAmounts)
         {
-            //dates += String.Format("'{0}'", elemAm.Date.ToShortDateString());
-            values += String.Format("{0}", elemAm.PipeLineAmount);
-        }
-        else
-        {
-            //dates += String.Format("'{0}', ", elemAm.Date.ToShortDateString());
-            values += String.Format("{0}, ", elemAm.PipeLineAmount);
+            teklaDates.Add(elemAm.Date);
+            if (elemAm == teklaElemAmounts.Last())
+            {
+                //dates += String.Format("'{0}'", elemAm.Date.ToShortDateString());
+                teklaValues += String.Format("{0}", elemAm.ElemAmount);
+            }
+            else
+            {
+                //dates += String.Format("'{0}', ", elemAm.Date.ToShortDateString());
+                teklaValues += String.Format("{0}, ", elemAm.ElemAmount);
+            }
         }
     }
-}
+
+    String values = string.Empty;
+    List<DateTime> dates = new List<DateTime>();
+    if (Model.Count > 0)
+    {
+        foreach (var elemAm in Model)
+        {
+            dates.Add(elemAm.Date);
+            if (elemAm == Model.Last())
+            {
+                //dates += String.Format("'{0}'", elemAm.Date.ToShortDateString());
+                values += String.Format("{0}", elemAm.PipeLineAmount);
+            }
+            else
+            {
+                //dates += String.Format("'{0}', ", elemAm.Date.ToShortDateString());
+                values += String.Format("{0}, ", elemAm.PipeLineAmount);
+            }
+        }
+    }
     ViewData["Title"] = "Мониторинг активности по проекту";
 
     //var a = Model.First().PipeLineAmount.ToString();
@@ -27,18 +49,35 @@ if (Model.Count>0){
 <br>
 <h3>Мониторинг активности по проекту @ViewData["prjAcr"]</h3>
 @{
-if (dates.Count>0)
-foreach (var d in dates)
-{
-    <input type="hidden" value="@d.ToLongDateString()" class="datesTr"/>
-}
-}
-    <br>
-    <link rel="stylesheet" href="~/css/ProjectsIndex.css">
+    if (teklaDates.Count > 0)
+        foreach (var d in teklaDates)
+        {
+            <input type="hidden" value="@d.ToLongDateString()" class="datesTekla" />
+        }
 
-    <script src="~/js/chart.js"></script>
+    if (dates.Count > 0)
+        foreach (var d in dates)
+        {
+            <input type="hidden" value="@d.ToLongDateString()" class="datesTr" />
+        }
+
+}
+<br>
+<link rel="stylesheet" href="~/css/ProjectsIndex.css">
+
+<script src="~/js/chart.js"></script>
+<!--<table>
+    <tr><td>222<canvas id="myChart" width="300" height="150"></canvas></td></tr>
+
+    <tr><td>111<canvas id="myChart1" width="300" height="150"></canvas></td></tr>
+</table>-->
+<div>
     <canvas id="myChart" width="300" height="150"></canvas>
-    <script>
+</div>
+<div>
+    <canvas id="myChart1" width="300" height="150"></canvas>
+</div>
+<script>
         let arrStr=[]
         let arr = document.getElementsByClassName('datesTr');
         for (let i = 0; i < arr.length; i++) {
@@ -79,6 +118,50 @@ foreach (var d in dates)
                 }
             }
         }
+        });
+
+    let arrTeklaStr = []
+    let arrTekla = document.getElementsByClassName('datesTekla');
+    for (let i = 0; i < arrTekla.length; i++) {
+        arrTeklaStr.push(arrTekla[i].value);
+    }
+
+        const ctx1 = document.getElementById('myChart1').getContext('2d');
+        const myChart1 = new Chart(ctx1, {
+        type: 'line',
+        data: {
+
+            labels: arrTeklaStr,
+            datasets: [{
+            label: 'Кол-во элементов строительных конструкций',
+                data: [@teklaValues],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+        scales: {
+            y: {
+                beginAtZero: true
+                }
+            }
+        }
     });
-    </script>
+</script>
+
 

@@ -1,0 +1,55 @@
+propName - objectClass propValue - System.Object[]
+propName - cn propValue - Альберт М. Исмагилов
+propName - sn propValue - Исмагилов
+propName - title propValue - Электромонтер по ремонту и обслуживанию электрооборудования
+propName - physicalDeliveryOfficeName propValue - B5-Пристрой строения
+propName - telephoneNumber propValue - +172
+propName - userCertificate propValue - System.Byte[]
+propName - givenName propValue - Альберт
+propName - initials propValue - М
+propName - distinguishedName propValue - CN=Альберт М. Исмагилов,OU=Users,OU=AHO,OU=Departments,DC=oilpro,DC=ru
+propName - instanceType propValue - 4
+propName - whenCreated propValue - 19.03.2008 8:50:10
+propName - whenChanged propValue - 20.05.2022 6:46:46
+propName - displayName propValue - Исмагилов Альберт Мансурович
+propName - uSNCreated propValue - System.__ComObject
+propName - memberOf propValue - System.Object[]
+propName - uSNChanged propValue - System.__ComObject
+propName - department propValue - Административно-хозяйственный отдел
+propName - company propValue - АО "Нефтехимпроект"
+propName - proxyAddresses propValue - sip:IsmagilovAM@oilpro.ru
+propName - nTSecurityDescriptor propValue - System.__ComObject
+propName - name propValue - Альберт М. Исмагилов
+propName - objectGUID propValue - System.Byte[]
+propName - userAccountControl propValue - 514
+propName - badPwdCount propValue - 0
+propName - codePage propValue - 0
+propName - countryCode propValue - 0
+propName - badPasswordTime propValue - System.__ComObject
+propName - lastLogoff propValue - System.__ComObject
+propName - lastLogon propValue - System.__ComObject
+propName - pwdLastSet propValue - System.__ComObject
+propName - primaryGroupID propValue - 513
+propName - objectSid propValue - System.Byte[]
+propName - accountExpires propValue - System.__ComObject
+propName - logonCount propValue - 6569
+propName - sAMAccountName propValue - IsmagilovAM
+propName - sAMAccountType propValue - 805306368
+propName - userPrincipalName propValue - IsmagilovAM@oilpro.ru
+propName - lockoutTime propValue - System.__ComObject
+propName - objectCategory propValue - CN=Person,CN=Schema,CN=Configuration,DC=oilpro,DC=ru
+propName - dSCorePropagationData propValue - System.Object[]
+propName - lastLogonTimestamp propValue - System.__ComObject
+propName - msDS-SupportedEncryptionTypes propValue - 0
+propName - manager propValue - CN=Дамир Ф. Салахов,OU=Users,OU=AHO,OU=Departments,DC=oilpro,DC=ru
+propName - thumbnailPhoto propValue - System.Byte[]
+propName - msRTCSIP-PrimaryUserAddress propValue - sip:IsmagilovAM@oilpro.ru
+propName - msRTCSIP-UserEnabled propValue - True
+propName - msRTCSIP-PrimaryHomeServer propValue - CN=Lc Services,CN=Microsoft,CN=1:9,CN=Pools,CN=RTC Service,CN=Services,CN=Configuration,DC=oilpro,DC=ru
+propName - msRTCSIP-FederationEnabled propValue - True
+propName - msRTCSIP-InternetAccessEnabled propValue - True
+propName - msRTCSIP-OptionFlags propValue - 257
+propName - msExchUMDtmfMap propValue - System.Object[]
+propName - msRTCSIP-UserPolicies propValue - 0=668109436
+propName - msRTCSIP-UserRoutingGroupId propValue - System.Byte[]
+propName - msRTCSIP-DeploymentLocator propValue - SRV:
