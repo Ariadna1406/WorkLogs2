@@ -11,23 +11,172 @@
 <link rel="stylesheet" href="~/css/ProjectsIndex.css">
 
 <table id="WorkLogs" class="QualityBook" width="100%">
+    <tbody id="WorkLogsTBody">
     <tr class="header">
-        <th style="padding: 10px 15px;">Наименование проекта</th>
-        <th style="padding: 10px 15px;">Наименование задачи</th>
-        <th style="padding: 10px 15px;">Дата начала</th>
-        <th style="padding: 10px 15px;">Дата окончания</th>
-        <th style="padding: 10px 15px;">Возможные действия</th>
+        <th style="padding: 10px 15px; text-align: center">Наименование проекта</th>
+        <th style="padding: 10px 15px; text-align: center">Наименование задачи</th>
+        <th style="padding: 10px 15px; text-align: center">Дата начала</th>
+        <th style="padding: 10px 15px; text-align: center">Дата окончания</th>
+        <th style="padding: 10px 15px; text-align: center">Возможные действия</th>
 
     </tr>
+    <tr class="filter">
+        <td style="padding: 10px 15px; text-align: center">
+            <input type="text" id="PrjNameSearch" oninput="FilterRows()"><br><span style="font-size:smaller;">(фильтр)</span>
+        </td>
+        <td style="padding: 10px 15px; text-align: center"><input type="text" id="TaskNameSearch" oninput="FilterRows()"><br><span style="font-size:smaller;">(фильтр)</span></td>
+
+        <td style="padding: 10px 15px; text-align: center">
+            <input type="date" id="StartDateSearch" oninput="FilterRows()"><br>
+            <span style="font-size:smaller;">ОТ (фильтр)</span><br>
+            <a class="btn btn-close" onclick="SortAscen('startDate')"><i></i>Сортировать по возрастанию</a><br>
+            <a class="btn btn-dark" onclick="SortDescen('startDate')"><i></i>Сортировать по убыванию</a>
+        </td>
+
+        <td style="padding: 10px 15px; text-align: center">
+            <input type="date" id="FinishDateSearch" oninput="FilterRows()"><br>
+            <span style="font-size:smaller;">ДО (фильтр) </span> <br>
+            <a class="btn btn-close" onclick="SortAscen('finishDate')"><i></i>Сортировать по возрастанию</a> <br>
+            <a class="btn btn-dark" onclick="SortDescen('finishDate')"><i></i>Сортировать по убыванию</a>
+        </td>
+        <td style="padding: 10px 15px; text-align: center">
+        </td>
+
+    </tr>
+    
     @foreach (var primaTask in Model)
     {
-<tr>
-    <td>@primaTask.ProjName </td>
-    <td>@primaTask.TaskName</td>
-    <td>@primaTask.StartDate</td>
-    <td>@primaTask.FinishDate</td>
-    <td><a class="btn btn-default" asp-controller="WorkLogs" asp-action="SelectProject" asp-route-selectedProject="@primaTask.ProjName "
-            asp-route-selectedTaskList="@primaTask.TaskName" asp-route-DateOfReport="@DateTime.Now.ToString()"><i></i>Отчитаться по задаче</a></td>
-</tr>
+        <tr class="realData">
+            <td class="prjName">@primaTask.ProjName </td>
+            <td class="taskName">@primaTask.TaskName</td>
+            <td class="startDate">@primaTask.StartDate.Split(' ').First()</td>
+            <td class="finishDate">@primaTask.FinishDate.Split(' ').First()</td>
+            <td>
+                <a class="btn btn-default" asp-controller="WorkLogs" asp-action="SelectProject" asp-route-selectedProject="@primaTask.ProjName "
+                   asp-route-selectedTaskList="@primaTask.TaskName" asp-route-DateOfReport="@DateTime.Now.ToString()"><i></i>Отчитаться по задаче</a>
+            </td>
+        </tr>
+    }
+        </tbody>
+</table>
+
+<script>
+    function FilterRows() {
+                
+        var taskForSearch = document.getElementById('TaskNameSearch').value;
+        var prjForSearch = document.getElementById('PrjNameSearch').value;
+        var startDateSearch = new Date(document.getElementById('StartDateSearch').value);
+        var finishDateSearch = new Date(document.getElementById('FinishDateSearch').value);        
+        var taskSet = document.getElementsByClassName('taskName')
+        var prjSet = document.getElementsByClassName('prjName')
+        var startDateSet = document.getElementsByClassName('startDate')
+        var finishDateSet = document.getElementsByClassName('finishDate')
+        for (var i = 0; i < startDateSet.length; i++) {
+            startDateSet[i].parentElement.hidden = false
+        }
+      
+
+        for (var i = 0; i < taskSet.length; i++) {
+            if (!(taskSet[i].textContent.includes(taskForSearch) && taskSet[i].parentElement.hidden == false)) {
+                taskSet[i].parentElement.hidden = true
             }
-        </table>
+            else {
+                taskSet[i].parentElement.hidden = false
+            }
+        }
+
+        for (var i = 0; i < prjSet.length; i++) {
+            if (!(prjSet[i].textContent.includes(prjForSearch) && prjSet[i].parentElement.hidden == false)) {
+                prjSet[i].parentElement.hidden = true
+            }
+            else {
+                prjSet[i].parentElement.hidden = false
+            }
+        }
+
+        if (startDateSearch.getDate() > 0) {
+            for (var i = 0; i < startDateSet.length; i++) {
+                var daAr = startDateSet[i].textContent.replace('.', '-').replace('.', '-').split('-')
+                var daStr = daAr[2] + '-' + daAr[1] + '-' + daAr[0]
+                var da = new Date(daStr)
+                if (startDateSearch < da && startDateSet[i].parentElement.hidden == false) {
+                    // alert("true --- " + i)
+                    startDateSet[i].parentElement.hidden = false
+                }
+                else {
+                    //  alert("false --- " + i)
+                    startDateSet[i].parentElement.hidden = true
+                }
+            }
+        }
+
+        if (finishDateSearch.getDate() > 0) {
+            for (var i = 0; i < finishDateSet.length; i++) {
+                var dateAr = finishDateSet[i].textContent.replace('.', '-').replace('.', '-').split('-')
+                var dateStr = dateAr[2] + '-' + dateAr[1] + '-' + dateAr[0]
+                var dateDa = new Date(dateStr)
+                if (dateDa < finishDateSearch && finishDateSet[i].parentElement.hidden == false) {
+                    finishDateSet[i].parentElement.hidden = false
+                }
+                else {
+                    finishDateSet[i].parentElement.hidden = true
+                }
+            }
+        }
+    }
+
+    function SortAscen(nameClass) {
+        PElems=[]
+        dateSetSorted = []
+        wl = document.getElementById('WorkLogsTBody')
+        var dateSet = document.getElementsByClassName(nameClass)        
+        for (var i = 0; i < dateSet.length; i++) {             
+            dateSetSorted.push(dateSet[i])            
+            }        
+        dateSetSorted.sort(function (a, b) {
+            return getDate(a) - getDate(b)
+        })       
+        
+        for (var i = 0; i < dateSetSorted.length; i++) {
+            PElems.push(dateSetSorted[i].parentElement)
+        }
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSet[i].parentElement.remove();
+        }
+        for (var i = 0; i < PElems.length; i++) {
+            wl.appendChild(PElems[i])
+        }        
+    }
+
+    function SortDescen(nameClass) {
+        PElems = []
+        dateSetSorted = []
+        wl = document.getElementById('WorkLogsTBody')
+        var dateSet = document.getElementsByClassName(nameClass)
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSetSorted.push(dateSet[i])
+        }
+        dateSetSorted.sort(function (a, b) {
+            return getDate(b) - getDate(a)
+        })
+
+        for (var i = 0; i < dateSetSorted.length; i++) {
+            PElems.push(dateSetSorted[i].parentElement)
+        }
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSet[i].parentElement.remove();
+        }
+        for (var i = 0; i < PElems.length; i++) {
+            wl.appendChild(PElems[i])
+        }
+    }
+            
+        function getDate(a) {
+            var dateAr = a.textContent.replace('.', '-').replace('.', '-').split('-')
+            var dateStr = dateAr[2] + '-' + dateAr[1] + '-' + dateAr[0]
+            return new Date(dateStr)
+        }
+
+
+
+</script>

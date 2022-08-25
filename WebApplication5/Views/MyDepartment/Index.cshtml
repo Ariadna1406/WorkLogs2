@@ -11,25 +11,37 @@ int countRows=0;
 <link rel="stylesheet" href="~/css/ProjectsIndex.css">
 
 <table id="WorkLogs" class="QualityBook" width="100%">
-    <tr class="header">
-        <th style="padding: 10px 15px;">Наименование проекта</th>
-        <th style="padding: 10px 15px;">Наименование задачи</th>
-        <th style="padding: 10px 15px;">Дата начала</th>
-        <th style="padding: 10px 15px;">Дата окончания</th>
-        <th style="padding: 10px 15px;">Наименование ресурсов</th>
-        <th style="padding: 10px 15px;">Процент выполнения</th>
-        <th style="padding: 10px 15px;">Возможные действия</th>
-    </tr>
-    <tr class="header">
-        <td style="padding: 10px 15px; text-align: center"><input type="text" id="PrjNameSearch" oninput="FilterRows()"><br><span style="font-size:smaller;">(фильтр)</span></td>
-        <td style="padding: 10px 15px; text-align: center"><input type="text" id="TaskNameSearch" oninput="FilterRows()"><br><span style="font-size:smaller;">(фильтр)</span></td>
-        <td style="padding: 10px 15px; text-align: center"><input type="date" id="StartDateSearch" oninput="FilterRows()"><br><span style="font-size:smaller;">ОТ (фильтр)</span></td>
-        <td style="padding: 10px 15px; text-align: center"><input type="date" id="FinishDateSearch" oninput="FilterRows()"><span style="font-size:smaller;">ДО (фильтр)</span></td>
-        <td style="padding: 10px 15px; text-align: center"><input type="text" id="RsrcSearch" oninput="FilterRows()"><br><span style="font-size:smaller;">(фильтр)</span></td>
-        <td style="padding: 10px 15px; text-align: center"></td>
-        <td style="padding: 10px 15px; text-align: center"></td>
-    </tr>
-    @foreach (var primaTaskGr in Model)
+    <tbody id="WorkLogsTBody">
+        <tr class="header">
+            <th style="padding: 10px 15px;">Наименование проекта</th>
+            <th style="padding: 10px 15px;">Наименование задачи</th>
+            <th style="padding: 10px 15px;">Дата начала</th>
+            <th style="padding: 10px 15px;">Дата окончания</th>
+            <th style="padding: 10px 15px;">Наименование ресурсов</th>
+            <th style="padding: 10px 15px;">Процент выполнения</th>
+            <th style="padding: 10px 15px;">Возможные действия</th>
+        </tr>
+        <tr class="header">
+            <td style="padding: 10px 15px; text-align: center"><input type="text" id="PrjNameSearch" oninput="FilterRows()"><br><span style="font-size:smaller;">(фильтр)</span></td>
+            <td style="padding: 10px 15px; text-align: center"><input type="text" id="TaskNameSearch" oninput="FilterRows()"><br><span style="font-size:smaller;">(фильтр)</span></td>
+            <td style="padding: 10px 15px; text-align: center">
+                <input type="date" id="StartDateSearch" oninput="FilterRows()"><br>
+                <span style="font-size:smaller;">ОТ (фильтр)</span><br>
+                <a class="btn btn-close" onclick="SortAscen('startDate')"><i></i>Сортировать по возрастанию</a><br>
+                <a class="btn btn-dark" onclick="SortDescen('startDate')"><i></i>Сортировать по убыванию</a>
+            </td>
+
+            <td style="padding: 10px 15px; text-align: center">
+                <input type="date" id="FinishDateSearch" oninput="FilterRows()"><br>
+                <span style="font-size:smaller;">ДО (фильтр)</span><br>
+                <a class="btn btn-close" onclick="SortAscen('finishDate')"><i></i>Сортировать по возрастанию</a><br>
+                <a class="btn btn-dark" onclick="SortDescen('finishDate')"><i></i>Сортировать по убыванию</a>
+            </td>
+            <td style="padding: 10px 15px; text-align: center"><input type="text" id="RsrcSearch" oninput="FilterRows()"><br><span style="font-size:smaller;">(фильтр)</span></td>
+            <td style="padding: 10px 15px; text-align: center"></td>
+            <td style="padding: 10px 15px; text-align: center"></td>
+        </tr>
+        @foreach (var primaTaskGr in Model)
     {
         string executor = string.Empty;
         foreach (var primaTask in primaTaskGr)
@@ -42,22 +54,23 @@ int countRows=0;
             }
 
         }
-    executor=executor.TrimEnd().TrimEnd(',');    
+    executor=executor.TrimEnd().TrimEnd(',');
     countRows++;
 
-    <tr>
-        <td class="prjName">@primaTaskGr.First().ProjName </td>
-        <td class="taskName">@primaTaskGr.First().TaskName</td>
-        <td class="startDate">@primaTaskGr.First().StartDate.Split(' ').First()</td>
-        <td class="finishDate">@primaTaskGr.First().FinishDate.Split(' ').First()</td>
-        <td class="rsrc">@executor</td>
-        <td></td>
-        <td>
-            <!--a class="btn btn-default" asp-controller="WorkLogs" asp-action="SelectProject" asp-route-selectedProject="@primaTaskGr.First().ProjName "
-       asp-route-selectedTaskList="@primaTaskGr.First().TaskName" asp-route-DateOfReport="@DateTime.Now.ToString()"><i></i>Отчитаться по задаче</!--a>-->
-        </td>
-    </tr>
-            }
+        <tr class="realData">
+            <td class="prjName">@primaTaskGr.First().ProjName </td>
+            <td class="taskName">@primaTaskGr.First().TaskName</td>
+            <td class="startDate">@primaTaskGr.First().StartDate.Split(' ').First()</td>
+            <td class="finishDate">@primaTaskGr.First().FinishDate.Split(' ').First()</td>
+            <td class="rsrc">@executor</td>
+            <td></td>
+            <td>
+                <!--a class="btn btn-default" asp-controller="WorkLogs" asp-action="SelectProject" asp-route-selectedProject="@primaTaskGr.First().ProjName "
+                asp-route-selectedTaskList="@primaTaskGr.First().TaskName" asp-route-DateOfReport="@DateTime.Now.ToString()"><i></i>Отчитаться по задаче</!--a>-->
+            </td>
+        </tr>
+        }
+        </tbody>
 </table>
 <script>
     function FilterRows() {
@@ -133,6 +146,56 @@ int countRows=0;
         }
     }
 
-   
+    function SortAscen(nameClass) {
+        PElems = []
+        dateSetSorted = []
+        wl = document.getElementById('WorkLogsTBody')
+        var dateSet = document.getElementsByClassName(nameClass)
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSetSorted.push(dateSet[i])
+        }
+        dateSetSorted.sort(function (a, b) {
+            return getDate(a) - getDate(b)
+        })
+
+        for (var i = 0; i < dateSetSorted.length; i++) {
+            PElems.push(dateSetSorted[i].parentElement)
+        }
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSet[i].parentElement.remove();
+        }
+        for (var i = 0; i < PElems.length; i++) {
+            wl.appendChild(PElems[i])
+        }
+    }
+
+    function SortDescen(nameClass) {
+        PElems = []
+        dateSetSorted = []
+        wl = document.getElementById('WorkLogsTBody')
+        var dateSet = document.getElementsByClassName(nameClass)
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSetSorted.push(dateSet[i])
+        }
+        dateSetSorted.sort(function (a, b) {
+            return getDate(b) - getDate(a)
+        })
+
+        for (var i = 0; i < dateSetSorted.length; i++) {
+            PElems.push(dateSetSorted[i].parentElement)
+        }
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSet[i].parentElement.remove();
+        }
+        for (var i = 0; i < PElems.length; i++) {
+            wl.appendChild(PElems[i])
+        }
+    }
+
+    function getDate(a) {
+        var dateAr = a.textContent.replace('.', '-').replace('.', '-').split('-')
+        var dateStr = dateAr[2] + '-' + dateAr[1] + '-' + dateAr[0]
+        return new Date(dateStr)
+    }
 
 </script>
