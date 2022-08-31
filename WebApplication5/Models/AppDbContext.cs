@@ -30,6 +30,8 @@ namespace WebApplication5.Models
         public DbSet<Licence> AvevaLicences { get; set; }
         public DbSet<Role> Roles { get; set; }
 
+        public DbSet<AvevaPipeLength> avevaPipeLengths { get; set; }
+
         //protected override void OnModelCreating(ModelBuilder builder)
         //{
         //    base.OnModelCreating(builder);

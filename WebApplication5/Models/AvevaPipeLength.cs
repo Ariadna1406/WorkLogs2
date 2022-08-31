@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace WebApplication5.Models
 {
-    public class AvevaElemAmount
+    public class AvevaPipeLength
     {
         public int Id { get; set; }
         
@@ -15,8 +15,8 @@ namespace WebApplication5.Models
 
         public DateTime Date { get; set; }
 
-        public int PipeLineAmount { get; set; }
-        
+        public int PipeLineLength { get; set; }
+        public int PipeLineBore { get; set; }
 
         public string ProjectAcr { get; set; }
 
