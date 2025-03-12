@@ -74,9 +74,9 @@
 
             </td>
             @{
-                            string executor;
-                            if (cor.Executor != null) executor = cor.Executor.FullName; else executor = string.Empty;
-                        }
+                string executor;
+                if (cor.Executor != null) { executor = cor.Executor.FullName; } else {executor = string.Empty; }
+            }
             <td>
                 @executor
                 </td >

@@ -12,9 +12,37 @@
         transition: all 0.5s ease;
     }
 
+    
+    .QualityBook th {
+        border: 1px solid #e3eef7;
+        padding: 10px 15px;
+        position: relative;
+        transition: all 0.5s ease;
+        text-align : center;
+
+    }
+
     .QualityBook tr:nth-child(odd) {
         background: #ebf3f9;
     }
+
+.tdRow {
+    text-align: center;
+    padding: 10px 15px;
+    color:red;
+    font-size : 16px;
+}
+
+.scroll-bg {
+    height: 500px;
+}
+
+#tdRow {
+    text-align: center;
+    padding: 10px 15px;
+    color: red;
+    font-size : 16px;
+}
 
 #Message {
     font-size: 16px;

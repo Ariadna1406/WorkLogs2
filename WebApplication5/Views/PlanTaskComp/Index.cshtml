@@ -1,0 +1,617 @@
+﻿@{
+    Layout = @"_LayoutAlignLeft.cshtml";
+}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DHTMLX Gantt</title>
+    <link href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css" rel="stylesheet">
+    <style>
+        .gantt_grid_head_cell {
+            font-weight: 500 !important;
+            background-color: #F3F3F3;
+        }
+
+        /* Вертикальные линии в таблице */
+        .gantt_grid .gantt_cell {
+            border-right: 1px solid #F0F0F0;
+        }
+
+        /* Масштаб страницы */
+        body {
+            transform: scale(0.9);
+            transform-origin: top left;
+            width: 111%;
+        }
+
+        .holiday {
+            background-color: #eaf2ff;
+        }
+
+        .weekend {
+            background-color: #ececec;
+        }
+
+        /* Размер шрифта на странице */
+        :root {
+            --dhx-gantt-font-size: 12px;
+        }
+
+        #top-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            font-family: Inter, Helvetica, Arial, sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            color: #555D63;
+            margin-top: 30px;
+            margin-left: 20px;
+            margin-right: 20px;
+        }
+
+        #left-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 30px;
+        }
+
+        /* Итого планируемые ТЗ */
+        #total-summary {
+            padding: 7px 10px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            border-radius: 3px;
+        }
+
+        /* Кол-во часов */
+        #total-summary span {
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        /* Выбор месяца */
+        #monthSelector {
+            font-family: Inter, Helvetica, Arial, sans-serif;
+            font-weight: 500;
+            width: max-content;
+            font-size: 12px;
+            color: #555D63;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            padding: 7px 6px;
+            border-radius: 3px;
+        }
+
+        #monthSelector:focus {
+            outline: none;
+            border: 1px solid #ccc;
+        }
+
+        /* Контейнер легенды */
+        #legend-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        #weekend-legend,
+        #holiday-legend {
+            display: flex;
+            align-items: center;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border: 1px solid #ccc;
+            margin-right: 5px;
+        }
+
+        .legend-text {
+            margin-left: 7px;
+            min-width: 120px;
+            display: inline-block;
+        }
+
+        #saveButton {
+            padding: 10px 20px;
+            background-color: #537CFA;
+            border: 1px solid #919191;
+            border-radius: 3px;
+/*             font-weight: 600; */
+            color: #FFFFFF;
+        }
+    </style>
+</head>
+<body>
+    <div id="top-panel">  
+        <div id="left-container">
+            <select id="monthSelector">
+                <option value="0">Январь</option>
+                <option value="1">Февраль</option>
+                <option value="2">Март</option>
+                <option value="3">Апрель</option>
+                <option value="4">Май</option>
+                <option value="5">Июнь</option>
+                <option value="6">Июль</option>
+                <option value="7">Август</option>
+                <option value="8">Сентябрь</option>
+                <option value="9">Октябрь</option>
+                <option value="10">Ноябрь</option>
+                <option value="11">Декабрь</option>
+            </select>
+            <div id="total-summary">
+                Итого планируемые ТЗ: <span id="total-sum">0</span>&nbsp;ч
+            </div>
+            <button id="saveButton">Сохранить</button>
+        </div>
+        <div id="legend-container">
+            <div id="weekend-legend">
+                <div class="legend-color" style="background-color: #ececec;"></div>
+                <span class="legend-text">Выходные дни</span>
+            </div>
+            <div id="holiday-legend">
+                <div class="legend-color" style="background-color: #eaf2ff;"></div>
+                <span class="legend-text">Праздничные дни</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="GanttChart" style="width: 100%; height: 600px;"></div>
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+        var validValues = [0.10, 0.20, 0.25, 0.30, 0.40, 0.50, 1.00]; // Массив допустимых значений для интенсивности выполнения работ
+        
+        var holidays  = [
+            "01-05-2025",
+            "02-05-2025",
+            "08-05-2025",
+            "09-05-2025"
+        ]
+
+        var format_date = gantt.date.str_to_date("%d-%m-%Y");
+
+        // Исключение часов в праздничные дни
+        for (var i = 0; i < holidays.length; i++) {
+            var converted_date = format_date(holidays[i])
+            gantt.setWorkTime({date:converted_date, hours:false})
+        }
+
+        // Проверка праздничного дня
+        function isHoliday(date) {
+            var formattedDate = gantt.date.date_to_str("%d-%m-%Y")(date);
+            return holidays.indexOf(formattedDate) !== -1;
+        }
+
+        // Выделение цветом выходных и праздничных дней недели
+        gantt.templates.scale_cell_class = function(date){
+            if(!gantt.isWorkTime(date)) {
+                return isHoliday(date) ? "holiday" : "weekend";
+            };
+        };
+
+        // Выделение выходных и праздничных дней на диаграмме
+        gantt.templates.timeline_cell_class = function (item, date) {
+            if (!gantt.isWorkTime(date)) {
+                return isHoliday(date) ? "holiday" : "weekend";
+            }
+        }
+
+        // Конфигурация графика gantt
+        gantt.config.row_height = 40;   // Высота строк
+        gantt.config.date_format = "%d-%m-%Y";   // Формат даты
+        gantt.config.show_grid = true; // Отображение сетки
+        gantt.config.show_add_button = true; // Отображение кнопки добавления (плюсик)
+        gantt.config.work_time = true; // Учет только рабочих дней при расчете длительности
+        // gantt.config.resize_rows = true; // Изменение высоты строк в таблице
+        gantt.config.sort = true; // Сортировка столбцов
+        // gantt.config.order_branch = true; // Перетаскивание задач
+        gantt.config.bar_height = 25; // Высота полосок на диаграмме
+        gantt.i18n.setLocale("ru"); // Русский язык
+        gantt.config.lightbox = false;
+
+        // Дни недели и число
+        gantt.config.scales = [
+            { unit: "day", step: 1, format: "%D" },
+            { unit: "day", step: 1, format: "%d.%m" },
+        ]
+
+        gantt.config.scale_height = 50; // Высота шапочки
+        gantt.config.min_column_width = 55; // Ширина ячеек сетки диаграммы
+
+        gantt.config.auto_scheduling = true;
+        gantt.config.auto_scheduling_strict = true;
+
+        gantt.attachEvent("onTaskLoading", function (task) {
+            task.end_date = gantt.calculateEndDate(task.start_date, task.duration);
+            return true;
+        });
+
+        // Список проектов
+        var projects = [];
+
+        // Список комплектов
+        var sets = [];
+
+        // Функция обновления списка проектов и комплектов
+        function updateProjectAndSetOptions(tasks) {
+            // Извлечение уникальных проектов из задач
+            let uniqueProjects = [];
+            let uniqueSets = [];
+
+            tasks.forEach(task => {
+                if (task.project && !uniqueProjects.some(project => project.key === task.project)) {
+                    uniqueProjects.push({ key: task.project, label: task.project });
+                }
+
+                if (task.text && !uniqueSets.some(set => set.key === task.text)) {
+                    uniqueSets.push({ key: task.id, label: task.text, project: task.project });
+                }
+            });
+
+            // Обновление списка проектов
+            projects = uniqueProjects;
+
+            sets = uniqueSets;
+
+            console.log("Обновленные проекты:", projects);
+            console.log("Обновленные комплекты:", sets);
+
+            return { projects, sets}
+        }
+
+        // Ресурсы (сотрудники)
+        var resources = [];
+
+        fetch("/plantaskcomp/api/gantt/resources")
+            .then(response => response.json())
+            .then(result => {
+                
+                resources = result.data;
+                console.log("Сотрудники:", result.data);
+
+                gantt.config.columns.forEach(column => {
+                    if (column.name === "resources") {
+                        column.editor.options = resources;
+                    }
+                });
+                gantt.render();
+            })
+        .catch(error => console.error("Ошибка загрузки сотрудников:", error));
+
+        // Выполняемые работы
+        var work = [];
+        fetch("/plantaskcomp/api/gantt/kindofact")
+            .then(response => response.json())
+            .then(result => {
+                work = result.data;
+                console.log("Работа:", result.data);
+
+                gantt.config.columns.forEach(column => {
+                    if (column.name === "work") {
+                        column.editor.options = work;
+                    }
+                });
+                gantt.render();
+            })
+        .catch(error => console.error("Ошибка загрузки работ:", error));
+
+        // Колонки в таблице
+        gantt.config.columns = [
+            { name: "project", label: "Проект", min_width: 150, align: "left", editor: {type: "select", map_to: "project", options: projects} },
+            { name: "text", label: "Комплект", min_width: 240, align: "left", editor: {type: "select", map_to: "text", options: sets } },
+            { name: "work", label: "Выполняемая работа", min_width: 250, align: "left", editor: {type: "select", map_to: "work", options: work} },
+            { name: "resources", label: "Сотрудник", align: "center", min_width: 230, editor: {type: "select", map_to: "resources", options: resources} },
+            { name: "start_date", label: "Дата начала", align: "center", min_width: 100, editor: {type: "date", map_to: "start_date"}, template: function(task) {
+                return gantt.date.date_to_str("%d.%m.%Y")(task.start_date);
+            } },
+            { name: "end_date", label: "Дата окончания", align: "center", min_width: 110, template: function(task) {
+                // Для того, чтобы дата окончания не прибавлялась на +1 день
+                if (task.start_date && task.duration) {
+                    let calculatedEndDate = gantt.calculateEndDate(task.start_date, task.duration);
+                    calculatedEndDate.setDate(calculatedEndDate.getDate() - 1);
+                    return gantt.date.date_to_str("%d.%m.%Y")(calculatedEndDate);
+                }
+                return null;
+            }},
+            { name: "duration", label: "Длительность", align: "center", min_width: 100, editor: {type: "number", map_to: "duration"} },
+            { name: "intensity", label: "Интенсивность", min_width: 110, align: "center", editor: {type: "select", map_to: "intensity", options: validValues.map(value => ({ key: value, label: value.toString() }))} },
+            { name: "planned_progress", label: "Планир. % выполнения", min_width: 150, align: "center", editor: {type: "number", map_to: "planned_progress" } },
+            { name: "total_hours", label: "Итого, ч", align: "center", min_width: 70, template: function(task) {
+                let duration = task.duration || 0;
+                let intensity = task.intensity || 1.00;
+                return (duration * 8 * intensity);
+            }},
+            { name: "add_Task", min_width: 44, label: "<div style='text-align:center'><button id='header-add-task-btn' style='border:none; background:none; cursor:pointer; font-size: 28px; font-family: Inter, Helvetica, Arial, sans-serif; color: #9F9FA0;'>+</button></div>", min_width: 44, align: "center", template: function(){
+                return "<button class='add-task-btn' style='border:none; background:none; cursor:pointer; font-size: 28px; font-family: Inter, Helvetica, Arial, sans-serif; color: #9F9FA0;'>+</button>"
+            }}, // Колонка для кнопки добавления
+            { name: "delete_Task", label: "", min_width: 65, align: "center", template: function(task){
+                return "<button class='delete-task-btn' data-id='" + task.id + "' style='border:none; background:none; cursor:pointer; font-size: 12px; font-weight: 500; font-family: Inter, Helvetica, Arial, sans-serif; color: #909090; padding: 0; margin: 0'>Удалить</button>"
+            }} // Колонка для удаления
+        ];
+
+        // Запрет создания связей между задачами
+        gantt.attachEvent("onBeforeLinkAdd", function(id, link){
+            return false;
+        })
+
+        // Обновление списка комлпектов после выбора проекта
+        gantt.attachEvent("onAfterTaskUpdate", function (id, task) {
+            if (task.project) {
+                updateSetOptions(task.project);
+            }
+            if (task.text) {
+                task.text = mapTaskSetText(task);
+            }
+            if (task.resources) {
+                task.resources = mapTaskResText(task);
+            }
+        })
+
+        // Замена key на label в комплекте для отображения в таблице
+        function mapTaskSetText(task) {
+            let matchingSet = sets.find(set => String(set.key) === String(task.text));
+            if (matchingSet) {
+                return matchingSet.label;
+            } else {
+                return task.text;
+            }
+        }
+
+        // Обратная функция - возврат key в комплектах для передачи на сервер
+        function mapTaskSetLabelToId(task) {
+            let matchingSet = sets.find(set => String(set.label) === String(task.text));
+            if (matchingSet) {
+                return matchingSet.key;
+            } else {
+                return task.text;
+            }
+        }
+
+        // Замена key на label в ресурсе для отображения в таблице
+        function mapTaskResText(task) {
+            let matchingRes = resources.find(res => String(res.key) === String(task.resources));
+            if (matchingRes) {
+                return matchingRes.label;
+            } else {
+                return task.resources;
+            }
+        }
+
+        // Обратная функция - возврат key в ресурсах для передачи на сервер
+        function mapTaskResLabelToId(task) {
+            let matchingRes = resources.find(res => String(res.label) === String(task.resources));
+            if (matchingRes) {
+                return matchingRes.key;
+            } else {
+                return task.resources;
+            }
+        }
+
+        // Предотвращение вызова lightBox при нажатии двойным щелчком в ячейке столбца Итого, ч
+        gantt.attachEvent("onBeforeLightBox", function(id) {
+        })
+
+        // Обновление списка комлпектов в зависимости от выбранного проекта
+        function updateSetOptions(selectedProject) {
+            let filteredSets = sets.filter(set => set.project === selectedProject);
+
+            if (filteredSets.length === 0) {
+                filteredSets.push({ label: "Нет комплектов", key: "Нет комплектов", projects: selectedProject });
+            }
+
+            gantt.config.columns.forEach(column => {
+                if (column.name === "text") {
+                    column.editor = { type: "select", map_to: "text", options: filteredSets };
+                }
+            });
+
+            gantt.render();
+        }
+
+        // Создание задачи при нажатии на кнопку +
+        document.addEventListener("click", function(e) {
+            if ((e.target && e.target.classList.contains("add-task-btn")) || (e.target && e.target.id === "header-add-task-btn")) {
+                var selectedMonth = parseInt(document.getElementById("monthSelector").value, 10);
+                var selectedYear = new Date().getFullYear();
+                var taskStartDate = new Date(selectedYear, selectedMonth, 1);
+
+                var newTask = {
+                    project: "",
+                    text: "",
+                    work: "",
+                    resources: "",
+                    start_date: gantt.date.date_to_str("%d-%m-%Y")(taskStartDate),
+                    duration: 1,
+                    intensity: 1.00,
+                    planned_progress: 100
+                };
+                gantt.addTask(newTask);
+                gantt.render();
+                updateTotalSummary();
+            }
+        });
+
+        // Обновление Итого планируемые ТЗ при обновлении задачи
+        gantt.attachEvent("onAfterTaskUpdate", function(id, task) {
+            
+            updateTotalSummary();
+        })
+
+        // Удаление задачи при нажатии на кнопку Удалить
+        document.addEventListener("click", function(e) {
+            if (e.target && e.target.classList.contains("delete-task-btn")) {
+
+                var taskId = e.target.getAttribute('data-id');
+                gantt.message({
+                    text: "Вы уверены, что хотите удалить эту задачу?",
+                    type: "confirm",
+                    callback: function(result) {
+                        if (result) {
+                            fetch(`/api/gantt/tasks/${taskId}`, {
+                                method: 'DELETE'
+                            })
+                            .then(response => {
+                                if (response.ok) {
+                                    gantt.deleteTask(taskId);
+                                    updateTotalSummary();
+                                } else {
+                                console.error('Ошибка при удалении задачи с сервера');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Ошибка при удалении задачи:', error);
+                            });
+                        }
+                    }
+                })
+            }
+        })
+
+        document.getElementById("saveButton").addEventListener("click", function() {
+            SaveTasks();
+        })
+
+        // Сохранение задач
+        function SaveTasks() {
+            // Получение текущего пользователя
+            fetch('/plantaskcomp/api/currentuserid')
+                .then(response => response.json())
+                .then(data => {
+                    let currentUserId = data.userId;
+                    let tasklist = [];
+                    
+                    gantt.eachTask(function(task) {
+                    let calculatedEndDate = null;
+                    if (task.start_date && task.duration) {
+                            calculatedEndDate = gantt.calculateEndDate(task.start_date, task.duration);
+                            calculatedEndDate.setDate(calculatedEndDate.getDate() - 1);
+                    }
+
+                    tasklist.push({
+                        id: task.id,
+                        taskCompId: mapTaskSetLabelToId(task),
+                        startPlanDate: gantt.date.date_to_str("%Y-%m-%d")(task.start_date),
+                        finishPlanDate: gantt.date.date_to_str("%Y-%m-%d")(calculatedEndDate),
+                        intensity: task.intensity,
+                        executerId: mapTaskResLabelToId(task),
+                        authorId: currentUserId
+                    });
+                })
+                //добавлен комментарий
+                console.log("Отправляемые данные для сохранения:", JSON.stringify(tasklist));
+                const newstr='111'
+
+                $.ajax({                    
+                    url: '/PlanTaskComp/SaveTasks',
+                    type: 'POST',
+                    data: newstr, //JSON.stringify(),
+                    contentType: 'application/json',
+                    success: function (response) {
+                        let message = response.iserror ? "Ошибка! " + response.mes : "Успешно! " + response.mes;
+                        alert(message);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Ошибка при сохранении данных:", error);
+                    }
+                })
+            })
+            .catch(error => console.error("Ошибка при получении Id пользователя:", error));   
+        }
+
+        // Получение начала и конца месяца
+        function getMonthStartEnd(year, month) {
+            var startDate = new Date(year, month, 1);
+            var endDate = new Date(year, month + 1, 0); // Для получения последнего дня месяца используется день "0" следующего месяца
+            return { start: startDate, end: endDate};
+        }
+
+        // Установка начальных параметров (текущий месяц)
+        var currentDate = new Date();
+        var currentYear = currentDate.getFullYear();
+        var currentMonth = currentDate.getMonth();
+        var dates = getMonthStartEnd(currentYear, currentMonth);
+
+        // Установка текущего месяца по умолчанию в список
+        document.getElementById("monthSelector").value = currentMonth;
+
+        // Настройка диаграммы на выбранный период
+        gantt.config.start_date = dates.start;
+        gantt.config.end_date = dates.end;
+        gantt.config.min_date = dates.start;
+        gantt.config.max_date = dates.end;
+
+        // Обновление отображения диграммы на выбранный месяц
+        function updateGanttMonth(year, month) {
+            var dates = getMonthStartEnd(year, month);
+            gantt.config.start_date = dates.start;
+            gantt.config.end_date = dates.end;
+            gantt.config.min_date = dates.start;
+            gantt.config.max_date = dates.end;
+
+            gantt.render();
+        }
+
+        // Обработчик для выбора месяца
+        document.getElementById("monthSelector").addEventListener("change", function() {
+            var selectedMonth = parseInt(this.value, 10);
+            updateGanttMonth(currentYear, selectedMonth);
+            updateTotalSummary();
+        })
+
+        // Обновление Итого планируемые ТЗ
+        function updateTotalSummary() {
+            let totalSum = 0;
+            let selectedMonth = parseInt(document.getElementById("monthSelector").value, 10);
+            let selectedYear = new Date().getFullYear();
+
+            let monthStart = new Date(selectedYear, selectedMonth, 1);
+            let monthEnd = new Date(selectedYear, selectedMonth + 1, 0);
+
+            gantt.eachTask(function(task) {
+                let taskStart = task.start_date;
+                if (typeof taskStart === "String") {
+                    taskStart = gantt.date.str_to_date("%d-%m-%Y")(task.start_date);
+                }
+
+                if (taskStart >= monthStart && taskStart <= monthEnd) {
+                    totalSum += (task.duration || 0) * 8 * (task.intensity || 1.00);
+                }
+            })
+
+            document.getElementById('total-sum').textContent = totalSum;
+        }
+
+        // Получение задач через API
+        fetch("/plantaskcomp/api/gantt/tasks")
+            .then(response => response.json())
+            .then(result => {
+                var tasks = result.data;
+                const updatedData = updateProjectAndSetOptions(tasks);
+
+                gantt.config.columns.forEach(column => {
+                    if (column.name === "project") {
+                        column.editor.options = updatedData.projects;
+                    }
+                    if (column.name === "text") {
+                        column.editor.options = updatedData.sets;
+                    }
+                });
+                gantt.render();
+            })
+            .catch(error => console.error("Ошибка загрузки данных:", error));
+
+        gantt.init("GanttChart");
+
+        updateTotalSummary();
+        });
+    </script>
+
+    <script src="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.js"></script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+.gantt_grid_head_cell {
+    font-weight: 500 !important;
+    background-color: #F3F3F3;
+}
+
+/* Вертикальные линии в таблице */
+.gantt_grid .gantt_cell {
+    border-right: 1px solid #F0F0F0; 
+}
+
+.holiday {
+    background-color: #eaf2ff;
+}
+
+.weekend {
+    background-color: #ececec;
+}
+
+/* Размер шрифта на странице */
+:root {
+    --dhx-gantt-font-size: 12px;
+}
+
+#top-panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    font-family: Inter, Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: #555D63;
+    margin-top: 30px;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+#left-container {
+    display:flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 30px;
+}
+
+/* Итого планируемые ТЗ */
+#total-summary {
+    padding: 7px 10px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    border-radius: 3px;
+}
+
+/* Кол-во часов */
+#total-summary span {
+    font-weight: bold;
+    margin-left: 8px;
+}
+
+/* Выбор месяца */
+#monthSelector {
+    font-family: Inter, Helvetica, Arial, sans-serif;
+    font-weight: 500;
+    width: max-content;
+    font-size: 12px;
+    color: #555D63;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    padding: 7px 6px;
+    border-radius: 3px;
+}
+
+#monthSelector:focus {
+    outline: none;
+    border: 1px solid #ccc;
+}
+
+/* Контейнер легенды */
+#legend-container {
+    display:flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+#weekend-legend,
+#holiday-legend {
+    display: flex;
+    align-items: center;
+}
+
+.legend-color {
+    width: 20px;
+    height: 20px;
+    border: 1px solid #ccc;
+    margin-right: 5px;
+}
+
+.legend-text {
+    margin-left: 7px;
+    min-width: 120px;
+    display: inline-block;
+}
+
+/* Кнопки интенсивности */
+.editor_intensity_button {
+    width: 25px;
+    height: 30px;
+    background-color: #FFFFFF;
+    border: 1px solid #DFE0E1;
+    font-size: 18px;
+    color: #537CFA;
+    cursor: pointer;
+    text-align: center;
+    line-height: 26px;
+    border-radius: 3px;
+}
+
+.editor_intensity_button:hover {
+    border: 1px solid #537CFA;
+}
+
+.editor_intensity_button[data-action="decrease"] {
+    border-radius: 4px 0 0 4px;
+}
+
+.editor_intensity_button[data-action="increase"] {
+    border-radius: 0 4px 4px 0;
+}
+
+.editor_intensity_container {
+    display: flex;
+    align-items: center;
+}
+
+/* Поле ввода интенсивности */
+.editor_intensity {
+    border-radius: 0 !important;
+    width: 50px !important;
+    height: 30px !important;
+    text-align: center !important;
+    border: 1px solid #DFE0E1 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    border-right: none !important;
+    border-left: none !important;
+}

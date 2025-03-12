@@ -1,10 +1,20 @@
-﻿@model List<AvevaElemAmount>
+﻿@using WebApplication5.Controllers;
+@model List<AvevaElemAmount>
 
 @{
     //String dates = string.Empty;
     string teklaValues = string.Empty;
     List<DateTime> teklaDates = new List<DateTime>();
+
+    string pipeLengthValues = string.Empty;
+    List<DateTime> pipeLengthDates = new List<DateTime>();
+
+    string pipeLengthLastDateBores = string.Empty;
+    string pipeLengthLastDateLength = string.Empty;
+
     List<TeklaElemAmount> teklaElemAmounts = ViewData["TeklaElemList"] as List<TeklaElemAmount>;
+    var avevaPipeLengths = ViewData["AvevaPipeLengthReport"] as List<AvevaPipeLengthReport>;
+    var avevaPipeLengthsLastDate = ViewData["AvevaPipeLengthLastDate"] as List<AvevaPipeLength>;
     if (teklaElemAmounts.Count > 0)
     {
         foreach (var elemAm in teklaElemAmounts)
@@ -22,6 +32,52 @@
             }
         }
     }
+    if (avevaPipeLengths.Count > 0)
+    {
+        foreach (var elem in avevaPipeLengths)
+        {
+            pipeLengthDates.Add(elem.Date);
+            var lengthAm = elem.TotalLength / 1000;
+            if (elem == avevaPipeLengths.Last())
+            {
+                //dates += String.Format("'{0}'", elemAm.Date.ToShortDateString());
+                pipeLengthValues += String.Format("{0}", lengthAm);
+            }
+            else
+            {
+                //dates += String.Format("'{0}', ", elemAm.Date.ToShortDateString());
+                pipeLengthValues += String.Format("{0}, ", lengthAm);
+            }
+        }
+    }
+    if (avevaPipeLengthsLastDate.Count > 0)
+    {
+        foreach (var elem in avevaPipeLengthsLastDate)
+        {
+            var lengthAm = elem.PipeLineLength / 1000;
+            if (elem == avevaPipeLengthsLastDate.Last())
+            {
+                //dates += String.Format("'{0}'", elemAm.Date.ToShortDateString());
+                pipeLengthLastDateLength += String.Format("{0}", lengthAm);
+            }
+            else
+            {
+                //dates += String.Format("'{0}', ", elemAm.Date.ToShortDateString());
+                pipeLengthLastDateLength += String.Format("{0}, ", lengthAm);
+            }
+            if (elem == avevaPipeLengthsLastDate.Last())
+            {
+                //dates += String.Format("'{0}'", elemAm.Date.ToShortDateString());
+                pipeLengthLastDateBores += String.Format("{0}", elem.PipeLineBore);
+            }
+            else
+            {
+                //dates += String.Format("'{0}', ", elemAm.Date.ToShortDateString());
+                pipeLengthLastDateBores += String.Format("{0}, ", elem.PipeLineBore);
+            }
+        }
+    }
+
 
     String values = string.Empty;
     List<DateTime> dates = new List<DateTime>();
@@ -48,20 +104,31 @@
 }
 <br>
 <h3>Мониторинг активности по проекту @ViewData["prjAcr"]</h3>
-@{
-    if (teklaDates.Count > 0)
-        foreach (var d in teklaDates)
+
+    @if (pipeLengthDates.Count > 0)
+    {
+        foreach (var d in pipeLengthDates)
         {
+            <input type="hidden" value="@d.ToLongDateString()" class="datesPipeLength" />
+        }
+        if (teklaDates.Count > 0)
+        {
+            foreach (var d in teklaDates)
+            {
             <input type="hidden" value="@d.ToLongDateString()" class="datesTekla" />
-        }
+            }
 
-    if (dates.Count > 0)
-        foreach (var d in dates)
-        {
+            if (dates.Count > 0)
+            {
+                foreach (var d in dates)
+                {
             <input type="hidden" value="@d.ToLongDateString()" class="datesTr" />
+                }
+            }
         }
+    }
 
-}
+
 <br>
 <link rel="stylesheet" href="~/css/ProjectsIndex.css">
 
@@ -73,6 +140,12 @@
 </table>-->
 <div>
     <canvas id="myChart" width="300" height="150"></canvas>
+</div>
+<div>
+    <canvas id="myChart0" width="300" height="150"></canvas>
+</div>
+<div>
+    <canvas id="myChart01" width="300" height="150"></canvas>
 </div>
 <div>
     <canvas id="myChart1" width="300" height="150"></canvas>
@@ -119,6 +192,92 @@
             }
         }
         });
+
+      let arrPipeLengthStr = []
+    let arrPipeLength = document.getElementsByClassName('datesPipeLength');
+    for (let i = 0; i < arrPipeLength.length; i++) {
+        arrPipeLengthStr.push(arrPipeLength[i].value);
+    }
+
+        const ctx0 = document.getElementById('myChart0').getContext('2d');
+        const myChart0 = new Chart(ctx0, {
+        type: 'line',
+        data: {
+
+            labels: arrPipeLengthStr,
+            datasets: [{
+            label: 'Общая длина запроектированных труб, м',
+                data: [@pipeLengthValues],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+        scales: {
+            y: {
+                beginAtZero: true
+                }
+            }
+        }
+    });
+
+         let arrPipeLengthLastDateStr = []
+    let arrPipeLengthLastDate = document.getElementsByClassName('datesPipeLengthLastDate');
+    for (let i = 0; i < arrPipeLengthLastDate.length; i++) {
+        arrPipeLengthStr.push(arrPipeLengthLastDate[i].value);
+    }
+
+        const ctx01 = document.getElementById('myChart01').getContext('2d');
+        const myChart01 = new Chart(ctx01, {
+        type: 'bar',
+        data: {
+
+            labels: [@pipeLengthLastDateBores],
+            datasets: [{
+                label: 'Длина запроектированных труб по диаметрам, м', 
+                data: [@pipeLengthLastDateLength],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+        scales: {
+            y: {
+                beginAtZero: true
+                }
+            }
+        }
+    });
 
     let arrTeklaStr = []
     let arrTekla = document.getElementsByClassName('datesTekla');

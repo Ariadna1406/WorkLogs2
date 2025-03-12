@@ -1,0 +1,369 @@
+﻿@using WebApplication5.Models
+@model List<TaskComp>
+@{
+    var taskCompGroupedByProject = Model.GroupBy(x => x.ProjectNumber).OrderBy(x=>x.Key);    
+    int countRows = 0;
+    ViewData["Title"] = "Задачи моего отдела";
+    var userList = ViewData["UsersOfMyDepart"] as List<User>;
+    string depart = string.Empty;
+    if (Model.Count > 0)
+    {
+        var taskCompDef = Model.First();
+        depart = taskCompDef.Department;
+    }
+    string showTaskCompCond = ViewData["ShowTaskCompCond"] as string;
+    string header = string.Empty;
+    if (showTaskCompCond == "0") { header = "Все задачи моего отдела"; }
+    else if (showTaskCompCond == "1") { header = "Все задачи моего отдела за текущий месяц"; }
+    else if (showTaskCompCond == "2") { header = "Все задачи моего отдела без исполнителя"; }
+    else { header = "Все задачи моего отдела без исполнителя за текущий месяц"; }
+    var curTaskCompId = @ViewData["TaskCompId"] as string;
+}
+
+<div class="left">
+
+    <!--<h3>Задачи моего отдела</h3>-->
+    <br>
+    <link rel="stylesheet" href="~/css/ProjectsIndex.css">
+    <input type="text" id="showTaskCompCond" hidden="hidden" value="@showTaskCompCond">
+    @if (ViewData["SuccessMes"] != null)
+    {
+        @Html.Partial("PartialInformation", ViewData["SuccessMes"]);
+    }
+    <table id="TaskCompControl" width="100%">
+        <td width="400px">
+            <p>
+                <a id="filterAllTaskComp" asp-controller="MyDepartment" asp-action="Index" asp-route-showTaskCompCond="0"><i></i>Работы отдела все</a>
+                <a id="filterAllTaskCompNoExecuter" asp-controller="MyDepartment" asp-action="Index" asp-route-showTaskCompCond="2"><i></i> (без исполнителя) </a>
+            </p>
+            <p>
+                <a id="filterAllTaskCompCurMonth" asp-controller="MyDepartment" asp-action="Index" asp-route-showTaskCompCond="1"><i></i>Работы отдела за текущий месяц</a>
+                <a id="filterAllTaskCompCurMonthNoExecuter" asp-controller="MyDepartment" asp-action="Index" asp-route-showTaskCompCond="3"><i></i>(без исполнителя)</a>
+                <input id="curFilter" type="text" hidden="hidden" value="@showTaskCompCond">
+            </p>
+        </td>
+        <td align="left">
+            <p>Всего работ <b style="color:red"> @Model.Count.ToString()</b></p>
+            <p>
+                Всего работ по проектам:
+                @foreach (var taskCompGr in taskCompGroupedByProject)
+                {
+                    <b onclick="SetProjNum(@taskCompGr.Key)" style="cursor: pointer;"> @taskCompGr.Key - </b> <b style="color:red"> @taskCompGr.Count()</b> <b> ;</b>
+
+                }
+            </p>
+        </td>
+    </table>
+    <table id="WorkLogs" class="QualityBook" width="100%">
+        <tbody id="WorkLogsTBody" onload="ScrollTo(@curTaskCompId)">
+            <tr class="header">
+                <th style="padding: 10px 15px; text-align: center">Наименование проекта</th>
+                <th style="padding: 10px 15px; text-align: center">Наименование работы</th>
+                <th style="padding: 10px 15px; text-align: center">Дата начала</th>
+                <th style="padding: 10px 15px; text-align: center">Дата окончания</th>
+                <th style="padding: 10px 15px; text-align: center">Исполнители</th>
+                <th style="padding: 10px 15px; text-align: center">Процент выполнения</th>
+                <th style="padding: 10px 15px; text-align: center">Возможные действия</th>
+            </tr>
+            <tr class="header">
+                <td style="padding: 10px 15px; text-align: center"><input type="text" id="PrjNameSearch" oninput="FilterRows()" size="5px"><br><span style="font-size:smaller;">(фильтр)</span></td>
+                <td style="padding: 10px 50px; text-align: center"><input type="text" id="TaskNameSearch" oninput="FilterRows()"><br><span style="font-size:smaller;">(фильтр)</span></td>
+                <td style="padding: 10px 15px; text-align: center">
+                    <input type="date" id="StartDateSearch" oninput="FilterRows()"><br>
+                    <span style="font-size:smaller;">ОТ (фильтр)</span><br>
+                    <a class="btn btn-close" onclick="SortAscen('startDate')" id="startDateAscen"><i></i>По возрастанию</a><br>
+                    <a class="btn btn-dark" onclick="SortDescen('startDate')" id="startDateDescen"><i></i>По убыванию</a>
+                </td>
+
+                <td style="padding: 10px 15px; text-align: center">
+                    <input type="date" id="FinishDateSearch" oninput="FilterRows()"><br>
+                    <span style="font-size:smaller;">ДО (фильтр)</span><br>
+                    <a class="btn btn-close" onclick="SortAscen('finishDate')" id="finishDateAscen"><i></i>По возрастанию</a><br>
+                    <a class="btn btn-dark" onclick="SortDescen('finishDate')" id="finishDateDescen"><i></i>По убыванию</a>
+                </td>
+                <td style="padding: 10px 40px 10px 40px; text-align: center"><input type="text" id="RsrcSearch" oninput="FilterRows()"><br><span style="font-size:smaller;">(фильтр)</span></td>
+                <td style="padding: 10px 15px; text-align: center"></td>
+                <td style="padding: 10px 15px; text-align: center;">
+                    <p><a class="btn btn-danger" id="filterTaskCompCurMonth" asp-area="" asp-controller="ImportComp" asp-action="TaskCompRequest">Сообщить <br>  об отсутствии комплекта  </a></p>
+                </td>
+            </tr>
+            @foreach (var taskComp in Model)
+            {
+
+
+                <tr class="realData">
+                    <td class="prjName">@taskComp.ProjectNumber </td>
+                    <td class="taskName" id="taskCompId-@taskComp.Id">
+                        @taskComp.TaskCompName
+                        <input type="hidden" id="TaskComp" name="TaskComp" value="@taskComp.Id" />
+                    </td>
+                    <td class="startDate">@taskComp.StartPlanDate?.ToShortDateString()</td>
+                    <td class="finishDate">@taskComp.FinishPlanDate?.ToShortDateString()</td>
+                    <td id="rsrc-@taskComp.Id.ToString()" class="rsrc">
+                        @{
+                            var executersStr = taskComp.Executers;
+                            if (!string.IsNullOrEmpty(executersStr))
+                            {
+                                var executerAr = taskComp.Executers.Split(';');
+                                foreach (var executer in executerAr)
+                                {
+                                    <p><button style="border: none;background: none"><img src="~/icons/RED_CROSS.png" width="10" height="10" onclick="DelSpecRes(@taskComp.Id, '@executer')" /></button> @executer</p>
+
+                                }
+                            }
+                        }
+                    </td>
+                    <td>@taskComp.CompletePercent</td>
+                    <td style="padding:5px 3px; vertical-align:central;">
+                        <p>
+                        <input list="ExecuterList" name="SelectedExecuterList" id="ExecuterList-@taskComp.Id.ToString()" value="" autocomplete="off" size="15px">
+                        <datalist id="ExecuterList">
+                            @foreach (var user in userList)
+                            {
+                                <option id="@user.Id">@user.FullName</option>
+                            }
+                        </datalist>
+                        <a class="btn btn-default" onclick="AddNewRes(@taskComp.Id)"><img src="~/icons/Add_user_icon.png" width="15px" height="15px"></img></a>
+                            </p>
+                    </td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+</div>
+
+<script>
+    var curTaskId = '@curTaskCompId'
+        if (curTaskId!='') ScrollTo(@curTaskCompId);
+
+    function AddNewRes(taskCompId) {
+        var newRsrcElem = document.getElementById('ExecuterList-' + taskCompId).value;
+        var rsrcId = 'rsrc-' + taskCompId;
+        var rsrcElem = document.getElementById(rsrcId);
+        var showTaskCompCond = document.getElementById('showTaskCompCond').value;
+        //
+        window.location.href = '/MyDepartment/ApplyExecuter/GetData?executorName=' + newRsrcElem + '&taskCompId=' + taskCompId + '&showTaskCompCond=' + showTaskCompCond;
+
+        if (rsrcElem.innerText != null && rsrcElem.innerText != '' && rsrcElem.innerText != ' ') rsrcElem.innerText = rsrcElem.innerText + ';' + newRsrcElem
+        else rsrcElem.innerText = newRsrcElem;
+    }
+
+    function DelSpecRes(taskCompId, executer) {
+        //alert("123123123");
+        //var newRsrcElem = document.getElementById('ExecuterList-' + taskCompId).value;
+        //var rsrcId = 'rsrc-' + taskCompId;
+        //var rsrcElem = document.getElementById(rsrcId);
+        var showTaskCompCond = document.getElementById('showTaskCompCond').value;
+        //
+        window.location.href = '/MyDepartment/DeleteExecuter/GetData?executorName=' + executer + '&taskCompId=' + taskCompId + '&showTaskCompCond=' + showTaskCompCond;
+
+        // if (rsrcElem.innerText != null && rsrcElem.innerText != '' && rsrcElem.innerText != ' ') rsrcElem.innerText = rsrcElem.innerText + ';' + newRsrcElem
+        // else rsrcElem.innerText = newRsrcElem;
+    }
+
+    function ScrollTo(taskCompId) {
+
+        el = document.getElementById('taskCompId-' + taskCompId)
+        el.scrollIntoView();
+    }
+
+    function FilterRows() {
+
+        var rsrcForSearch = document.getElementById('RsrcSearch').value;
+        var taskForSearch = document.getElementById('TaskNameSearch').value;
+        var prjForSearch = document.getElementById('PrjNameSearch').value;
+        var startDateSearch = new Date(document.getElementById('StartDateSearch').value);
+        var finishDateSearch = new Date(document.getElementById('FinishDateSearch').value);
+        var rsrcSet = document.getElementsByClassName('rsrc')
+        var taskSet = document.getElementsByClassName('taskName')
+        var prjSet = document.getElementsByClassName('prjName')
+        var startDateSet = document.getElementsByClassName('startDate')
+        var finishDateSet = document.getElementsByClassName('finishDate')
+        for (var i = 0; i < startDateSet.length; i++) {
+            startDateSet[i].parentElement.hidden = false
+        }
+        for (var i = 0; i < rsrcSet.length; i++) {
+            if (!rsrcSet[i].textContent.toLowerCase().includes(rsrcForSearch.toLowerCase())) {
+                rsrcSet[i].parentElement.hidden = true
+            }
+            else {
+                rsrcSet[i].parentElement.hidden = false
+            }
+        }
+
+        for (var i = 0; i < taskSet.length; i++) {
+            if (!(taskSet[i].textContent.toLowerCase().includes(taskForSearch.toLowerCase()) && taskSet[i].parentElement.hidden == false)) {
+                taskSet[i].parentElement.hidden = true
+            }
+            else {
+                taskSet[i].parentElement.hidden = false
+            }
+        }
+
+        for (var i = 0; i < prjSet.length; i++) {
+            if (!(prjSet[i].textContent.includes(prjForSearch) && prjSet[i].parentElement.hidden == false)) {
+                prjSet[i].parentElement.hidden = true
+            }
+            else {
+                prjSet[i].parentElement.hidden = false
+            }
+        }
+
+        if (startDateSearch.getDate() > 0) {
+            for (var i = 0; i < startDateSet.length; i++) {
+                var daAr = startDateSet[i].textContent.replace('.', '-').replace('.', '-').split('-')
+                var daStr = daAr[2] + '-' + daAr[1] + '-' + daAr[0]
+                var da = new Date(daStr)
+                if (startDateSearch < da && startDateSet[i].parentElement.hidden == false) {
+                    // alert("true --- " + i)
+                    startDateSet[i].parentElement.hidden = false
+                }
+                else {
+                    //  alert("false --- " + i)
+                    startDateSet[i].parentElement.hidden = true
+                }
+            }
+        }
+
+        if (finishDateSearch.getDate() > 0) {
+            for (var i = 0; i < finishDateSet.length; i++) {
+                var dateAr = finishDateSet[i].textContent.replace('.', '-').replace('.', '-').split('-')
+                var dateStr = dateAr[2] + '-' + dateAr[1] + '-' + dateAr[0]
+                var dateDa = new Date(dateStr)
+                if (dateDa < finishDateSearch && finishDateSet[i].parentElement.hidden == false) {
+                    finishDateSet[i].parentElement.hidden = false
+                }
+                else {
+                    finishDateSet[i].parentElement.hidden = true
+                }
+            }
+        }
+    }
+
+    function SortAscen(nameClass) {
+        highlightSort(nameClass, 0)
+        PElems = []
+        dateSetSorted = []
+        wl = document.getElementById('WorkLogsTBody')
+        var dateSet = document.getElementsByClassName(nameClass)
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSetSorted.push(dateSet[i])
+        }
+        dateSetSorted.sort(function (a, b) {
+            return getDate(a) - getDate(b)
+        })
+
+        for (var i = 0; i < dateSetSorted.length; i++) {
+            PElems.push(dateSetSorted[i].parentElement)
+        }
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSet[i].parentElement.remove();
+        }
+        for (var i = 0; i < PElems.length; i++) {
+            wl.appendChild(PElems[i])
+        }
+    }
+
+    function SortDescen(nameClass) {
+        highlightSort(nameClass, 1)
+        PElems = []
+        dateSetSorted = []
+        wl = document.getElementById('WorkLogsTBody')
+        var dateSet = document.getElementsByClassName(nameClass)
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSetSorted.push(dateSet[i])
+        }
+        dateSetSorted.sort(function (a, b) {
+            return getDate(b) - getDate(a)
+        })
+
+        for (var i = 0; i < dateSetSorted.length; i++) {
+            PElems.push(dateSetSorted[i].parentElement)
+        }
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSet[i].parentElement.remove();
+        }
+        for (var i = 0; i < PElems.length; i++) {
+            wl.appendChild(PElems[i])
+        }
+    }
+
+    function highlightSort(nameClass, cond) {
+        startDateAscen = document.getElementById('startDateAscen')
+        startDateDescen = document.getElementById('startDateDescen')
+        finishDateAscen = document.getElementById('finishDateAscen')
+        finishDateDescen = document.getElementById('finishDateDescen')
+        if (nameClass == 'startDate' && cond == 1) {           
+            highlightElemFilter(startDateDescen);
+            arr = [startDateAscen, finishDateAscen, finishDateDescen]
+            UnhighLightElem(arr)            
+        }
+        else if (nameClass == 'startDate' && cond == 0) {           
+            highlightElemFilter(startDateAscen);
+            arr = [startDateDescen, finishDateAscen, finishDateDescen]
+            UnhighLightElem(arr)
+        }
+        else if (nameClass == 'finishDate' && cond == 1) {           
+            highlightElemFilter(finishDateDescen);
+            arr = [startDateDescen, startDateAscen ,finishDateAscen]
+            UnhighLightElem(arr)
+        }
+        else if (nameClass == 'finishDate' && cond == 0) {            
+            highlightElemFilter(finishDateAscen);
+            arr = [startDateDescen, startDateAscen, finishDateDescen]
+            UnhighLightElem(arr)
+        }
+        
+    }
+
+    function UnhighLightElem(elem) {
+        for (let i = 0; i < elem.length; i++) {
+            elem[i].style.fontWeight = 'normal';
+            elem[i].style.color = ''
+        }
+    }
+    
+
+    function getDate(a) {
+        var dateAr = a.textContent.replace('.', '-').replace('.', '-').split('-')
+        var dateStr = dateAr[2] + '-' + dateAr[1] + '-' + dateAr[0]
+        return new Date(dateStr)
+    }
+
+    var curFilter = document.getElementById("curFilter");
+    highlightCurFilter(curFilter.value)
+
+    function highlightCurFilter(curPage) {
+        elem = '';
+        switch (curPage) {
+            case '0':
+                elem = document.getElementById("filterAllTaskComp");
+                break;
+            case '1':
+                elem = document.getElementById("filterAllTaskCompCurMonth");
+                break;
+            case '2':
+                elem = document.getElementById("filterAllTaskCompNoExecuter");
+                break;
+            case '3':
+                elem = document.getElementById("filterAllTaskCompCurMonthNoExecuter");
+                break;
+        }
+        if (elem != null && elem != '') highlightElemFilter(elem);
+    }
+    
+
+    function highlightElemFilter(elem) {
+        elem.style.color = 'blue';
+        elem.style.fontWeight = "bold";
+    }
+
+    function SetProjNum(ProjNum) {
+        var prjForSearch = document.getElementById('PrjNameSearch');
+        prjForSearch.value = ProjNum;
+        FilterRows()
+    }
+
+</script>
+

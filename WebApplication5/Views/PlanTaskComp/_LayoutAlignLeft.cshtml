@@ -1,0 +1,147 @@
+﻿@{
+    bool isHeadOfDepartment = false;
+    bool isAdmin = false;
+    bool? isKSP = false;
+    string myDepart = string.Empty;
+    isKSP = (bool?)ViewData["isKSP"];
+    var curUser = ViewData["curUser"] as User;
+    isHeadOfDepartment = true;
+    isAdmin = true;// (bool)ViewData["IsAdmin"];
+    if (curUser != null)
+    {
+
+    }
+    int curPage = 100;
+    if (ViewData["curPage"] != null) { curPage = (int)ViewData["curPage"]; }
+    var tcReqCount = ViewData["tcReqCount"] as string;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - АО "Нефтехимпроект"</title>
+
+    <environment include="Development">
+        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+        <link rel="stylesheet" href="~/css/site.css" />
+
+    </environment>
+    <environment exclude="Development">
+        <link rel="stylesheet" href="~/css/bootstrap.min.css"
+              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
+              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
+        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
+    </environment>
+    <script src="~/js/vue.js"></script>
+</head>
+<body>
+    <input id="curPage" type="text" hidden="hidden" value="@curPage">
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <!--div class="container">-->
+        <div style="padding-left:70px">
+        <div class="navbar-collapse collapse">
+
+            <ul class="nav navbar-nav">
+                <li><img src="~/images/logo-top.svg"></li>
+                <!-- <li>
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        Действия
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+        <li><a class="dropdown-item" href="#">Выдать задание в отдел</a></li>-->
+                <!--input id="isHeadOfDepart" value="@isHeadOfDepartment.ToString()" hidden-->
+                @if (isHeadOfDepartment)
+                {
+                    <li><a id="myDepartPlan" asp-area="" asp-controller="MyDepartment" asp-action="Index">Отдел (план)</a></li>
+                    <li><a id="myDepartFact" asp-area="" asp-controller="MyDepartment" asp-action="ShowMyDepartSetPercent">Отдел (факт)</a></li>
+                }
+                <li><a id="myTasks" asp-area="" asp-controller="MyTasks" asp-action="Index">Работы отдела</a></li>
+                <li><a id="myWorkLogs" asp-area="" asp-controller="WorkLogs" asp-action="Index">Трудозатраты</a></li>
+                <li><a id="myTaskCompRegistry" asp-area="" asp-controller="ImportComp" asp-action="Index">Реестр комплектов/работ</a></li>
+                <li><a id="myAbsenceRequest" asp-area="" asp-controller="Absence" asp-action="AbsenceRequest">Отсутствия</a></li>
+                @if (isAdmin || (isKSP.HasValue && isKSP.Value))
+                {
+                    <li>
+                        <a id="taskCompReqApply" asp-area="" asp-controller="ImportComp" asp-action="TaskCompReqApply">
+                            Реестр запросов
+                            @if (!string.IsNullOrEmpty(tcReqCount) && tcReqCount != "0")
+                            {
+                                <b style="color:red">(@tcReqCount)</b>
+                            }
+                        </a>
+                    </li>
+                }
+
+                @if (isAdmin)
+                {
+                    <li><a id="PlanTaskComp" asp-area="" asp-controller="PlanTaskComp" asp-action="Index">План комплектов/работ</a></li>
+                }
+
+                <!-- </ul>-->
+                <!--<li><a asp-area="" asp-controller="Project" asp-action="Index">Проекты</a></li>-->
+                <!--<li><a asp-area="" asp-controller="Instruct" asp-action="Index">Инструкции</a></li>-->
+                @if (isAdmin)
+                {
+                    <li><a asp-area="" asp-controller="Admin" asp-action="AdminMain">Администрирование</a></li>
+                }
+            </ul>
+        </div>
+        </div>
+    </nav>
+
+    <partial name="_CookieConsentPartial" />
+    <div style="padding: 40px">
+        @RenderBody()
+        <hr />
+        <footer>
+            <p>&copy; 2023 - АО "Нефтехимпроект"</p>
+        </footer>
+    </div>
+
+    @RenderSection("Scripts", required: false)
+    <script>
+        //var showHOD = document.getElementById("isHeadOfDepart");
+        //var myDepart = document.getElementById("myDepart");
+        //if (showHOD.value=="True") myDepart.setAttribute("class", "show");
+        //else myDepart.setAttribute("class", "hide")
+    </script>
+    <script>
+        var curPage = document.getElementById("curPage");
+        highlightCurPage(curPage.value)
+        function highlightCurPage(curPage) {
+            elem = '';
+            switch (curPage) {
+                case '0':
+                    elem = document.getElementById("myDepartPlan");
+                    break;
+                case '1':
+                    elem = document.getElementById("myDepartFact");
+                    break;
+                case '2':
+                    elem = document.getElementById("myTasks");
+                    break;
+                case '3':
+                    elem = document.getElementById("myWorkLogs");
+                    break;
+                case '4':
+                    elem = document.getElementById("myTaskCompRegistry");
+                    break;
+                case '5':
+                    elem = document.getElementById('PlanTaskComp');
+            }
+            if (elem != null) highlightElem(elem);
+        }
+
+        function highlightElem(elem) {
+            // elem.style.color = 'green';
+            // elem.style.fontWeight = "bold";
+        }
+
+    </script>
+
+    <script src="~/lib/bootstrap-5.0.2-dist/js/popper.min.js"></script>
+    <script src="~/lib/bootstrap-5.0.2-dist/js/jquery.js"></script>
+    <script src="~/lib/bootstrap-5.0.2-dist/js/bootstrap.bundle.min.js"></script>
+</body>
+    </html>

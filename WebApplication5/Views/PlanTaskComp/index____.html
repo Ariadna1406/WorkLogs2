@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=0.8">
+        <title>DHTMLX Gantt</title>
+        <link href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css" rel="stylesheet">
+        <link href="css/style.css" rel="stylesheet">
+    </head>
+    <body>
+        <div id="top-panel">
+            <div id="left-container">
+                <select id="monthSelector">
+                    <option value="0">Январь</option>
+                    <option value="1">Февраль</option>
+                    <option value="2">Март</option>
+                    <option value="3">Апрель</option>
+                    <option value="4">Май</option>
+                    <option value="5">Июнь</option>
+                    <option value="6">Июль</option>
+                    <option value="7">Август</option>
+                    <option value="8">Сентябрь</option>
+                    <option value="9">Октябрь</option>
+                    <option value="10">Ноябрь</option>
+                    <option value="11">Декабрь</option>
+                </select>
+                <div id="total-summary">
+                    Итого планируемые ТЗ: <span id="total-sum">0</span>&nbsp;ч
+                </div> 
+            </div>
+            <div id="legend-container">
+                <div id="weekend-legend">
+                    <div class="legend-color" style="background-color: #ececec;"></div>
+                    <span class="legend-text">Выходные дни</span>
+                </div>
+                <div id="holiday-legend">
+                    <div class="legend-color" style="background-color: #eaf2ff;"></div>
+                    <span class="legend-text">Праздничные дни</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="GanttChart" style="width: 100%; height: 800px;"></div>
+        
+        <script src="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.js"></script>
+        <script src="js/gantt.js"></script>
+    </body>
+</html>
+

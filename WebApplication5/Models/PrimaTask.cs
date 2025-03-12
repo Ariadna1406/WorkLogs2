@@ -57,6 +57,12 @@ namespace WebApplication5.Models
             return primaTaskList;
         }
 
+        public static List<TaskComp> GetTasksFromDb (string selectedProject, User curUser, AppDbContext context)
+        {
+           var taskSet = context.TaskComps.Where(x => x.ProjectNumber == selectedProject && x.Executers.Contains(curUser.FullName)).ToList();
+            return taskSet;
+        }
+
         static string SetSqlExpForTask(string selectedProject, User curUser)
         {
             var exp = String.Format(@"DECLARE @projectTable TABLE (prjName NVARCHAR(255), proj_id INT, task_id INT, task_name NVARCHAR(255), taskrsc_id INT);

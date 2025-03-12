@@ -15,7 +15,7 @@ namespace WebApplication5.Models
 
         public DateTime Date { get; set; }
 
-        public int PipeLineLength { get; set; }
+        public long PipeLineLength { get; set; }
         public int PipeLineBore { get; set; }
 
         public string ProjectAcr { get; set; }

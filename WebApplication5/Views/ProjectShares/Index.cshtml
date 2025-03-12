@@ -1,0 +1,287 @@
+﻿@using WebApplication5.Models.ExcelFiles;
+@{
+
+    ViewData["Title"] = "Выгрузить доли по проектам";
+    string showTaskCompCond = ViewData["ShowTaskCompCond"] as string;
+    string header = string.Empty;
+    //if (showTaskCompCond=="0") header = "Все комплекты/работы";
+    //else if (showTaskCompCond=="0") header = "Все комплекты/работы моего отдела";
+    //else header = "Все комплекты/работы моего отдела за текущий месяц";
+
+    bool isAdmin = (bool)ViewData["IsAdmin"];
+    bool isBuh = (bool)ViewData["isBuh"];
+}
+<!--<h3>Комплекты/работы</h3>-->
+<link rel="stylesheet" href="~/css/ProjectsIndex.css">
+@if (ViewData["SuccessMes"] != null)
+{
+    @Html.Partial("PartialInformation", ViewData["SuccessMes"]);
+}
+@if (ViewData["FailMes"] != null)
+{
+    @Html.Partial("PartialError", ViewData["FailMes"]);
+}
+
+
+<br>
+
+@if (isAdmin || isBuh)
+{
+    <p> Укажите месяц расчёта:</p>
+    <p><input class="text-box single-line" data-val="true" id="DateOfReport" name="DateOfReport" type="month" value=""></p>
+    <br>
+    <p>
+        <a class="btn btn-default" onclick="ExportTaskCompShares()"><i></i>Выгрузить доли по комплектам</a>
+    </p>
+    <p>
+        <a class="btn btn-default" onclick="ExportProjectSharesExcludeByUsers()"><i></i>Выгрузить доли по проектам (исключить пользователями)</a>
+    </p>
+    <p>
+        <a class="btn btn-default" onclick="ExportProjectShares()"><i></i>Выгрузить доли по проектам (исключить отделами)</a>
+    </p>
+    <br />
+    <br />
+    <p>
+    <p>ОТ <input class="text-box single-line" data-val="true" id="DateOfReport1" name="DateOfReport1" type="month" value=""></p>
+    <p>ДО <input class="text-box single-line" data-val="true" id="DateOfReport2" name="DateOfReport2" type="month" value=""></p>
+    <a class="btn btn-default" onclick="ExportProjectReport()"><i></i>Выгрузить свод трудозатрат по проектам</a>
+    </p>
+
+}
+
+<script>
+    function FilterRows() {
+
+        var taskForSearch = document.getElementById('TaskNameSearch').value;
+        var prjForSearch = document.getElementById('PrjNameSearch').value;
+        var departForSearch = document.getElementById('DepartAcr').value;
+        var executerForSearch = document.getElementById('ExecuterSearch').value;
+        var startDateSearch = new Date(document.getElementById('StartDateSearch').value);
+        var finishDateSearch = new Date(document.getElementById('FinishDateSearch').value);
+        var taskSet = document.getElementsByClassName('taskName')
+        var prjSet = document.getElementsByClassName('prjName')
+        var startDateSet = document.getElementsByClassName('startDate')
+        var finishDateSet = document.getElementsByClassName('finishDate')
+        var departSet = document.getElementsByClassName('department')
+        var executerSet = document.getElementsByClassName('Executers')
+
+        for (var i = 0; i < startDateSet.length; i++) {
+            startDateSet[i].parentElement.hidden = false
+        }
+
+
+        for (var i = 0; i < taskSet.length; i++) {
+            if (!(taskSet[i].textContent.includes(taskForSearch) && taskSet[i].parentElement.hidden == false)) {
+                taskSet[i].parentElement.hidden = true
+            }
+            else {
+                taskSet[i].parentElement.hidden = false
+            }
+        }
+
+        for (var i = 0; i < departSet.length; i++) {
+            if (!(departSet[i].textContent.includes(departForSearch) && taskSet[i].parentElement.hidden == false)) {
+                taskSet[i].parentElement.hidden = true
+            }
+            else {
+                taskSet[i].parentElement.hidden = false
+            }
+        }
+
+        for (var i = 0; i < executerSet.length; i++) {
+            if (!(executerSet[i].textContent.includes(executerForSearch) && executerSet[i].parentElement.hidden == false)) {
+                taskSet[i].parentElement.hidden = true
+            }
+            else {
+                taskSet[i].parentElement.hidden = false
+            }
+        }
+
+        for (var i = 0; i < prjSet.length; i++) {
+            if (!(prjSet[i].textContent.includes(prjForSearch) && prjSet[i].parentElement.hidden == false)) {
+                prjSet[i].parentElement.hidden = true
+            }
+            else {
+                prjSet[i].parentElement.hidden = false
+            }
+        }
+
+        if (startDateSearch.getDate() > 0) {
+            for (var i = 0; i < startDateSet.length; i++) {
+                var daAr = startDateSet[i].textContent.replace('.', '-').replace('.', '-').split('-')
+                var daStr = daAr[2] + '-' + daAr[1] + '-' + daAr[0]
+                var da = new Date(daStr)
+                if (startDateSearch < da && startDateSet[i].parentElement.hidden == false) {
+                    // alert("true --- " + i)
+                    startDateSet[i].parentElement.hidden = false
+                }
+                else {
+                    //  alert("false --- " + i)
+                    startDateSet[i].parentElement.hidden = true
+                }
+            }
+        }
+
+        if (finishDateSearch.getDate() > 0) {
+            for (var i = 0; i < finishDateSet.length; i++) {
+                var dateAr = finishDateSet[i].textContent.replace('.', '-').replace('.', '-').split('-')
+                var dateStr = dateAr[2] + '-' + dateAr[1] + '-' + dateAr[0]
+                var dateDa = new Date(dateStr)
+                if (dateDa < finishDateSearch && finishDateSet[i].parentElement.hidden == false) {
+                    finishDateSet[i].parentElement.hidden = false
+                }
+                else {
+                    finishDateSet[i].parentElement.hidden = true
+                }
+            }
+        }
+    }
+
+    function SortAscen(nameClass) {
+        highlightSort(nameClass, 0)
+        PElems = []
+        dateSetSorted = []
+        wl = document.getElementById('WorkLogsTBody')
+        var dateSet = document.getElementsByClassName(nameClass)
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSetSorted.push(dateSet[i])
+        }
+        dateSetSorted.sort(function (a, b) {
+            return getDate(a) - getDate(b)
+        })
+
+        for (var i = 0; i < dateSetSorted.length; i++) {
+            PElems.push(dateSetSorted[i].parentElement)
+        }
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSet[i].parentElement.remove();
+        }
+        for (var i = 0; i < PElems.length; i++) {
+            wl.appendChild(PElems[i])
+        }
+    }
+
+    function SortDescen(nameClass) {
+        highlightSort(nameClass, 1)
+        PElems = []
+        dateSetSorted = []
+        wl = document.getElementById('WorkLogsTBody')
+        var dateSet = document.getElementsByClassName(nameClass)
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSetSorted.push(dateSet[i])
+        }
+        dateSetSorted.sort(function (a, b) {
+            return getDate(b) - getDate(a)
+        })
+
+        for (var i = 0; i < dateSetSorted.length; i++) {
+            PElems.push(dateSetSorted[i].parentElement)
+        }
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSet[i].parentElement.remove();
+        }
+        for (var i = 0; i < PElems.length; i++) {
+            wl.appendChild(PElems[i])
+        }
+    }
+
+    function highlightSort(nameClass, cond) {
+        startDateAscen = document.getElementById('startDateAscen')
+        startDateDescen = document.getElementById('startDateDescen')
+        finishDateAscen = document.getElementById('finishDateAscen')
+        finishDateDescen = document.getElementById('finishDateDescen')
+        if (nameClass == 'startDate' && cond == 1) {
+            highlightElemFilter(startDateDescen);
+            arr = [startDateAscen, finishDateAscen, finishDateDescen]
+            UnhighLightElem(arr)
+        }
+        else if (nameClass == 'startDate' && cond == 0) {
+            highlightElemFilter(startDateAscen);
+            arr = [startDateDescen, finishDateAscen, finishDateDescen]
+            UnhighLightElem(arr)
+        }
+        else if (nameClass == 'finishDate' && cond == 1) {
+            highlightElemFilter(finishDateDescen);
+            arr = [startDateDescen, startDateAscen, finishDateAscen]
+            UnhighLightElem(arr)
+        }
+        else if (nameClass == 'finishDate' && cond == 0) {
+            highlightElemFilter(finishDateAscen);
+            arr = [startDateDescen, startDateAscen, finishDateDescen]
+            UnhighLightElem(arr)
+        }
+
+    }
+
+    function UnhighLightElem(elem) {
+        for (let i = 0; i < elem.length; i++) {
+            elem[i].style.fontWeight = 'normal';
+            elem[i].style.color = ''
+        }
+    }
+
+    function getDate(a) {
+        var dateAr = a.textContent.replace('.', '-').replace('.', '-').split('-')
+        var dateStr = dateAr[2] + '-' + dateAr[1] + '-' + dateAr[0]
+        return new Date(dateStr)
+    }
+
+    function ExportProjectShares() {
+        var date = document.getElementById('DateOfReport').value;
+        //var fileRef = document.getElementById('FileRef').value;
+        window.location.href = '/ProjectShares/Export/GetData?date=' + date
+
+    }
+
+    function ExportProjectSharesExcludeByUsers() {
+        var date = document.getElementById('DateOfReport').value;
+        //var fileRef = document.getElementById('FileRef').value;
+        window.location.href = '/ProjectShares/ExportExcludeByUsers/GetData?date=' + date
+
+    }
+
+    function ExportProjectReport() {
+        var date1 = document.getElementById('DateOfReport1').value;
+        var date2 = document.getElementById('DateOfReport2').value;
+        //var fileRef = document.getElementById('FileRef').value;
+        window.location.href = '/ProjectShares/ExportReport/GetData?date1=' + date1+'&date2='+ date2
+
+    }
+
+    function ExportTaskCompShares() {
+        var date = document.getElementById('DateOfReport').value;
+        window.location.href = '/ProjectShares/ExportTaskCompShares/GetData?date=' + date
+    }
+
+    var curFilter = document.getElementById("curFilter");
+    highlightCurFilter(curFilter.value)
+
+    function highlightCurFilter(curFilter) {
+        elem = '';
+        switch (curFilter) {
+            case '0':
+                elem = document.getElementById("filterAllTaskComp");
+                break;
+            case '1':
+                elem = document.getElementById("filterMyDepartTaskComp");
+                break;
+            case '2':
+                elem = document.getElementById("filterMyDepartTaskCompCurMonth");
+                break;
+
+        }
+        if (elem != null && elem != '') highlightElemFilter(elem);
+    }
+
+    function highlightElemFilter(elem) {
+        elem.style.color = 'blue';
+        elem.style.fontWeight = "bold";
+    }
+
+    function SetProjNum(ProjNum) {
+        var prjForSearch = document.getElementById('PrjNameSearch');
+        prjForSearch.value = ProjNum;
+        FilterRows()
+    }
+    //asp - controller="ImportComp" asp - action="ImportCompFromExcel" asp - route - excelFilePath="getExcelFileRef()
+</script>

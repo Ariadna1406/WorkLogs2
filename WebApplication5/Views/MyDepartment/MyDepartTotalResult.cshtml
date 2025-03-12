@@ -1,0 +1,112 @@
+﻿@using WebApplication5.Models
+@model IOrderedEnumerable<TotalWorkLog>
+@{
+    int countRows = 0;
+    ViewData["Title"] = "Задачи моего отдела";
+    var userList = ViewData["UsersOfMyDepart"] as List<User>;
+    int curMonthInt = ViewBag.CurMonthInt;
+    string curMonth = ViewBag.CurMonth;
+    string curYear = ViewBag.CurYear;
+    int curYearInt = ViewBag.CurYearInt;
+    curMonth = curMonth.ToLower();
+    string taskCompName = string.Empty;
+
+}
+
+<br>
+<h3>Сводная таблица по отделу за @curMonth @curYear</h3>
+<br>
+<link rel="stylesheet" href="~/css/ProjectsIndex.css">
+
+@if (ViewData["SuccessMes"] != null)
+{
+    @Html.Partial("PartialInformation", ViewData["SuccessMes"]);
+}
+
+<input hidden="hidden" id="curMonth" value="@curMonthInt" />
+<input hidden="hidden" id="curYear" value="@curYearInt" />
+<p><input class="text-box single-line" data-val="true" id="DateOfReport" name="DateOfReport" type="month" value=""></p>
+<a class="btn btn-default" onclick="CreateReport()"><i></i>Отчёт за месяц (онлайн)</a>
+<a class="btn btn-default" onclick="CreateExcelReport()"><i></i>Отчёт за месяц (excel)</a>
+<a class="btn btn-default" onclick="SendNotification()"><i></i>Отправить напоминание по электронной почте</a>
+<br />
+<table id="WorkLogsLast30" class="QualityBook" width="100%">
+    <tr style="padding: 10px 15px;">
+        <th width="60%" style="align-content: center; padding: 10px 15px;">ФИО сотрудника</th>
+        <th width="20%" style="align-content: center; padding: 10px 15px;">Кол-во поданных трудозатрат</th>
+        <th width="20%" style="align-content: center; padding: 10px 15px;">Нормативное кол-во поданных трудозатрат</th>
+
+    </tr>
+    @if (Model.Count() > 0)
+    {
+        @foreach (var totalWl in Model)
+        {
+            <tr>
+
+                <td>@totalWl.User.FullName</td>
+                @if (totalWl.TotalWorkLogsShouldBe > totalWl.TotalSendedWorkLogs + 16)
+                {
+                    <td style="color: red; font-weight: bold">@totalWl.TotalSendedWorkLogs</td>
+                }
+                else
+                {
+                    <td style="color: green; font-weight: bold">@totalWl.TotalSendedWorkLogs</td>
+                }
+                <td>@totalWl.TotalWorkLogsShouldBe</td>
+
+
+            </tr>
+        }
+    }
+    else
+    {
+        <br>
+        <p id="Message"><b>У вашего отдела нет поданных трудозатрат за @curMonth</b></p>
+        <br>
+    }
+</table>
+<script>
+    var curMonth = document.getElementById('curMonth').value
+    var curYear = document.getElementById('curYear').value
+    var dateOfReport = document.getElementById('DateOfReport')
+    dateOfReport.value = curYear + '-'+curMonth     
+
+
+    function CreateReport() {
+        var date = document.getElementById('DateOfReport').value;
+        datAr = date.split('-');
+        num = Number(datAr[1])
+        yearnum = Number(datAr[0])
+        //var fileRef = document.getElementById('FileRef').value;
+        window.location.href = '/MyDepartment/ShowMyDepartTotalResult/GetData?month=' + num + '&year=' + yearnum;
+
+    }
+    function CreateExcelReport() {
+        var date = document.getElementById('DateOfReport').value;
+        datAr = date.split('-');
+        num = Number(datAr[1])
+        yearnum = Number(datAr[0])
+        //var fileRef = document.getElementById('FileRef').value;
+        window.location.href = '/MyDepartment/ShowMyDepartTotalResult/GetData?month=' + num + '&year=' + yearnum + '&uploadToExcel=true';
+    }
+
+    function SendNotification() {
+        var date = document.getElementById('DateOfReport').value;
+        datAr = date.split('-');
+        num = Number(datAr[1])
+        yearnum = Number(datAr[0])
+        //var fileRef = document.getElementById('FileRef').value;
+        window.location.href = '/MyDepartment/ShowMyDepartTotalResult/GetData?month=' + num + '&year=' + yearnum + '&uploadToExcel=false' + '&sendNotifications=true';
+    }
+
+    function SetDate(day) {
+        if (day < 10) {
+            day = '0' + day
+        }
+        var year = new Date().getFullYear();
+        var date = year + '-' + day;
+        return date;
+    }
+</script>
+
+

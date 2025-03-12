@@ -1,0 +1,18 @@
+{
+  "dependencies": {
+    "dhtmlx-gantt": "^9.0.3"
+  },
+  "name": "gant",
+  "version": "1.0.0",
+  "main": "index.html",
+  "scripts": {
+    "start": "lite-server"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "lite-server": "^2.6.1"
+  }
+}

@@ -13,6 +13,9 @@ using Aspose.Cells;
 using System.Data.SqlClient;
 using System.IO;
 using Microsoft.AspNetCore.Http;
+using System.Net;
+using System.Text;
+using System.Xml.Linq;
 
 namespace WebApplication5.Controllers
 {    
@@ -25,7 +28,7 @@ namespace WebApplication5.Controllers
         }
         public bool IsAdminUser()
         {
-            var winUs = GetLogin(HttpContext.User.Identity.Name);
+            var winUs = GetLogin(HttpContext.User.Identity.Name);            
             var userSet = context.Users.Where(x => x.Login == winUs).Include(x => x.Role);
             if (userSet.Count() > 0 && userSet.First().Role != null && userSet.First().Role.Name == "Admin")
             {
@@ -77,7 +80,31 @@ namespace WebApplication5.Controllers
             // {
             ViewData["prjAcr"] = prjAcr;
             ViewData["TeklaElemList"]=context.TeklaElemAmounts.Where(x => x.ProjectAcr == prjAcr).ToList();
+            var avevaPipeLengthSet = context.avevaPipeLengths.Where(x => x.ProjectAcr == prjAcr);
+            var pipeLength = avevaPipeLengthSet.GroupBy(x => x.Date).Select(g => new AvevaPipeLengthReport(g.Key, g.Sum(y => y.PipeLineLength))).ToList();
+            var lastDate = avevaPipeLengthSet.OrderBy(x => x.Date).Last().Date;
+            var avevaPipeLengthSetLastDate = avevaPipeLengthSet.Where(y => y.Date == lastDate).OrderBy(z=>z.PipeLineBore).ToList();
+            ViewData["AvevaPipeLengthReport"] = pipeLength;
+            ViewData["AvevaPipeLengthLastDate"] = avevaPipeLengthSetLastDate;
             return View(elemSet);
+            //}
+            //return View("/Views/Project/")
+        }
+
+        public ViewResult BoreDetailed(string prjAcr)
+        {
+            List<AvevaBoreReport> avevaBoreReports = new List<AvevaBoreReport>();
+            var boreGrouped = context.avevaPipeLengths.Where(x => x.ProjectAcr == prjAcr).GroupBy(x => x.PipeLineBore);
+            foreach (var boreGr in boreGrouped)
+            {
+                var boreGroupedDate= boreGr.GroupBy(x => x.Date);
+                foreach (var boreGrDate in boreGroupedDate)
+                {
+                    var totLength= boreGrDate.Sum(y => y.PipeLineLength)/1000;
+                    avevaBoreReports.Add(new AvevaBoreReport(boreGr.Key, boreGrDate.Key, totLength));
+                }
+            } 
+            return View(avevaBoreReports);
             //}
             //return View("/Views/Project/")
         }
@@ -93,6 +120,51 @@ namespace WebApplication5.Controllers
                 return line;
             }
             return string.Empty;
+        }
+
+        public string GetNewDocsFromPortal (string avevaAcr)
+        {
+            if (context.ProjectLinks.Count()>0)
+            {
+                var prjLink = context.ProjectLinks.First();
+
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(prjLink.RDPortalLink);
+                request.Credentials = new NetworkCredential("urpskug\\IlyinAL", "715zxtGJL");                
+                request.PreAuthenticate = true;
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                var encoding = ASCIIEncoding.ASCII;
+                using (var reader = new System.IO.StreamReader(response.GetResponseStream(), encoding))
+                {
+                    string responseText = reader.ReadToEnd();
+                    var doc = XDocument.Load(reader);
+                }
+            }
+            return string.Empty;
+        }
+    }
+    public class AvevaPipeLengthReport
+    {
+        public DateTime Date { get; set; }
+        public long TotalLength  { get; set; }
+
+        public AvevaPipeLengthReport(DateTime date, long totalLength)
+        {
+            Date = date;
+            TotalLength = totalLength;
+        }
+    }
+
+    public class AvevaBoreReport
+    {
+        public int Bore { get; set; }
+        public DateTime Date { get; set; }
+        public long TotalLength { get; set; }
+
+        public AvevaBoreReport(int bore, DateTime date, long totalLength)
+        {
+            Bore = bore;
+            Date = date;
+            TotalLength = totalLength;
         }
     }
 }

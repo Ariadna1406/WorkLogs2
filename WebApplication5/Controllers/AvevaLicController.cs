@@ -26,16 +26,17 @@ namespace WebApplication5.Controllers
 
         public IActionResult Index()
         {
-            if (TempData["SuccessMes"] != null)
-            {                
-                var successAr = TempData["SuccessMes"] as string[];
-                ViewData["SuccessMes"] = successAr.ToList();               
-            }
-            if (TempData["FailMes"] != null)
-            {               
-                var failAr = TempData["FailMes"] as string[];
-                ViewData["FailMes"] = failAr.ToList(); ;
-            }
+            ControllerTemplate.ExecuteCommonFunctions(TempData, ViewData, context, HttpContext);
+            //if (TempData["SuccessMes"] != null)
+            //{                
+            //    var successAr = TempData["SuccessMes"] as string[];
+            //    ViewData["SuccessMes"] = successAr.ToList();               
+            //}
+            //if (TempData["FailMes"] != null)
+            //{               
+            //    var failAr = TempData["FailMes"] as string[];
+            //    ViewData["FailMes"] = failAr.ToList(); ;
+            //}
             List<Licence> licenceList = new List<Licence>();
             var filterRows = TempData["FilterRows"] as bool?;
             if (filterRows.HasValue && filterRows.Value)

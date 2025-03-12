@@ -1,11 +1,25 @@
 ﻿@{ 
     bool isHeadOfDepartment = false;
+    bool isAdmin = false;
+    bool? isKSP = false;
+    bool isGip = false;
     string myDepart = string.Empty;
     var curUser = ViewData["curUser"] as User;
+    if (ViewData["IsHOD"] != null) { isHeadOfDepartment = (bool)ViewData["IsHOD"]; }
+    if (ViewData["IsAdmin"] != null) { isAdmin = (bool)ViewData["IsAdmin"]; }
+
+    isKSP = ViewData["isKSP"] as bool?;
+    bool? isBuh = ViewData["isBuh"] as bool?;
     if (curUser != null)
     {
-        isHeadOfDepartment = curUser.isHeadOfDepartment();        
+        if (curUser.IsGIP != null && curUser.IsGIP)
+        {
+            isGip = true;
+        }
     }
+    int curPage = 100;
+    if (ViewData["curPage"] != null) { curPage = (int)ViewData["curPage"]; }
+    var tcReqCount = ViewData["tcReqCount"] as string;
 }
 <!DOCTYPE html>
 <html>
@@ -28,52 +42,126 @@
     <script src="~/js/vue.js"></script>
 </head>
 <body>
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-        <div class="container">
-            <div class="navbar-collapse collapse">
+    <input id="curPage" type="text" hidden="hidden" value="@curPage">
 
-                <ul class="nav navbar-nav">
-                    <li><img src="~/images/logo-top.svg"></li>
-                    <!-- <li>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+
+        <!--  <div class="container">-->
+        <div style="padding-left:70px">
+        <div class="navbar-collapse collapse">
+
+            <ul class="nav navbar-nav">
+                <li><img src="~/images/logo-top.svg"></li>
+
+                <!-- <li>
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
         Действия
     </a>
     <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
         <li><a class="dropdown-item" href="#">Выдать задание в отдел</a></li>-->
-                    <li><a asp-area="" asp-controller="MyTasks" asp-action="Index">Мои задачи</a></li>
-                    <input id="isHeadOfDepart" value="@isHeadOfDepartment.ToString()" hidden>
-                    <li id="myDepart" class="hide"><a asp-area="" asp-controller="MyDepartment" asp-action="Index">Мой Отдел</a></li>
-                    <li><a asp-area="" asp-controller="WorkLogs" asp-action="Index">Трудозатраты</a></li>
+                <!--input id="isHeadOfDepart" value="@isHeadOfDepartment.ToString()" hidden-->
+                @if (isHeadOfDepartment)
+                {
+                    <li><a id="myDepartPlan" asp-area="" asp-controller="MyDepartment" asp-action="Index">Отдел (план)</a></li>
+                    <li><a id="myDepartFact" asp-area="" asp-controller="MyDepartment" asp-action="ShowMyDepartSetPercent">Отдел (факт)</a></li>
+                }
+                <li><a id="myTasks" asp-area="" asp-controller="MyTasks" asp-action="Index">Работы отдела</a></li>
+                <li><a id="myWorkLogs" asp-area="" asp-controller="WorkLogs" asp-action="Index">Трудозатраты</a></li>
+                @if (isGip)
+                {
+                    <li><a id="myTaskCompRegistry" asp-area="" asp-controller="ImportComp" asp-action="Index">ГИП</a></li>
+                }
+                else
+                {
+                <li><a id="myTaskCompRegistry" asp-area="" asp-controller="ImportComp" asp-action="Index">Реестр комплектов/работ</a></li>
+                }
+                <li><a id="myAbsenceRequest" asp-area="" asp-controller="Absence" asp-action="AbsenceRequest">Отсутствия</a></li>
+                @if (isAdmin || (isBuh.HasValue && isBuh.Value))
+                {
+                    <li><a id="ProjectShares" asp-area="" asp-controller="ProjectShares" asp-action="Index">Доли проектов</a></li>
+                }
 
-                    <!-- </ul>-->
-                    <li><a asp-area="" asp-controller="Project" asp-action="Index">Проекты</a></li>
-                    <li><a asp-area="" asp-controller="Instruct" asp-action="Index">Инструкции</a></li>
+                @if (isAdmin)
+                {
+                    <li><a id="ProjectShares" asp-area="" asp-controller="PlanTaskComp" asp-action="Index">План комплектов/работ</a></li>
+                }
+
+
+                <!-- </ul>-->
+                <!--<li><a asp-area="" asp-controller="Project" asp-action="Index">Проекты</a></li>-->
+                <!--<li><a asp-area="" asp-controller="Instruct" asp-action="Index">Инструкции</a></li>-->
+                @if (isAdmin || (isKSP.HasValue && isKSP.Value))
+                {
+                    <li>
+                        <a id="taskCompReqApply" asp-area="" asp-controller="ImportComp" asp-action="TaskCompReqApply">
+                            Реестр запросов
+                            @if (!string.IsNullOrEmpty(tcReqCount) && tcReqCount != "0")
+                            {
+                                <b style="color:red">(@tcReqCount)</b>
+                            }
+                        </a>
+                    </li>
                     <li><a asp-area="" asp-controller="Admin" asp-action="AdminMain">Администрирование</a></li>
-
-                </ul>
-                </div>
-            </div>
-        </nav>
-        <partial name="_CookieConsentPartial" />
-
-        <div class="container body-content">
-            @RenderBody()
-            <hr />
-            <footer>
-                <p>&copy; 2022 - АО "Нефтехимпроект"</p>
-            </footer>
+                }
+            </ul>
         </div>
+        </div>
+    </nav>
 
-        @RenderSection("Scripts", required: false)
-    <script>
-        var showHOD = document.getElementById("isHeadOfDepart");
-        var myDepart = document.getElementById("myDepart");
-        if (showHOD.value=="True") myDepart.setAttribute("class", "show");
-        else myDepart.setAttribute("class", "hide")
-    </script>
+<partial name="_CookieConsentPartial" />
+<div class="container body-content">
+    <br>
+    @RenderBody()
+    <hr />
+    <footer>
+        <p>&copy; 2024 - АО "Нефтехимпроект"</p>
+    </footer>
+</div>
 
-        <script src="~/lib/bootstrap-5.0.2-dist/js/popper.min.js"></script>
-        <script src="~/lib/bootstrap-5.0.2-dist/js/jquery.js"></script>
-        <script src="~/lib/bootstrap-5.0.2-dist/js/bootstrap.bundle.min.js"></script>
-    </body>
+@RenderSection("Scripts", required: false)
+<script>
+    //var showHOD = document.getElementById("isHeadOfDepart");
+    //var myDepart = document.getElementById("myDepart");
+    //if (showHOD.value=="True") myDepart.setAttribute("class", "show");
+    //else myDepart.setAttribute("class", "hide")
+</script>
+<script>
+    var curPage = document.getElementById("curPage");
+    highlightCurPage(curPage.value)
+    function highlightCurPage(curPage) {
+        elem = '';
+        switch (curPage) {
+            case '0':
+                elem = document.getElementById("myDepartPlan");
+                break;
+            case '1':
+                elem = document.getElementById("myDepartFact");
+                break;
+            case '2':
+                elem = document.getElementById("myTasks");
+                break;
+            case '3':
+                elem = document.getElementById("myWorkLogs");
+                break;
+            case '4':
+                elem = document.getElementById("myTaskCompRegistry");
+                break;
+            case '5':
+                elem = document.getElementById('PlanTaskComp');
+        }
+        if (elem != null && elem != '') highlightElemPage(elem);
+    }
+
+
+
+    function highlightElemPage(elem) {
+        elem.style.color = 'green';
+        elem.style.fontWeight = "bold";
+    }
+
+</script>
+<script src="~/lib/bootstrap-5.0.2-dist/js/popper.min.js"></script>
+<script src="~/lib/bootstrap-5.0.2-dist/js/jquery.js"></script>
+<script src="~/lib/bootstrap-5.0.2-dist/js/bootstrap.bundle.min.js"></script>
+</body>
     </html>

@@ -23,11 +23,11 @@
     "WebApplication5": {
       "commandName": "IIS",
       "workingDirectory": "D:\\Igor\\source\\Git\\WorkLogs2\\WebApplication5",
-      "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "http://localhost:5000"
+      "applicationUrl": "http://localhost:5000",
+      "jsWebView2Debugging": false
     },
     "newProfile1": {
       "commandName": "IIS",

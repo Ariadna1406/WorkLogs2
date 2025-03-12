@@ -1,0 +1,148 @@
+﻿@using WebApplication5.Models
+@model List<Absence>
+@{
+    int countRows = 0;
+    ViewData["Title"] = "Сводная таблица трудозатрат";
+    var userList = ViewData["UsersOfMyDepart"] as List<User>;
+    int curMonth = ViewBag.CurMonth;
+    int curYear = ViewBag.CurYear;
+    string curMonthStr = ViewBag.CurMonthStr;
+    //int curMonthInt = 0;
+    //if (string.IsNullOrEmpty(curMonth))
+    //{
+    //    curMonthInt = DateTime.Now.Month;
+    //}
+    //else
+    //{
+    //    var res = Int32.TryParse(curMonth, out curMonthInt);
+    //    if (!res)        
+    //    {
+    //        curMonthInt = DateTime.Now.Month;
+    //    }
+    //}
+    string taskCompName = string.Empty;
+    var wlAbusers = ViewBag.UserListWLAbusers as List<User>;
+}
+
+<br>
+<h3>Сводная таблица отсутствий @curMonthStr</h3>
+<br>
+<link rel="stylesheet" href="~/css/ProjectsIndex.css">
+
+@if (ViewData["SuccessMes"] != null)
+{
+    @Html.Partial("PartialInformation", ViewData["SuccessMes"]);
+}
+<input hidden="hidden" id="curMonth" value="@curMonth" />
+<input hidden="hidden" id="curYear" value="@curYear" />
+<p><input class="text-box single-line" data-val="true" id="DateOfReport" name="DateOfReport" type="month" value=""></p>
+
+<a class="btn btn-default" onclick="CreateAbsenceReportExcel()"><i></i>Отчёт за месяц (excel)</a>
+<table id="WorkLogsLast30" class="QualityBook" width="100%">
+    <tr style="padding: 10px 15px;">
+        <th width="10%" style="align-content: center; padding: 10px 15px;">Отдел</th>
+        <th width="40%" style="align-content: center; padding: 10px 15px;">ФИО сотрудника</th>
+        <th width="10%" style="align-content: center; padding: 10px 15px;">Дата начала отсутствия</th>
+        <th width="10%" style="align-content: center; padding: 10px 15px;">Дата окончания отсутствия</th>
+        <th width="10%" style="align-content: center; padding: 10px 15px;">Кол-во часов</th>
+        <th width="30%" style="align-content: center; padding: 10px 15px;">Причина отсутствия</th>
+
+    </tr>
+    <tr class="filter">
+        <td style="padding: 10px 15px; text-align: center">
+            <input type="text" id="DepartAcrSearch" oninput="FilterRows()" size="5"><br><span style="font-size:smaller;">(фильтр)</span>
+        </td>
+        <td style="padding: 10px 15px; text-align: center"><input type="text" id="ExecuterNameSearch" oninput="FilterRows()"><br><span style="font-size:smaller;">(фильтр)</span></td>
+
+    </tr>
+    @if (Model.Count() > 0)
+    {
+        @foreach (Absence absence in Model)
+        {
+<tr>
+    <td class="DepartAcr">@absence.User.Department.Acronym</td>
+    <td class="Executers">@absence.User.FullName</td>
+    <td style="color: green; font-weight: normal">@absence.StartDate.ToShortDateString()</td>
+    <td style="color: green; font-weight: normal">@absence.FinishDate?.ToShortDateString()</td>
+    <td>@absence.HourAmount</td>
+    <td>@absence.Reason.ReasonName   </td>
+</tr>
+
+        }
+    }
+    else
+    {
+        <br />
+        <p id="Message"><b> У вашего отдела нет поданных трудозатрат за последние 30 дней </b></p>
+    }
+
+
+</table>
+
+
+<script>
+    var d = document.getElementById('curMonth').value
+    var y = document.getElementById('curYear').value
+    var dateOfReport = document.getElementById('DateOfReport')
+    dateOfReport.value = SetDate(d, y)
+    console.log(d);
+   
+   
+    function CreateReport() {
+        var date = document.getElementById('DateOfReport').value;
+        datAr = date.split('-');
+        num = Number(datAr[1])
+        //var fileRef = document.getElementById('FileRef').value;
+        window.location.href = '/Admin/TotalWLResult/GetData?month=' + num;
+
+    }
+    function FilterRows() {
+
+        var departAcrSearch = document.getElementById('DepartAcrSearch').value;
+        var executerNameSearch = document.getElementById('ExecuterNameSearch').value;
+        var departAcrSet = document.getElementsByClassName('DepartAcr')
+        var executerSet = document.getElementsByClassName('Executers')
+        for (var i = 0; i < departAcrSearch.length; i++) {
+            departAcrSet[i].parentElement.hidden = false
+        }
+                
+        for (var i = 0; i < departAcrSet.length; i++) {
+            if (!(departAcrSet[i].textContent.toLowerCase().includes(departAcrSearch.toLowerCase()))) {
+                departAcrSet[i].parentElement.hidden = true
+            }
+            else {
+                if (!(executerSet[i].textContent.toLowerCase().includes(executerNameSearch.toLowerCase()))) {
+                    departAcrSet[i].parentElement.hidden = true
+                }
+                else {
+                    departAcrSet[i].parentElement.hidden = false
+                }
+            }
+        }     
+
+        
+    }
+
+
+    function CreateAbsenceReportExcel() {
+        var date = document.getElementById('DateOfReport').value;
+        datAr = date.split('-');
+        num = Number(datAr[1])
+        year = Number(datAr[0])
+        //var fileRef = document.getElementById('FileRef').value;
+        window.location.href = '/Admin/ExportAbsenceReportToExcel/GetData?month=' + num +'&year='+year;
+    }
+    function SetDate(day, year) {
+        if (day < 10) {
+            day = '0' + day
+        }
+        if (year == null) {
+            var year = new Date().getFullYear();
+        }
+        var date = year + '-' + day;
+        return date;
+    }
+    
+
+</script>
+

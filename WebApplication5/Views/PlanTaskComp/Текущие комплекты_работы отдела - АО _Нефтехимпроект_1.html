@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<!-- saved from url=(0032)http://localhost:89/PlanTaskComp -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Текущие комплекты/работы отдела - АО "Нефтехимпроект"</title>
+
+    
+        <link rel="stylesheet" href="./Текущие комплекты_работы отдела - АО _Нефтехимпроект__files/bootstrap.css">
+        <link rel="stylesheet" href="./Текущие комплекты_работы отдела - АО _Нефтехимпроект__files/site.css">
+
+    
+    
+    <script src="./Текущие комплекты_работы отдела - АО _Нефтехимпроект__files/vue.js.Без названия"></script>
+</head>
+<body>
+    <input id="curPage" type="text" hidden="hidden" value="2">
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <!--<div class="container">-->
+            <div class="navbar-menu">
+            <div class="navbar-collapse collapse">
+
+                <ul class="nav navbar-nav">
+                    <li><img src="./Текущие комплекты_работы отдела - АО _Нефтехимпроект__files/logo-top.svg"></li>
+                    <!-- <li>
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        Действия
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+        <li><a class="dropdown-item" href="#">Выдать задание в отдел</a></li>-->
+                    <!--input id="isHeadOfDepart" value="False" hidden-->
+                    <li><a id="myTasks" href="http://localhost:89/MyTasks" style="color: green; font-weight: bold;">Работы отдела</a></li>
+                    <li><a id="myWorkLogs" href="http://localhost:89/">Трудозатраты</a></li>
+                    <li><a id="myTaskCompRegistry" href="http://localhost:89/ImportComp">Реестр комплектов/работ</a></li>
+                    <li><a id="myAbsenceRequest" href="http://localhost:89/Absence/AbsenceRequest">Отсутствия</a></li>
+                        <li><a id="ProjectShares" href="http://localhost:89/ProjectShares">Доли проектов</a></li>
+
+                        <li><a id="ProjectShares" href="http://localhost:89/PlanTaskComp">План комплектов/работ</a></li>
+
+                    <!-- </ul>-->
+                    <!--<li><a asp-area="" asp-controller="Project" asp-action="Index">Проекты</a></li>-->
+                    <!--<li><a asp-area="" asp-controller="Instruct" asp-action="Index">Инструкции</a></li>-->
+                      
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    
+
+
+    <!--  <div class="container body-content">-->
+        <div class="mainPadding">
+        <br>       
+        
+
+    <!--<h3>&#x41C;&#x43E;&#x438; &#x43A;&#x43E;&#x43C;&#x43F;&#x43B;&#x435;&#x43A;&#x442;&#x44B;/&#x440;&#x430;&#x431;&#x43E;&#x442;&#x44B; &#x437;&#x430; &#x442;&#x435;&#x43A;&#x443;&#x449;&#x438;&#x439; &#x43C;&#x435;&#x441;&#x44F;&#x446;</h3>-->
+    <br>
+    
+    <input id="curFilter" type="text" hidden="hidden" value="1">
+    <link rel="stylesheet" href="./Текущие комплекты_работы отдела - АО _Нефтехимпроект__files/ProjectsIndex.css">
+
+    <table id="TaskCompControl" width="100%">
+        <tbody><tr><td width="400px">
+            <p><a id="filterAllTaskComp" href="http://localhost:89/MyTasks?showTaskCompCond=2">Работы отдела все</a></p>
+            <p><a id="filterTaskCompCurMonth" href="http://localhost:89/MyTasks?showTaskCompCond=1" style="color: blue; font-weight: bold;">Работы отдела за текущий месяц</a></p>
+
+        </td>
+        <td align="left">
+            <p>Всего работ <b style="color:red"> 434</b></p>
+            <p>
+                Всего работ по проектам:
+                    <b onclick="SetProjNum(0)" style="cursor: pointer;"> 0 - </b> <b style="color:red"> 8</b> <b> ;</b>
+                    <b onclick="SetProjNum(2642)" style="cursor: pointer;"> 2642 - </b> <b style="color:red"> 5</b> <b> ;</b>
+                    <b onclick="SetProjNum(2866)" style="cursor: pointer;"> 2866 - </b> <b style="color:red"> 4</b> <b> ;</b>
+                    <b onclick="SetProjNum(2873)" style="cursor: pointer;"> 2873 - </b> <b style="color:red"> 2</b> <b> ;</b>
+                    <b onclick="SetProjNum(2884)" style="cursor: pointer;"> 2884 - </b> <b style="color:red"> 2</b> <b> ;</b>
+                    <b onclick="SetProjNum(2907)" style="cursor: pointer;"> 2907 - </b> <b style="color:red"> 10</b> <b> ;</b>
+                    <b onclick="SetProjNum(2912)" style="cursor: pointer;"> 2912 - </b> <b style="color:red"> 2</b> <b> ;</b>
+                    <b onclick="SetProjNum(2914)" style="cursor: pointer;"> 2914 - </b> <b style="color:red"> 13</b> <b> ;</b>
+                    <b onclick="SetProjNum(2918)" style="cursor: pointer;"> 2918 - </b> <b style="color:red"> 3</b> <b> ;</b>
+                    <b onclick="SetProjNum(2921)" style="cursor: pointer;"> 2921 - </b> <b style="color:red"> 1</b> <b> ;</b>
+                    <b onclick="SetProjNum(2929)" style="cursor: pointer;"> 2929 - </b> <b style="color:red"> 24</b> <b> ;</b>
+                    <b onclick="SetProjNum(2931)" style="cursor: pointer;"> 2931 - </b> <b style="color:red"> 2</b> <b> ;</b>
+                    <b onclick="SetProjNum(2934)" style="cursor: pointer;"> 2934 - </b> <b style="color:red"> 1</b> <b> ;</b>
+                    <b onclick="SetProjNum(2937)" style="cursor: pointer;"> 2937 - </b> <b style="color:red"> 37</b> <b> ;</b>
+                    <b onclick="SetProjNum(2946)" style="cursor: pointer;"> 2946 - </b> <b style="color:red"> 93</b> <b> ;</b>
+                    <b onclick="SetProjNum(2947)" style="cursor: pointer;"> 2947 - </b> <b style="color:red"> 6</b> <b> ;</b>
+                    <b onclick="SetProjNum(2948)" style="cursor: pointer;"> 2948 - </b> <b style="color:red"> 7</b> <b> ;</b>
+                    <b onclick="SetProjNum(2955)" style="cursor: pointer;"> 2955 - </b> <b style="color:red"> 2</b> <b> ;</b>
+                    <b onclick="SetProjNum(2956)" style="cursor: pointer;"> 2956 - </b> <b style="color:red"> 6</b> <b> ;</b>
+                    <b onclick="SetProjNum(2958)" style="cursor: pointer;"> 2958 - </b> <b style="color:red"> 48</b> <b> ;</b>
+                    <b onclick="SetProjNum(2959)" style="cursor: pointer;"> 2959 - </b> <b style="color:red"> 12</b> <b> ;</b>
+                    <b onclick="SetProjNum(2960)" style="cursor: pointer;"> 2960 - </b> <b style="color:red"> 1</b> <b> ;</b>
+                    <b onclick="SetProjNum(2961)" style="cursor: pointer;"> 2961 - </b> <b style="color:red"> 1</b> <b> ;</b>
+                    <b onclick="SetProjNum(2963)" style="cursor: pointer;"> 2963 - </b> <b style="color:red"> 11</b> <b> ;</b>
+                    <b onclick="SetProjNum(2964)" style="cursor: pointer;"> 2964 - </b> <b style="color:red"> 1</b> <b> ;</b>
+                    <b onclick="SetProjNum(2965)" style="cursor: pointer;"> 2965 - </b> <b style="color:red"> 6</b> <b> ;</b>
+                    <b onclick="SetProjNum(2967)" style="cursor: pointer;"> 2967 - </b> <b style="color:red"> 3</b> <b> ;</b>
+                    <b onclick="SetProjNum(2968)" style="cursor: pointer;"> 2968 - </b> <b style="color:red"> 42</b> <b> ;</b>
+                    <b onclick="SetProjNum(2969)" style="cursor: pointer;"> 2969 - </b> <b style="color:red"> 1</b> <b> ;</b>
+                    <b onclick="SetProjNum(2970)" style="cursor: pointer;"> 2970 - </b> <b style="color:red"> 6</b> <b> ;</b>
+                    <b onclick="SetProjNum(2972)" style="cursor: pointer;"> 2972 - </b> <b style="color:red"> 2</b> <b> ;</b>
+                    <b onclick="SetProjNum(2974)" style="cursor: pointer;"> 2974 - </b> <b style="color:red"> 10</b> <b> ;</b>
+                    <b onclick="SetProjNum(2982)" style="cursor: pointer;"> 2982 - </b> <b style="color:red"> 1</b> <b> ;</b>
+                    <b onclick="SetProjNum(2996)" style="cursor: pointer;"> 2996 - </b> <b style="color:red"> 1</b> <b> ;</b>
+                    <b onclick="SetProjNum(3012)" style="cursor: pointer;"> 3012 - </b> <b style="color:red"> 4</b> <b> ;</b>
+                    <b onclick="SetProjNum(3014)" style="cursor: pointer;"> 3014 - </b> <b style="color:red"> 1</b> <b> ;</b>
+                    <b onclick="SetProjNum(3033)" style="cursor: pointer;"> 3033 - </b> <b style="color:red"> 1</b> <b> ;</b>
+                    <b onclick="SetProjNum(3034)" style="cursor: pointer;"> 3034 - </b> <b style="color:red"> 6</b> <b> ;</b>
+                    <b onclick="SetProjNum(3035)" style="cursor: pointer;"> 3035 - </b> <b style="color:red"> 1</b> <b> ;</b>
+                    <b onclick="SetProjNum(3036)" style="cursor: pointer;"> 3036 - </b> <b style="color:red"> 2</b> <b> ;</b>
+                    <b onclick="SetProjNum(3037)" style="cursor: pointer;"> 3037 - </b> <b style="color:red"> 1</b> <b> ;</b>
+                    <b onclick="SetProjNum(3038)" style="cursor: pointer;"> 3038 - </b> <b style="color:red"> 2</b> <b> ;</b>
+                    <b onclick="SetProjNum(3039)" style="cursor: pointer;"> 3039 - </b> <b style="color:red"> 1</b> <b> ;</b>
+                    <b onclick="SetProjNum(3040)" style="cursor: pointer;"> 3040 - </b> <b style="color:red"> 1</b> <b> ;</b>
+                    <b onclick="SetProjNum(3045)" style="cursor: pointer;"> 3045 - </b> <b style="color:red"> 1</b> <b> ;</b>
+                    <b onclick="SetProjNum(3049)" style="cursor: pointer;"> 3049 - </b> <b style="color:red"> 28</b> <b> ;</b>
+                    <b onclick="SetProjNum(3063)" style="cursor: pointer;"> 3063 - </b> <b style="color:red"> 1</b> <b> ;</b>
+                    <b onclick="SetProjNum(3083)" style="cursor: pointer;"> 3083 - </b> <b style="color:red"> 4</b> <b> ;</b>
+                    <b onclick="SetProjNum(3084)" style="cursor: pointer;"> 3084 - </b> <b style="color:red"> 3</b> <b> ;</b>
+                    <b onclick="SetProjNum(3086)" style="cursor: pointer;"> 3086 - </b> <b style="color:red"> 2</b> <b> ;</b>
+                    <b onclick="SetProjNum(И029)" style="cursor: pointer;"> И029 - </b> <b style="color:red"> 1</b> <b> ;</b>
+            </p>
+        </td>
+    </tr></tbody></table>
+
+    <!--<table id="WorkLogs" class="QualityBook" width="100%">-->
+
+    <div class="scroll-workScope">
+
+        <table id="WorkLogs" class="QualityBook">
+            <tbody id="WorkLogsTBody">
+                <tr class="header">
+                    <th style="padding: 5px 5px; text-align: center">Наименование проекта</th>
+                    <th style="padding: 10px 15px; text-align: center">Наименование работы</th>
+                    <th style="padding: 10px 15px; text-align: center">Дата начала</th>
+                    <th style="padding: 10px 15px; text-align: center">Дата окончания</th>
+                    <th style="padding: 10px 15px; text-align: center">Исполнители</th>
+                    <th style="padding: 5px 5px; text-align: center; width: 40px;" >%</th>                   
+
+                </tr>
+               
+
+                   <tr id="TaskComp-32" class="trDragElem" style="padding: 3px 3px; text-align: center" draggable="true" ondragstart="drag(event)">
+                        <td class="prjName">2600</td>
+                        <td class="taskName">0000-0000-0000-0000</td>
+                        <td class="startDate">02.02.2023</td>
+                        <td class="finishDate">20.02.2023</td>
+                        <td class="executers">
+<p>Нестеров Игорь Гидалевич</p>                       </td>
+                        <td class="curPercent">30</td>                        
+                        <td style="padding: 5px 1px 1px 1px; text-align: center">
+                            <p>
+
+                            </p>
+                        </td>
+                    </tr>                           
+                        <tr id="TaskComp-33" class="trDragElem" style="padding: 3px 3px; text-align: center" draggable="true" ondragstart="drag(event)">
+                        <td class="prjName">2600 </td>
+                        <td class="taskName">0000-0000-0000-0001</td>
+                        <td class="startDate">02.02.2023</td>
+                        <td class="finishDate">20.02.2023</td>
+                        <td class="executers">
+<p>Поваренков Денис Александрович</p>                     </td>
+                        <td class="curPercent">35</td>                       
+                        <td style="padding: 5px 1px 1px 1px; text-align: center">
+                            <p>
+
+                            </p>
+                        </td>
+                    </tr>
+                </tr>
+                <tr id="TaskComp-34" class="trDragElem" style="padding: 3px 3px; text-align: center" draggable="true" ondragstart="drag(event)">
+                <td class="prjName">2601 </td>
+                <td class="taskName">0000-0000-0000-0002</td>
+                <td class="startDate">02.02.2023</td>
+                <td class="finishDate">20.02.2023</td>
+                <td class="executers">
+<p>Сагитов Максим Валерьевич</p>                        </td>
+                <td class="curPercent">35</td>                
+                <td style="padding: 5px 1px 1px 1px; text-align: center">
+                    <p>
+
+                    </p>
+                </td>
+            </tr>
+            <tr id="TaskComp-35" class="trDragElem" style="padding: 3px 3px; text-align: center" draggable="true" ondragstart="drag(event)">
+                <td class="prjName">2602 </td>
+                <td class="taskName">0000-0000-0000-0003</td>
+                <td class="startDate">02.02.2023</td>
+                <td class="finishDate">20.02.2023</td>
+                <td class="executers">
+<p>Журавлёв Андрей Алексеевич</p>                        </td>
+                <td class="curPercent">35</td>                
+                <td style="padding: 5px 1px 1px 1px; text-align: center">
+                    <p>
+
+                    </p>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+    </div>
+
+    
+            <p><input type="text" id="hourAmount" size="5"><br><span style="font-size:smaller;">(кол-во часов)</p>
+    
+    
+
+        <p>План загрузки сотрудников</p>
+    <div class="el-scroll">
+        <table id="EmployeeLoad" border="1" onmouseup="MouseUp(event)" onmousedown="MouseDown(event)">
+            <tbody>
+                <tr class="header">
+                    <th style="padding: 5px 30px; text-align: center;">ФИО Сотрудника</th>
+                    <th style="padding: 10px 15px; text-align: center">Проект</th>
+                    <th style="padding: 10px 40px; text-align: center">Комплект/работа</th>
+                    <th style="padding: 10px 15px; text-align: center">Текущий %</th>
+                    <th style="padding: 10px 15px; text-align: center;">Загрузка</th>
+                    <th style="padding: 5px 5px; text-align: center; width: 1px ;">Норматив, ч/ч</th>
+                    <th style="padding: 10px 15px; text-align: center;">Действия</th>
+                    <th class="DayoffHead" style="padding: 10px 15px; text-align: center">01</th>
+                    <th style="padding: 10px 15px; text-align: center">02</th>
+                    <th style="padding: 10px 15px; text-align: center">03</th>
+                    <th style="padding: 10px 15px; text-align: center;">04</th>
+                    <th style="padding: 10px 15px; text-align: center;">05</th>
+                    <th style="padding: 10px 15px; text-align: center;">06</th>
+                    <th class="DayoffHead" style="padding: 10px 15px; text-align: center;">07</th>
+                    <th class="DayoffHead" style="padding: 10px 15px; text-align: center;">08</th>
+                    <th style="padding: 10px 15px; text-align: center;">09</th>
+                    <th style="padding: 10px 15px; text-align: center;">10</th>
+                    <th style="padding: 10px 15px; text-align: center;">11</th>
+                    <th style="padding: 10px 15px; text-align: center;">12</th>
+                    <th style="padding: 10px 15px; text-align: center;">13</th>
+                    <th class="DayoffHead" style="padding: 10px 15px; text-align: center;">14</th>
+                    <th class="DayoffHead" style="padding: 10px 15px; text-align: center;">15</th>
+                    <th style="padding: 10px 15px; text-align: center;">16</th>
+                    <th style="padding: 10px 15px; text-align: center">17</th>
+                    <th style="padding: 10px 15px; text-align: center">18</th>
+                    <th style="padding: 10px 15px; text-align: center">19</th>
+                    <th style="padding: 10px 15px; text-align: center;">20</th>
+                    <th class="DayoffHead" style="padding: 10px 15px; text-align: center;">21</th>
+                    <th class="DayoffHead" style="padding: 10px 15px; text-align: center;">22</th>
+                    <th style="padding: 10px 15px; text-align: center;">23</th>
+                    <th style="padding: 10px 15px; text-align: center;">24</th>
+                    <th style="padding: 10px 15px; text-align: center;">25</th>
+                    <th style="padding: 10px 15px; text-align: center;">26</th>
+                    <th style="padding: 10px 15px; text-align: center;">27</th>
+                    <th class="DayoffHead" >28</th>
+                    <th class="DayoffHead" style="padding: 10px 15px; text-align: center;">29</th>
+                    <th style="padding: 10px 15px; text-align: center;">30</th>
+                    <th style="padding: 10px 15px; text-align: center;">31</th>
+                    
+                 
+                    
+                </tr>
+             
+
+            <tr id="user-15" class="trDropZone">
+                <td class="User" ondragover="allowDrop(event)" ondrop="drop(event)" onclick="userClick(this)" style="padding:5px 5px;">Лопатин В. И.</td>
+                <td class="Project" style="padding: 5px 5px; height: 50px; text-align: center">                   
+                </td>
+                <td class="TaskComp">
+
+                </td>
+                <td class="CurPercent"></td>
+                <td class="TotalWorkHours" style="padding: 5px 1px 1px 1px; text-align: center"></td>
+                <td class="NormativeWorkHours" style="padding: 5px 1px 1px 1px; text-align: center">160</td>
+                <td class="DeleteRows"><button onclick="DeleteRow(this)">Удалить</button></td>
+
+               
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="dayoff"></td>
+                <td class="dayoff"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="dayoff"></td>
+                <td class="dayoff"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>                
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="dayoff"></td>
+                <td class="dayoff"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>                
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="dayoff"></td>
+                <td class="dayoff"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr id="user-16" class="trDropZone" >
+                <td class="User" ondragover="allowDrop(event)" ondrop="drop(event)" onclick="userClick(this)">Нестеров И.Г.</td>
+                <td class="Project">                   
+                </td>
+                <td class="TaskComp">
+
+                </td>
+                <td class="CurPercent"></td>
+                <td class="TotalWorkHours" ></td>
+                <td class="NormativeWorkHours" style="padding: 5px 1px 1px 1px; text-align: center">160</td>
+                <td class="DeleteRows"><button onclick="DeleteRow(this)">Удалить</button></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td>
+                <td class="day" onmousedown="BackgroundPaintAnyway(this, event)" onmouseenter="BackgroundPaint(this)" onmouseup="MouseUp()"></td> 
+            
+               
+            </tr>
+            </tbody>
+        </table>
+    </div>
+        <br>
+        <p><button onclick="SaveRow()">Сохранить</button></p>
+<style>
+    .navbar-menu{
+        padding-left: 50px;
+        padding-right: 50px;
+    }
+    .mainPadding{
+        padding-left: 50px;
+        padding-right: 50px;
+    }
+    .DayoffHead{
+padding: 10px 15px; 
+text-align: center;
+background-color: lightgray;
+    }
+
+.dayoff{
+    background-color: lightgray;
+}
+
+.el-scroll{
+    height: 300px;
+    width: 100%; 
+    overflow: hidden;
+    overflow-y: scroll; 
+    overflow-x: scroll; 
+    align-items: center;
+}
+
+    .scroll-workScope{
+    height: 200px;
+    width: 100%; 
+    overflow: hidden; 
+    overflow-y: scroll; 
+    align-items: center;
+    }
+     .User{
+        padding: 5px 20px;
+        text-align: center;         
+        font-size: small;     
+    }
+    .Project{
+        padding: 15px 15px;
+        height: 50px;
+        text-align: center;
+    }
+    .CurPercent{
+        padding: 5px 1px 1px 1px; 
+        text-align: center
+    }
+    .TaskComp{
+        padding: 5px 1px 1px 1px; 
+        text-align: center
+    }
+    .day{
+        text-align: center;                
+    }
+    
+    .TotalWorkHours{
+        padding: 5px 1px 1px 1px; 
+        text-align: center
+    }    
+   .NormativeWorkHours{
+        padding: 5px 1px 1px 1px; 
+        text-align: center
+   }
+   .DeleteRows{
+        padding: 5px 1px 1px 1px; 
+        text-align: center
+   }
+
+</style>
+   
+
+    <script>
+
+trDragZone = document.getElementsByClassName('trDragZone');
+trDropZone = document.getElementsByClassName('trDropZone');
+trDragElem = document.getElementsByClassName('trDragElem');
+
+trDropZone.ondragover=allowDrop;
+
+function allowDrop(event){
+    //console.log('3333')
+    event.preventDefault();
+}
+            
+let dragId;
+        function drag(event) {
+            dragId = event.target.id
+            console.log(dragId)
+          //  event.dataTransfer.setData('id', event.target.id)           
+            //console.log(event.dataTransfer)
+           // console.log(event)
+
+        }
+
+        function drop(event) {                     
+            var trDrop = event.target.parentNode            
+            var trDrag = document.getElementById(dragId);
+            var tbody = trDrop.parentNode; //document.getElementById("EmployeeLoadTbody")
+            var dragPrjName = trDrag.getElementsByClassName('prjName')[0].innerText
+            var dragTaskName = trDrag.getElementsByClassName('taskName')[0].innerText
+            var dragCurPercent = trDrag.getElementsByClassName('curPercent')[0].innerText
+            if (IsFirstRow(trDrop, trDrag)){
+                console.log(trDrop)
+                console.log(trDrag)
+                console.log(dragId) 
+                trDrop.children[1].innerText=dragPrjName
+                trDrop.children[2].innerText=dragTaskName
+                trDrop.children[3].innerText=dragCurPercent
+            }
+            else if (IsNewRow(trDrop, tbody, dragPrjName, dragTaskName)){
+
+                //alert('New Row')
+                
+                
+                var newTr = trDrop.cloneNode(true)
+                var rowSpanNum= GetCurRowSpan(trDrop)+1
+
+                trDrop.getElementsByClassName('User')[0].setAttribute('rowspan', rowSpanNum)
+                trDrop.getElementsByClassName('NormativeWorkHours')[0].setAttribute('rowspan', rowSpanNum)
+                trDrop.getElementsByClassName('TotalWorkHours')[0].setAttribute('rowspan', rowSpanNum)
+                
+                
+                newTr.children[1].innerText=dragPrjName
+                newTr.children[2].innerText=dragTaskName
+                newTr.children[3].innerText=dragCurPercent
+                newTr.getElementsByClassName('User')[0].remove()
+                newTr.getElementsByClassName('NormativeWorkHours')[0].remove()
+                newTr.getElementsByClassName('TotalWorkHours')[0].remove()
+                        
+                newTr.setAttribute('mainPart', trDrop.id)
+                tbody.append(newTr)
+                        
+            }  
+            else{
+                alert('Already have it')
+            }
+               
+        }
+
+        function GetCurRowSpan(trDrop){
+var RowSpanElem =  trDrop.getElementsByClassName('User')[0].attributes.rowspan
+if (RowSpanElem!=null){
+    var rowSpanElemNum = Number(RowSpanElem.value);
+    return rowSpanElemNum;
+}
+return 1;
+        }
+
+        function IsFirstRow(trDrop, trDrag){
+            if (trDrop.children[1].innerText==''){
+            if (trDrop.children[2].innerText==''){
+                return true;
+            }
+            }
+            return false;
+            }
+
+function IsNewRow(trDrop, tboby, dragPrjName, dragTaskName)
+{
+    //var rowspan = trDrop.getElementsByClassName('User')[0].attributes.rowspan.value 
+     
+    var trAr = [];
+    IsMentioned = false
+   
+    for (let i=0;i<tboby.rows.length;i++){
+        try{
+        var prjName = tboby.rows[i].getElementsByClassName('Project')[0].innerText
+        var taskName = tboby.rows[i].getElementsByClassName('TaskComp')[0].innerText
+        if (prjName==dragPrjName && taskName==dragTaskName){
+            return false;
+        }   
+    }
+    catch(ex){       
+        continue;
+    }    
+    }
+    return true;
+}
+
+
+    </script>
+
+        <hr>
+        <footer>
+            <p>© 2023 - АО "Нефтехимпроект"</p>
+        </footer>
+    </div>
+
+    
+    <script>
+                    //var showHOD = document.getElementById("isHeadOfDepart");
+                    //var myDepart = document.getElementById("myDepart");
+                    //if (showHOD.value=="True") myDepart.setAttribute("class", "show");
+                    //else myDepart.setAttribute("class", "hide")
+    </script>
+    <script>
+        var curPage = document.getElementById("curPage");
+        highlightCurPage(curPage.value)
+            function highlightCurPage(curPage) {
+                elem = '';
+            switch (curPage) {
+                case '0':
+                    elem = document.getElementById("myDepartPlan");                    
+                    break;
+                case '1':
+                    elem = document.getElementById("myDepartFact");                    
+                    break;
+                case '2':
+                    elem = document.getElementById("myTasks");
+                    break;
+                case '3':
+                    elem = document.getElementById("myWorkLogs");
+                    break;
+                case '4':
+                    elem = document.getElementById("myTaskCompRegistry");
+                    break;
+            }
+            if (elem!=null && elem!='') highlightElemPage(elem);           
+        }     
+var mark = 0;
+        function MouseDown(event){
+            if (event.which==1){ 
+                mark = 1
+                console.log("mark_" + mark)
+            }
+            else if(event.which==3){
+                mark = 3
+                console.log("mark_" + mark)
+            }
+            else{
+                mark = 0;
+            }            
+        }
+        function MouseUp(event){
+            mark = 0;
+            console.log("mark_" + mark)
+            
+        }
+
+        
+        function BackgroundPaint(elem) {
+            elemParent = elem.parentNode;
+            var userTd = elemParent.getElementsByClassName('User')[0]
+            if (userTd!=null){
+            if (userTd.style.background=='yellow' && mark==1){
+               Paint(elem)
+           
+        }
+        else if (userTd.style.background=='yellow' && mark==3){
+            elem.style.background = 'white'
+            elem.innerText=0;
+        }
+    }
+    else{ //Для строк, которые имеют главный элемент
+        var trMain = document.getElementById(elem.parentNode.id)
+        var userTd = trMain.getElementsByClassName('User')[0]
+            if (userTd!=null){
+            if (userTd.style.background=='yellow' && mark==1){
+               Paint(elem)
+            }
+            else if (userTd.style.background=='yellow' && mark==3){
+            elem.style.background = 'white'
+            elem.innerText=0;
+        }
+    }
+}
+        }
+
+    function BackgroundPaintAnyway(elem, event) {
+        mark = event.which;
+        elemParent = elem.parentNode;
+        var userTd = elemParent.getElementsByClassName('User')[0]
+        if (userTd!=null){       
+            if (userTd.style.background=='yellow'){     
+            if (mark==1){               
+                        Paint(elem);   
+                }             
+            }
+            if(mark==3){
+                    elem.style.background = 'white'
+                    elem.innerText=0;
+                   
+            }
+            Recalculate(elem);
+        }
+    
+        else{
+            var trMain = document.getElementById(elem.parentNode.id)
+            var userTd = trMain.getElementsByClassName('User')[0]
+            if (userTd!=null){
+                if (userTd.style.background=='yellow'){
+                if (mark==1)
+                    Paint(elem)
+                }
+                else if(mark==3){
+                    elem.style.background = 'white'
+                    elem.innerText=0;
+                    Recalculate(elem);
+                }
+            }
+        }
+        
+}
+
+    function Paint(elem){
+        elemParent=elem.parentNode;
+        var hourAmount = Number(document.getElementById('hourAmount').value)            
+                elem.style.background = 'lightblue'
+                if (hourAmount==0){
+                    elem.innerText=8;    
+                }
+                else{
+                elem.innerText=hourAmount;
+                }         
+                               
+           Recalculate(elemParent);
+            }
+
+
+        function Recalculate(elem){
+            let elemMainPart;
+            try{
+                if (elem.attributes.mainpart!=null)
+            var mainPartVal=elem.attributes.mainpart.value
+            }
+            catch(ex){}
+            var IsMainPart = true
+
+            if (mainPartVal!=null) IsMainPart=false
+            else mainPartVal = elem.id
+
+            var arrDays = []
+            if (IsMainPart){
+                elemMainPart = elem;            
+            elems = elem.getElementsByClassName('day')
+            for (var i=0; i<elems.length; i++){
+                arrDays.push(elems[i])
+                }
+
+                var queryStr = '[mainpart="' +elem.id +'"]'
+                var elemSet = document.querySelectorAll(queryStr);
+                for (var i=0; i<elemSet.length; i++){ //Добавляем в массив дочерние элементы
+                var daySet= elemSet[i].getElementsByClassName("day");
+                    for (var i=0; i<daySet.length; i++){
+                        arrDays.push(daySet[i])
+                    }
+                }
+            }
+            else{                
+                var queryStr = '[mainpart="' +mainPartVal +'"]'
+                var elemSet = document.querySelectorAll(queryStr);
+                elemMainPart = document.getElementById(mainPartVal)
+
+                for (var i=0; i<elemSet.length; i++){ //Добавляем в массив дочерние элементы
+                var daySet= elemSet[i].getElementsByClassName("day");
+                    for (var j=0; j<daySet.length; j++){
+                        arrDays.push(daySet[j])
+                    }
+                }
+
+                 //Добавляем в массив главный элемент
+                var daySet= elemMainPart.getElementsByClassName("day");
+                    for (var i=0; i<daySet.length; i++){
+                        arrDays.push(daySet[i])
+                    }
+                
+            }     
+            //Блок суммирования       
+            sum = 0;
+            for (let i=0;i<arrDays.length;i++)
+            {
+                element= arrDays[i]
+                sum+= Number(element.innerText);
+            }           
+            
+            elemMainPart.getElementsByClassName('TotalWorkHours')[0].innerText = sum;
+        }
+
+        function highlightElemPage(elem) {
+            elem.style.color = 'green';
+            elem.style.fontWeight = "bold";
+        }
+
+        function userClick(elem){
+            console.log(elem)
+            
+            if (elem.style.background == 'yellow') {
+                elem.style.background = 'white'                
+            }
+            else {
+                elem.style.background = 'yellow';                               
+            }   
+        }
+
+        function DeleteRow(elem){
+            var tr = elem.parentNode.parentNode
+            var tbody = tr.parentNode;
+            userTr = tbody.getElementsByClassName('User');
+            if (userTr.length>0){ 
+                var CurRowSpan = userTr[0].attributes.rowspan;
+            var rowSpanNum =Number(CurRowSpan.value);
+            if (rowSpanNum==1){
+                tr.getElementsByClassName('Project')[0].innerText=''
+                tr.getElementsByClassName('TaskComp')[0].innerText=''
+                tr.getElementsByClassName('CurPercent')[0].innerText=''
+            }           
+            if (rowSpanNum>1){                
+
+                mainPartVal=tr.id
+                var queryStr = '[mainpart="' +mainPartVal +'"]'
+                var elemSet = document.querySelectorAll(queryStr);
+                var trForDel = elemSet[0] 
+                tr.getElementsByClassName('Project')[0].innerText = trForDel.getElementsByClassName('Project')[0].innerText
+                tr.getElementsByClassName('TaskComp')[0].innerText = trForDel.getElementsByClassName('TaskComp')[0].innerText
+                tr.getElementsByClassName('CurPercent')[0].innerText = trForDel.getElementsByClassName('CurPercent')[0].innerText
+                CurRowSpan.value = rowSpanNum - 1
+                CopyDays(tr, trForDel)
+                trForDel.remove();
+                Recalculate(tr)
+            }
+
+        }
+        else{ // Удаляется неглавный элемент
+                tr.remove()
+                Recalculate(elem)
+            }       
+            console.log(elem)
+        
+        }
+        
+        function CopyDays(tr, trForDel){
+            var daysForDel = trForDel.getElementsByClassName('day');
+            var days = tr.getElementsByClassName('day');
+            for (let i=0;i<days.length;i++){
+                days[i].innerText = daysForDel[i].innerText;
+                days[i].style.background=daysForDel[i].style.background;
+            }
+        }
+
+        document.onkeydown = keydown;
+        document.onkeyup = keyup;
+function keydown(evt) {
+    if (!evt) evt = event;
+    if (evt.altKey) {
+        mark=3;
+        console.log('alt_3');
+        }
+    };
+
+    function keyup(evt) {
+    if (!evt) evt = event;
+    if (evt.key=='Alt' ||evt.key == 'Control') {
+        mark=0;
+        console.log('alt_0');
+        }
+    };
+
+    </script>
+                <script src="./Текущие комплекты_работы отдела - АО _Нефтехимпроект__files/popper.min.js.Без названия"></script>
+    <script src="./Текущие комплекты_работы отдела - АО _Нефтехимпроект__files/jquery.js.Без названия"></script>
+    <script src="./Текущие комплекты_работы отдела - АО _Нефтехимпроект__files/bootstrap.bundle.min.js.Без названия"></script>
+
+    
+</body></html>

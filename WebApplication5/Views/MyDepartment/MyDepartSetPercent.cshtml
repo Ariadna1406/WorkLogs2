@@ -1,0 +1,344 @@
+﻿@using WebApplication5.Models
+@model List<TaskComp>
+@{
+    Layout = @"..\ImportComp\_LayoutAlignLeft.cshtml";
+    var taskCompGroupedByProject = Model.GroupBy(x => x.ProjectNumber).OrderBy(x=>x.Key);
+    int countRows = 0;
+    ViewData["Title"] = "Задачи моего отдела";
+    var userList = ViewData["UsersOfMyDepart"] as List<User>;
+    string depart = string.Empty;
+    if (Model.Count > 0)
+    {
+        var taskCompDef = Model.First();
+        depart = taskCompDef.Department;
+    }
+
+    string showTaskCompCond = ViewData["ShowTaskCompCond"] as string;
+    string header = string.Empty;
+    if (showTaskCompCond == "0") { header = "Все незавершённые задачи моего отдела"; }
+    else if (showTaskCompCond == "1") { header = "Все задачи моего отдела"; }
+}
+<!--<h3>@header</h3>-->
+<link rel="stylesheet" href="~/css/ProjectsIndex.css">
+<p><a class="btn btn-default" asp-controller="MyDepartment" asp-action="ShowMyDepartWorkLogs" asp-route-department="@depart"><i></i>Отчёт: Трудозатраты за месяц</a></p>
+<p><a class="btn btn-default" asp-controller="MyDepartment" asp-action="ShowMyDepartTotalResult" asp-route-department="@depart"><i></i>Отчёт: Трудозатраты за месяц (сводная)</a></p>
+@if (ViewData["SuccessMes"] != null)
+{
+    @Html.Partial("PartialInformation", ViewData["SuccessMes"]);
+}
+<p>
+    * Примечание: Необязательно после каждого ввода процента по комплекту нажимать кнопку "Установить процент". Достаточно проставить проценты по всем строчкам в области
+    видимости и один раз нажать любою кнопку "Установить процент", проценты будут установлены для всех работ/комплектов.
+</p>
+<table id="TaskCompControl" width="100%">
+    <td width="500px">
+        <p>
+            <a id="filterAllTaskComp" asp-controller="MyDepartment" asp-action="ShowMyDepartSetPercent" asp-route-showTaskCompCond="1"><i></i>Работы отдела все</a>
+        </p>
+        <p>
+            <a id="filterAllNotCompletedTaskComp" asp-controller="MyDepartment" asp-action="ShowMyDepartSetPercent" asp-route-showTaskCompCond="0"><i></i>Незавершённые работы отдела</a>
+        </p>
+
+        <input id="curFilter" type="text" hidden="hidden" value="@showTaskCompCond">
+    </td>
+    <td align="left">
+        <p>Всего работ <b style="color:red"> @Model.Count.ToString()</b></p>
+        <p>
+            Всего работ по проектам:
+            @foreach (var taskCompGr in taskCompGroupedByProject)
+            {
+                <b onclick="SetProjNum(@taskCompGr.Key)"  style="cursor: pointer;"> @taskCompGr.Key - </b> <b style="color:red"> @taskCompGr.Count()</b> <b> ;</b>
+
+            }
+        </p>
+    </td>
+</table>
+
+
+<table id="WorkLogs" class="QualityBook" width="100%">
+    <tbody id="WorkLogsTBody">
+        <tr class="header">
+            <th style="padding: 5px 5px; text-align: center">Наименование проекта</th>
+            <th style="padding: 10px 15px; text-align: center">Наименование работы</th>
+            <th style="padding: 10px 15px; text-align: center">Дата начала</th>
+            <th style="padding: 10px 15px; text-align: center">Дата окончания</th>
+            <th style="padding: 10px 15px; text-align: center">Исполнители</th>
+            <th style="padding: 10px 15px; text-align: center">Плановые трудозатраты</th>
+            <th style="padding: 10px 15px; text-align: center">Фактические трудозатраты</th>
+            <th style="padding: 10px 15px; text-align: center">Процент выполнения</th>
+            <th style="padding: 10px 15px; text-align: center">Возможные действия</th>
+        </tr>
+        <tr class="header">
+            <td style="padding: 10px 15px; text-align: center"><input type="text" id="PrjNameSearch" oninput="FilterRows()" size="5px"><br><span style="font-size:smaller;">(фильтр)</span></td>
+            <td style="padding: 10px 15px; text-align: center"><input type="text" id="TaskNameSearch" oninput="FilterRows()"><br><span style="font-size:smaller;">(фильтр)</span></td>
+            <td style="padding: 10px 15px; text-align: center">
+                <input type="date" id="StartDateSearch" oninput="FilterRows()"><br>
+                <span style="font-size:smaller;">ОТ (фильтр)</span><br>
+                <a class="btn btn-close" onclick="SortAscen('startDate')" id="startDateAscen"><i></i>По возрастанию</a><br>
+                <a class="btn btn-dark" onclick="SortDescen('startDate')" id="startDateDescen"><i></i>По убыванию</a>
+            </td>
+
+            <td style="padding: 10px 15px; text-align: center">
+                <input type="date" id="FinishDateSearch" oninput="FilterRows()"><br>
+                <span style="font-size:smaller;">ДО (фильтр)</span><br>
+                <a class="btn btn-close" onclick="SortAscen('finishDate')" id="finishDateAscen"><i></i>По возрастанию</a><br>
+                <a class="btn btn-dark" onclick="SortDescen('finishDate')" id="finishDateDescen"><i></i>По убыванию</a>
+            </td>
+            <td style="padding: 10px 50px; text-align: center"><input type="text" id="RsrcSearch" oninput="FilterRows()"><br><span style="font-size:smaller;">(фильтр)</span></td>
+            <td style="padding: 10px 15px; text-align: center"></td>
+            <td></td>
+            <td></td>
+            <td style="padding: 10px 15px; text-align: center">
+                <p><a class="btn btn-danger" id="filterTaskCompCurMonth" asp-area="" asp-controller="ImportComp" asp-action="TaskCompRequest">Сообщить<br> об отсутствии комплекта</a></p>
+            </td>
+            
+        </tr>
+        @foreach (var taskComp in Model)
+        {
+            string executersStr = string.Empty;
+            var executers = taskComp.Executers;
+            List<string> executersAr = new List<string>();
+            if (!string.IsNullOrEmpty(executers))
+            {
+                executersAr.AddRange(taskComp.Executers.Split(';'));               
+            }
+            <tr class="realData">
+                <td class="prjName" style="text-align: center">@taskComp.ProjectNumber </td>
+                <td class="taskName" style="text-align: center">
+                    @taskComp.TaskCompName
+                    <input type="hidden" id="TaskComp" name="TaskComp" value="@taskComp.Id" />
+                </td>
+                <td class="startDate" style="text-align: center">@taskComp.StartPlanDate?.ToShortDateString()</td>
+                <td class="finishDate" style="text-align: center">@taskComp.FinishPlanDate?.ToShortDateString()</td>
+                <td id="rsrc-@taskComp.Id.ToString()" class="rsrc" style="text-align: center">@foreach (var exec in executersAr) {<p>@exec</p>}</td>
+                <td style="text-align: center">@taskComp.PlanWorkLog</td>
+                <td style="text-align: center">@taskComp.FactWorkLog</td>
+                <td style="text-align: center">@taskComp.CompletePercent</td>
+                <td style="text-align: center">
+
+                    <input type="text" size="5" name="curPercent" id="curPercent-@taskComp.Id" value="" />
+                    <!--<input type="submit" value="Установить процент" onclick="SetPercent(@taskComp.Id)">-->
+                    <input class="btn btn-default" style="color:green; " type="submit" value="%" onclick="SetPercent(@taskComp.Id)">
+
+                </td>
+            </tr>
+        }
+
+    </tbody>
+</table>
+<script>
+    function SetPercent(taskCompId) {
+        var curPercentSet = document.getElementsByName('curPercent');
+        let str = ''
+        for (let i = 0; i < curPercentSet.length; i++) {
+            var curPer = curPercentSet[i].value
+            if (curPer != '') {
+                strTemp = curPercentSet[i].id
+                strTemp = 'taskCompDict[' + strTemp.replace('curPercent-', '') + ']=' + curPer
+                str += strTemp + '&'
+
+            }
+        }
+        str = str.substring(0, str.length - 1);
+        window.location.href = '/MyDepartment/SetMultiplePercent/GetData?' + str;
+        //console.log(str)
+        //var curPercent = document.getElementById('curPercent-' + taskCompId).value;
+        //var rsrcId = 'rsrc-' + taskCompId;
+        //var rsrcElem = document.getElementById(rsrcId);
+        //, string taskCompId
+        //taskCompDict[taskCompId]=curPercent
+        //window.location.href = '/MyDepartment/SetPercent/GetData?curPercent=' + curPercent + '&taskCompId=' + taskCompId;
+        //Home/GetData?items[germany]=berlin&items[france]=paris&items[spain]=madrid
+    }
+
+    function FilterRows() {
+
+        var rsrcForSearch = document.getElementById('RsrcSearch').value;
+        var taskForSearch = document.getElementById('TaskNameSearch').value;
+        var prjForSearch = document.getElementById('PrjNameSearch').value;
+        var startDateSearch = new Date(document.getElementById('StartDateSearch').value);
+        var finishDateSearch = new Date(document.getElementById('FinishDateSearch').value);
+        var rsrcSet = document.getElementsByClassName('rsrc')
+        var taskSet = document.getElementsByClassName('taskName')
+        var prjSet = document.getElementsByClassName('prjName')
+        var startDateSet = document.getElementsByClassName('startDate')
+        var finishDateSet = document.getElementsByClassName('finishDate')
+        for (var i = 0; i < startDateSet.length; i++) {
+            startDateSet[i].parentElement.hidden = false
+        }
+        for (var i = 0; i < rsrcSet.length; i++) {
+            if (!rsrcSet[i].textContent.includes(rsrcForSearch)) {
+                rsrcSet[i].parentElement.hidden = true
+            }
+            else {
+                rsrcSet[i].parentElement.hidden = false
+            }
+        }
+
+        for (var i = 0; i < taskSet.length; i++) {
+            if (!(taskSet[i].textContent.includes(taskForSearch) && taskSet[i].parentElement.hidden == false)) {
+                taskSet[i].parentElement.hidden = true
+            }
+            else {
+                taskSet[i].parentElement.hidden = false
+            }
+        }
+
+        for (var i = 0; i < prjSet.length; i++) {
+            if (!(prjSet[i].textContent.includes(prjForSearch) && prjSet[i].parentElement.hidden == false)) {
+                prjSet[i].parentElement.hidden = true
+            }
+            else {
+                prjSet[i].parentElement.hidden = false
+            }
+        }
+
+        if (startDateSearch.getDate() > 0) {
+            for (var i = 0; i < startDateSet.length; i++) {
+                var daAr = startDateSet[i].textContent.replace('.', '-').replace('.', '-').split('-')
+                var daStr = daAr[2] + '-' + daAr[1] + '-' + daAr[0]
+                var da = new Date(daStr)
+                if (startDateSearch < da && startDateSet[i].parentElement.hidden == false) {
+                    // alert("true --- " + i)
+                    startDateSet[i].parentElement.hidden = false
+                }
+                else {
+                    //  alert("false --- " + i)
+                    startDateSet[i].parentElement.hidden = true
+                }
+            }
+        }
+
+        if (finishDateSearch.getDate() > 0) {
+            for (var i = 0; i < finishDateSet.length; i++) {
+                var dateAr = finishDateSet[i].textContent.replace('.', '-').replace('.', '-').split('-')
+                var dateStr = dateAr[2] + '-' + dateAr[1] + '-' + dateAr[0]
+                var dateDa = new Date(dateStr)
+                if (dateDa < finishDateSearch && finishDateSet[i].parentElement.hidden == false) {
+                    finishDateSet[i].parentElement.hidden = false
+                }
+                else {
+                    finishDateSet[i].parentElement.hidden = true
+                }
+            }
+        }
+    }
+
+    function SortAscen(nameClass) {
+        highlightSort(nameClass, 0)
+        PElems = []
+        dateSetSorted = []
+        wl = document.getElementById('WorkLogsTBody')
+        var dateSet = document.getElementsByClassName(nameClass)
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSetSorted.push(dateSet[i])
+        }
+        dateSetSorted.sort(function (a, b) {
+            return getDate(a) - getDate(b)
+        })
+
+        for (var i = 0; i < dateSetSorted.length; i++) {
+            PElems.push(dateSetSorted[i].parentElement)
+        }
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSet[i].parentElement.remove();
+        }
+        for (var i = 0; i < PElems.length; i++) {
+            wl.appendChild(PElems[i])
+        }
+    }
+
+    function SortDescen(nameClass) {
+        highlightSort(nameClass, 1)
+        PElems = []
+        dateSetSorted = []
+        wl = document.getElementById('WorkLogsTBody')
+        var dateSet = document.getElementsByClassName(nameClass)
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSetSorted.push(dateSet[i])
+        }
+        dateSetSorted.sort(function (a, b) {
+            return getDate(b) - getDate(a)
+        })
+
+        for (var i = 0; i < dateSetSorted.length; i++) {
+            PElems.push(dateSetSorted[i].parentElement)
+        }
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSet[i].parentElement.remove();
+        }
+        for (var i = 0; i < PElems.length; i++) {
+            wl.appendChild(PElems[i])
+        }
+    }
+
+    function highlightSort(nameClass, cond) {
+        startDateAscen = document.getElementById('startDateAscen')
+        startDateDescen = document.getElementById('startDateDescen')
+        finishDateAscen = document.getElementById('finishDateAscen')
+        finishDateDescen = document.getElementById('finishDateDescen')
+        if (nameClass == 'startDate' && cond == 1) {
+            highlightElemFilter(startDateDescen);
+            arr = [startDateAscen, finishDateAscen, finishDateDescen]
+            UnhighLightElem(arr)
+        }
+        else if (nameClass == 'startDate' && cond == 0) {
+            highlightElemFilter(startDateAscen);
+            arr = [startDateDescen, finishDateAscen, finishDateDescen]
+            UnhighLightElem(arr)
+        }
+        else if (nameClass == 'finishDate' && cond == 1) {
+            highlightElemFilter(finishDateDescen);
+            arr = [startDateDescen, startDateAscen, finishDateAscen]
+            UnhighLightElem(arr)
+        }
+        else if (nameClass == 'finishDate' && cond == 0) {
+            highlightElemFilter(finishDateAscen);
+            arr = [startDateDescen, startDateAscen, finishDateDescen]
+            UnhighLightElem(arr)
+        }
+
+    }
+
+    function UnhighLightElem(elem) {
+        for (let i = 0; i < elem.length; i++) {
+            elem[i].style.fontWeight = 'normal';
+            elem[i].style.color = ''
+        }
+    }
+
+    function getDate(a) {
+        var dateAr = a.textContent.replace('.', '-').replace('.', '-').split('-')
+        var dateStr = dateAr[2] + '-' + dateAr[1] + '-' + dateAr[0]
+        return new Date(dateStr)
+    }
+
+    var curFilter = document.getElementById("curFilter");
+    highlightCurFilter(curFilter.value)
+
+    function highlightCurFilter(curPage) {
+        elem = '';
+        switch (curPage) {
+            case '0':
+                elem = document.getElementById("filterAllNotCompletedTaskComp");
+                break;
+            case '1':
+                elem = document.getElementById("filterAllTaskComp");
+                break;
+
+        }
+        if (elem != null && elem != '') highlightElemFilter(elem);
+    }
+
+    function highlightElemFilter(elem) {
+        elem.style.color = 'blue';
+        elem.style.fontWeight = "bold";
+    }
+
+    function SetProjNum(ProjNum) {
+        var prjForSearch = document.getElementById('PrjNameSearch');
+        prjForSearch.value = ProjNum;
+        FilterRows()
+    }
+
+</script>

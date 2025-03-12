@@ -1,0 +1,350 @@
+﻿
+@model Absence
+@{
+
+    ViewData["Title"] = "Сообщить об отсутствии";
+
+    User curUser = ViewData["CurUser"] as User;
+    var absenseThisMonthAr = ViewBag.AbsenseCol as List<Absence>;
+    var userSubs = ViewBag.UserSubs as List<User>;
+    string startDate = ViewBag.StartDate; string finishDate = ViewBag.FinishDate; string reasonOfAbsence = ViewBag.ReasonOfAbsence; string comment = ViewBag.Comment;
+    string monitorMonth = ViewBag.MonitorMonth.ToString();
+    int count = 0;
+    string inputAnotherUserAb = ViewBag.InputAnotherUserWL as string;
+    string userSubsSel = ViewData["UserSubsSelected"] as string;
+    //if (ViewData["IsShowingBalance"]!=null) isShowingBalance = ViewData["IsShowingBalance"] as bool?;
+
+    var absenceReasonsList = ViewBag.AbsenceReason as IQueryable<AbsenceReason>;
+    var monitorMonthStr = ViewBag.MonitorMonthStr as string;
+
+}
+
+<h3>Сообщить об отсутствии</h3>
+<link rel="stylesheet" href="~/css/WorkLogsIndex.css">
+@Html.Partial("PartialInformation", ViewData["SuccessMes"])
+@Html.Partial("PartialError", ViewData["FailMes"])
+
+@if (userSubs != null && userSubs.Count() > 0)
+{
+
+    <p>
+        Сообщить об отсутствии за пользователя: <input type="checkbox" id="InputAnotherUserAb" onchange="ShowInputAnotherUserWLOnClick()" value="@inputAnotherUserAb" />
+        <input list="userSubsList" name="userSubs" id="UserSubs" value="@userSubsSel" autocomplete="off" size="40" onchange="onUserSubSel()" hidden="hidden">
+
+        <datalist id="userSubsList">
+            @foreach (var userSub in userSubs)
+            {
+                <option id="@userSub.Id">@userSub.FullName</option>
+            }
+        </datalist>
+    </p>
+}
+
+<table id="WorkLogs" class="QualityBook" width="100%">
+    <form asp-controller="Absence" asp-action="CreateAbsence" method="post" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly"></div>
+    <tr>
+        <td>
+            <div class="editor-label">
+                Дата начала отсутствия:
+            </div>
+            <input id="onlyOneDayAbsenceCheckBox" type="checkbox" onchange="onlyOneDayAbsence()" /> один день
+            <p id="hourAmountP" hidden="hidden"><input id="hourAmountCheckBox" type="checkbox" onchange="showHourAmountField()" /> указать кол-во часов</p>
+        </td>
+        <td>
+            <div class="editor-field">
+                <input class="text-box single-line" data-val="true" id="StartDateAbsence" name="startDateAbsence" type="date" value="@startDate">
+            </div>
+            <div id="hourAmountValue" class="editor-field" hidden="hidden" style="padding:5px">
+                <input class="text-box single-line" data-val="true" id="hourAmountField" name="hourAmount" type="text" size="3">
+                Кол-во часов отсутствия
+            </div>
+        </td>
+    </tr>
+
+    <tr>
+        <td>Дата окончания отсутствия:</td>
+        <td>
+            <div class="editor-field">
+                <input class="text-box single-line" data-val="true" id="FinishDateAbsence" name="finishDateAbsence" type="date" value="@finishDate">
+            </div>
+        </td>
+    </tr>
+
+    <tr>
+        <td>Причина отсутствия:</td>
+        <td>
+            <input list="ReasonOfAbsenceList" name="reasonOfAbsence" id="ReasonOfAbsenceSelected" value="@reasonOfAbsence" autocomplete="off">
+            <datalist id="ReasonOfAbsenceList">
+                @foreach (var absenceReason in absenceReasonsList)
+                {
+                    <option>@absenceReason.ReasonName</option>
+                }
+            </datalist>
+
+        </td>
+    </tr>
+
+    <tr>
+        <td>Комментарий:</td>
+        <td>
+            <textarea rows="3" cols="68" name="comment" id="comment">@comment</textarea>
+            (Необязательное поле)
+        </td>
+    </tr>
+    <tr><td><input type="text" name="userSubsHidden" id="userSubsHidden" value="@userSubsSel" hidden="hidden" /></td></tr>
+
+    <tr>
+
+        <td>
+            <input type="submit" value="Сохранить" onclick="onclickProj()">
+        </td>
+    </tr>
+    </form>
+</table>
+
+<br>
+<p>Месяц мониторинга отсутствий</p>
+<input hidden="hidden" id="curMonth" value="@monitorMonth" />
+<p>
+    <input class="text-box single-line" data-val="true" id="MonthOfReport" name="MonthOfReport" type="month" value="@monitorMonthStr">
+    <a class="btn btn-default" onclick="OnSelMonth()"><i></i> Показать </a>
+</p>
+@if (!string.IsNullOrEmpty(userSubsSel)) {
+<h2 id="userSubSelHeader">Показан отчёт по пользователю: <b style="color:red" id="userSubSel">@userSubsSel</b></h2>
+}
+
+<table class="QualityBook" width="100%">
+    <tr>
+        <td width="300px" style="font-size:16px; color:brown">Всего часов отсутвий за текущий месяц:</td>
+        <td style="font-size:16px; color:brown; font-weight:bold ">@ViewBag.TotalHoursAbsence</td>
+    </tr>
+
+    <tr>
+    </tr>
+</table>
+<br>
+<table id="WorkLogsLast30" class="QualityBook" width="100%">
+    <tr style="padding: 10px 15px;">
+        <th width="5%" style="align-content: center; padding: 10px 15px;">№</th>
+        <th width="20%" style="align-content: center; padding: 10px 15px;">Дата начала отсутствия</th>
+        <th width="20%" style="align-content: center; padding: 10px 15px;">Дата окончания отсутствия</th>
+        <th width="7%" style="align-content: center; padding: 10px 15px;">Кол-во часов</th>
+        <th width="15%" style="align-content: center; padding: 10px 15px;">Причина отсутвия</th>
+        <th width="10%" style="align-content: center; padding: 10px 15px;">Возможные действия</th>
+
+    </tr>
+    <tr>
+        <td></td>
+        <td style="padding: 10px 15px; text-align: center">
+            <input type="date" id="StartDateForSearch" oninput="FilterRows()">
+            <br>
+            <span style="font-size:smaller;">(фильтр)</span>
+        </td>
+
+        <td style="padding: 10px 15px; text-align: center">
+            <input type="date" id="FinishDateForSearch" oninput="FilterRows()">
+            <br>
+            <span style="font-size:smaller;">(фильтр)</span>
+        </td>
+        <td></td>
+    </tr>
+    @if (absenseThisMonthAr != null && absenseThisMonthAr.Count > 0)
+    {
+        int countRow = 1;
+        @foreach (WebApplication5.Models.Absence absence in absenseThisMonthAr)
+        {
+
+            <tr>
+                <td style="text-align: center">@countRow</td>
+                <td class="StartDateAb" style="text-align: center">@absence.StartDate.ToShortDateString()</td>
+                <td class="FinishDateAb" style="text-align: center">@absence.FinishDate?.ToShortDateString()</td>
+                <td style="text-align:center">@absence.HourAmount</td>
+                <td style="text-align: center">@absence.Reason.ReasonName</td>
+                <td style="text-align: center"><a class="btn btn-default" onclick="Delete(@absence.Id)"><i></i> Удалить </a></td>
+            </tr>
+            countRow++;
+        }
+    }
+    else
+    {
+        <br>
+        <p id="Message"><b>У вас нет отсутствий за текущий месяц</b></p>
+        <br>
+    }
+</table>
+
+<script>
+    ShowInputAnotherUserWLOnLoad()
+    //function onUserSubSel() {
+    //    var userSubSelHeader = document.getElementById('userSubSelHeader');
+    //    userSubSelHeader.hidden = false;
+    //    var userSubSel = document.getElementById('userSubSel');
+    //    var UserSubs = document.getElementById('UserSubs')
+    //    if (UserSubs.value != '') {
+    //        userSubSel.innerHTML = UserSubs.value;
+    //    }
+    //    else {
+    //        userSubSelHeader.hidden = true;
+    //    }
+        
+    //}
+    function onUserSubSel() {
+        var UserSubs = document.getElementById('UserSubs')
+        window.location.href = '/Absence/AbsenceRequest/GetData?userSubsSelected=' + UserSubs.value;
+    }
+    function onlyOneDayAbsence() {
+        var fd = document.getElementById('FinishDateAbsence');
+        var hap = document.getElementById('hourAmountP');
+        var hacb = document.getElementById('hourAmountCheckBox');
+        var haf = document.getElementById('hourAmountValue');
+        var rowHidden = fd.parentElement.parentElement.parentElement.hidden;
+        if (rowHidden) {
+            fd.parentElement.parentElement.parentElement.hidden = false;
+            fd.value = ''
+            hap.hidden = true;
+            haf.hidden = true;
+            hacb.checked = false;
+        }
+        else {
+            fd.parentElement.parentElement.parentElement.hidden = true;
+            hap.hidden = false;
+        }
+    }
+
+    function showHourAmountField() {
+        var haf = document.getElementById('hourAmountValue');
+        if (haf.hidden) {
+            haf.hidden = false;
+        }
+        else {
+            haf.hidden = true;
+        }
+    }
+
+
+    function Delete(Id) {
+        var userSubsHidden = document.getElementById('userSubsHidden').value;
+        var startDateAb = document.getElementById('StartDateAbsence').value;
+        var finishDateAb = document.getElementById('FinishDateAbsence').value;
+        var reasonOfAb = document.getElementById('ReasonOfAbsenceSelected').value;
+        var hourAmount = document.getElementById('hourAmountField').value;
+        var comment = document.getElementById('comment').value;
+
+        window.location.href = '/Absence/DeleteAbsence/GetData?IdStr=' + Id + '&startDateAbsence=' + startDateAb + '&finishDateAbsence=' + finishDateAb + '&reasonOfAbsence=' + reasonOfAb + '&hourAmount=' + hourAmount + '&comment=' + comment + '&userSubsHidden=' + userSubsHidden;
+
+    };
+
+    function FilterRows() {
+
+        var startDateSearch = new Date(document.getElementById('StartDateForSearch').value);
+        var finishDateSearch = new Date(document.getElementById('FinishDateForSearch').value);
+        var startDateSet = document.getElementsByClassName('StartDateAb')
+        var finishDateSet = document.getElementsByClassName('FinishDateAb')
+
+        for (var i = 0; i < startDateSet.length; i++) {
+            startDateSet[i].parentElement.hidden = false
+        }
+
+        if (startDateSearch.getDate() > 0) {
+            for (var i = 0; i < startDateSet.length; i++) {
+                var daAr = startDateSet[i].textContent.replace('.', '-').replace('.', '-').split('-')
+                var daStr = daAr[2] + '-' + daAr[1] + '-' + daAr[0]
+                var da = new Date(daStr)
+                console.log(startDateSearch.toString() + "{}" + da.toString())
+                if (startDateSearch.toString() == da.toString() && startDateSet[i].parentElement.hidden == false) {
+                    // alert("true --- " + i)
+                    startDateSet[i].parentElement.hidden = false
+                }
+                else {
+                    //  alert("false --- " + i)
+                    startDateSet[i].parentElement.hidden = true
+                }
+            }
+        }
+
+
+        if (finishDateSearch.getDate() > 0) {
+            for (var i = 0; i < finishDateSet.length; i++) {
+                var daAr = finishDateSet[i].textContent.replace('.', '-').replace('.', '-').split('-')
+                var daStr = daAr[2] + '-' + daAr[1] + '-' + daAr[0]
+                var da = new Date(daStr)
+                if (finishDateSearch.toString() == da.toString() && startDateSet[i].parentElement.hidden == false) {
+                    // alert("true --- " + i)
+                    finishDateSet[i].parentElement.hidden = false
+                }
+                else {
+                    //  alert("false --- " + i)
+                    finishDateSet[i].parentElement.hidden = true
+                }
+            }
+        }
+
+    }
+
+    function getDate(a) {
+        var dateAr = a.textContent.replace('.', '-').replace('.', '-').split('-')
+        var dateStr = dateAr[2] + '-' + dateAr[1] + '-' + dateAr[0]
+        return new Date(dateStr)
+    }
+
+    function getDateStr(a) {
+        var dateAr = a.split('.')
+        var dateStr = dateAr[2] + '-' + dateAr[1] + '-' + dateAr[0]
+        return dateStr
+    }
+
+    function SetFilterDate(elemid, value) {
+        var filterElem = document.getElementById(elemid);
+        filterElem.value = value;
+        FilterRows()
+    }
+
+    function OnSelMonth() {
+        console.log('onSelMonth')
+        var startDateAbsence = document.getElementById('StartDateAbsence').value;
+        var finishDateAbsence = document.getElementById('FinishDateAbsence').value;
+        var hourAmountValue = document.getElementById('hourAmountValue').value;
+        var reasonOfAbsenceSelected = document.getElementById('ReasonOfAbsenceSelected').value;
+        var comment = document.getElementById('comment').value;
+        var month = document.getElementById('MonthOfReport').value.split('-')[1];
+        var year = document.getElementById('MonthOfReport').value.split('-')[0];
+        window.location.href = '/Absence/AbsenceRequest/GetData?startDate=' + startDateAbsence + '&finishDate=' + finishDateAbsence + '&reasonOfAbsence=' + reasonOfAbsenceSelected + '&comment=' + comment + '&comment=' + comment + '&month=' + month + '&year=' + year;
+
+    }
+
+    function ShowInputAnotherUserWLOnLoad() {
+        
+        var cb = document.getElementById('InputAnotherUserAb');
+        var userSubs = document.getElementById('UserSubs');
+        if (cb != null && userSubs != null) {
+            if (userSubs.value!='') {
+                cb.checked = true
+                userSubs.hidden = false
+            }
+            else {
+                cb.checked = false
+                userSubs.hidden = true
+            }
+        }
+    }
+
+    function ShowInputAnotherUserWLOnClick() {
+        var val = document.getElementById('InputAnotherUserAb');
+        var userSubsHidden = document.getElementById('userSubsHidden')
+        var userSubs = document.getElementById('UserSubs');
+        if (val.checked) {
+            console.log('false111')
+            userSubs.hidden = false
+            userSubsHidden.value = userSubs.value
+        }
+        else {
+            console.log('true111')
+            userSubs.hidden = true
+            userSubs.value = ''
+            userSubsHidden.value = ''
+
+        }
+    }
+
+</script>

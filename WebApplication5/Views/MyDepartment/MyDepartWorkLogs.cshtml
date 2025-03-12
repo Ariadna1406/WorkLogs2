@@ -1,0 +1,195 @@
+﻿@using WebApplication5.Models
+@model List<WorkLogs>
+@{
+    int countRows = 0;
+    ViewData["Title"] = "Задачи моего отдела";
+    var userList = ViewData["UsersOfMyDepart"] as List<User>;
+    string curMonth =(string)ViewData["curMonth"];
+    string taskCompName = string.Empty;
+
+}
+
+<br>
+<h3>Трудозатраты @curMonth</h3>
+<br>
+<link rel="stylesheet" href="~/css/ProjectsIndex.css">
+
+@if (ViewData["SuccessMes"] != null)
+{
+@Html.Partial("PartialInformation", ViewData["SuccessMes"]);
+}
+
+<table id="WorkLogsLast30" class="QualityBook" width="100%">
+    <tr style="padding: 10px 15px;">
+        <th width="10%" style="align-content: center; padding: 10px 15px;">Проект</th>
+        <th width="20%" style="align-content: center; padding: 10px 15px;">Наименование комплекта</th>
+        <th width="20%" style="align-content: center; padding: 10px 15px;">Вид деятельности</th>
+        <th width="15%" style="align-content: center; padding: 10px 15px;">Дата отчёта</th>
+        <th width="10%" style="align-content: center; padding: 10px 15px;">Кол-во списанного времени</th>
+        <th width="15%" style="align-content: center; padding: 10px 15px;">Исполнитель</th>
+        <th width="10%" style="align-content: center; padding: 10px 15px;">Комментарий</th>
+    </tr>
+    <td style="padding: 10px 15px; text-align: center"><input type="text" id="PrjNameSearch" oninput="FilterRows()"><br><span style="font-size:smaller;">(фильтр)</span></td>
+    <td style="padding: 10px 15px; text-align: center"><input type="text" id="TaskNameSearch" oninput="FilterRows()"><br><span style="font-size:smaller;">(фильтр)</span></td>
+    <td></td>
+    <td style="padding: 10px 15px; text-align: center">
+        <input type="date" id="DateSearch" oninput="FilterRows()"><br>
+        <span style="font-size:smaller;">ОТ (фильтр)</span><br>
+        <a class="btn btn-close" onclick="SortAscen('DateOfReport')"><i></i>Сортировать по возрастанию</a><br>
+        <a class="btn btn-dark" onclick="SortDescen('DateOfReport')"><i></i>Сортировать по убыванию</a>
+    </td>
+    <td></td>
+    <td style="padding: 10px 15px; text-align: center"><input type="text" id="RsrcSearch" oninput="FilterRows()"><br><span style="font-size:smaller;">(фильтр)</span></td>
+    <td></td>
+    @if (Model.Count > 0) {
+    @foreach (var workLog in Model)
+    {
+<tr>
+    <td class="prjName">@workLog.Proj_id</td>
+    <td class="taskName">@workLog.TaskName</td>
+    @{
+        string kindOfActString = string.Empty;
+        if (workLog.KindOfAct.Name == "Другое")
+        {
+            if (workLog.KindOfActStr != null)
+            {
+                kindOfActString = workLog.KindOfActStr;
+            }
+
+        }
+        else
+        {
+            kindOfActString = workLog.KindOfAct.Name;
+        }
+    }
+    <td>@kindOfActString</td>
+    <td class="DateOfReport">@workLog.DateOfReport.ToShortDateString()</td>
+    <td>@workLog.WorkTime</td>
+    <td class="rsrc">@workLog.User.FullName</td>
+    <td>@workLog.Comment</td>
+    <!--<td><a class="btn btn-default" onclick="Delete(@workLog.Id)"><i></i> Удалить </a></td>-->
+</tr>
+    }
+    }
+    else{
+    <br>
+    <p id="Message"><b>У вашего отдела нет поданных трудозатрат за последние 30 дней</b></p>
+    <br>
+    }
+</table>
+
+<script>
+   
+    function FilterRows() {
+       
+        var rsrcForSearch = document.getElementById('RsrcSearch').value;
+        var taskForSearch = document.getElementById('TaskNameSearch').value;
+        var prjForSearch = document.getElementById('PrjNameSearch').value;
+        var dateSearch = new Date(document.getElementById('DateSearch').value);       
+        var rsrcSet = document.getElementsByClassName('rsrc')
+        var taskSet = document.getElementsByClassName('taskName')
+        var prjSet = document.getElementsByClassName('prjName')
+        var dateSet = document.getElementsByClassName('DateOfReport')        
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSet[i].parentElement.hidden = false
+        }
+        for (var i = 0; i < rsrcSet.length; i++) {
+            if (!rsrcSet[i].textContent.includes(rsrcForSearch)) {
+                rsrcSet[i].parentElement.hidden = true
+            }
+            else {
+                rsrcSet[i].parentElement.hidden = false
+            }
+        }
+
+        for (var i = 0; i < taskSet.length; i++) {
+            if (!(taskSet[i].textContent.includes(taskForSearch) && taskSet[i].parentElement.hidden == false)) {
+                taskSet[i].parentElement.hidden = true
+            }
+            else {
+                taskSet[i].parentElement.hidden = false
+            }
+        }
+
+        for (var i = 0; i < prjSet.length; i++) {
+            if (!(prjSet[i].textContent.includes(prjForSearch) && prjSet[i].parentElement.hidden == false)) {
+                prjSet[i].parentElement.hidden = true
+            }
+            else {
+                prjSet[i].parentElement.hidden = false
+            }
+        }
+
+        if (dateSearch.getDate() > 0) {
+            for (var i = 0; i < dateSet.length; i++) {
+                var daAr = dateSet[i].textContent.replace('.', '-').replace('.', '-').split('-')
+                var daStr = daAr[2] + '-' + daAr[1] + '-' + daAr[0]
+                var da = new Date(daStr)
+                if (dateSearch < da && dateSet[i].parentElement.hidden == false) {
+                    // alert("true --- " + i)
+                    dateSet[i].parentElement.hidden = false
+                }
+                else {
+                    //  alert("false --- " + i)
+                    dateSet[i].parentElement.hidden = true
+                }
+            }
+        }
+        
+    }
+
+    function SortAscen(nameClass) {
+        PElems = []
+        dateSetSorted = []
+        wl = document.getElementById('WorkLogsLast30')
+        var dateSet = document.getElementsByClassName(nameClass)
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSetSorted.push(dateSet[i])
+        }
+        dateSetSorted.sort(function (a, b) {
+            return getDate(a) - getDate(b)
+        })
+
+        for (var i = 0; i < dateSetSorted.length; i++) {
+            PElems.push(dateSetSorted[i].parentElement)
+        }
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSet[i].parentElement.remove();
+        }
+        for (var i = 0; i < PElems.length; i++) {
+            wl.appendChild(PElems[i])
+        }
+    }
+
+    function SortDescen(nameClass) {
+        PElems = []
+        dateSetSorted = []
+        wl = document.getElementById('WorkLogsLast30')
+        var dateSet = document.getElementsByClassName(nameClass)
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSetSorted.push(dateSet[i])
+        }
+        dateSetSorted.sort(function (a, b) {
+            return getDate(b) - getDate(a)
+        })
+
+        for (var i = 0; i < dateSetSorted.length; i++) {
+            PElems.push(dateSetSorted[i].parentElement)
+        }
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSet[i].parentElement.remove();
+        }
+        for (var i = 0; i < PElems.length; i++) {
+            wl.appendChild(PElems[i])
+        }
+    }
+
+    function getDate(a) {
+        var dateAr = a.textContent.replace('.', '-').replace('.', '-').split('-')
+        var dateStr = dateAr[2] + '-' + dateAr[1] + '-' + dateAr[0]
+        return new Date(dateStr)
+    }
+
+</script>
+
+

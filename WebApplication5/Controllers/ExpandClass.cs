@@ -22,6 +22,14 @@ namespace WebApplication5.Controllers
 
         }
 
+        public static string IntToStrWithZero(this int intValue)
+        {
+            if (intValue > 9)
+            {
+                return intValue.ToString();
+            }
+            return "0" + intValue.ToString(); 
+        }
 
     }
 }

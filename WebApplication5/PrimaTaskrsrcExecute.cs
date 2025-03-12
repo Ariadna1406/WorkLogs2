@@ -19,11 +19,17 @@ public class PrimaTaskrsrcExecute
     //Добавляет фактические трудозатраты и делает перерасчет остатка
     public void AddFact(double ValueToAdd)
     {
-        Act_this_per_qty += ValueToAdd;
+        //Act_this_per_qty += ValueToAdd;
 
-        if (Act_this_per_qty < 0)
+        //if (Act_this_per_qty < 0)
+        //{
+        //    Act_this_per_qty = 0;
+        //}
+
+        Act_reg_qty += ValueToAdd;
+        if (Act_reg_qty < 0)
         {
-            Act_this_per_qty = 0;
+            Act_reg_qty = 0;
         }
         Update();              
     }
@@ -38,10 +44,12 @@ public class PrimaTaskrsrcExecute
 
     private void Update()
     {
+       
         using (SqlConnection _connection = ConnectToDB())
         {
-            var query = String.Format(@"UPDATE [primavera].[dbo].[TASKRSRC] Set act_this_per_qty = {1} Where taskrsrc_id = {0}", Taskrsrc_id, Act_this_per_qty.ToString().Replace(',','.'));
-             var command = new SqlCommand(query);
+            //var query = String.Format(@"UPDATE [primavera].[dbo].[TASKRSRC] Set act_this_per_qty = {1} Where taskrsrc_id = {0}", Taskrsrc_id, Act_this_per_qty.ToString().Replace(',','.'));
+            var query = String.Format(@"UPDATE [primavera].[dbo].[TASKRSRC] Set act_reg_qty = {1} Where taskrsrc_id = {0}", Taskrsrc_id, Act_reg_qty.ToString().Replace(',', '.'));
+            var command = new SqlCommand(query);
             command.Connection = _connection;
             command.ExecuteNonQuery();
         }              
@@ -49,7 +57,11 @@ public class PrimaTaskrsrcExecute
 
     private void FillEmptyFields(int taskrsrc_id)
     {
-        string query = String.Format(@"Select [act_this_per_qty]
+        //    string query = String.Format(@"Select [act_this_per_qty]
+        //FROM[primavera].[dbo].[TASKRSRC]
+        //Where taskrsrc_id = {0}", taskrsrc_id);
+
+        string query = String.Format(@"Select [act_reg_qty]
     FROM[primavera].[dbo].[TASKRSRC]
     Where taskrsrc_id = {0}", taskrsrc_id);
 
@@ -67,11 +79,13 @@ public class PrimaTaskrsrcExecute
                     var val = reader.GetValue(0);
                     if (val != null)
                     {
-                        Act_this_per_qty = Convert.ToDouble(val);//FACT
+                        //Act_this_per_qty = Convert.ToDouble(val);//FACT
+                        Act_reg_qty = Convert.ToDouble(val);
                     }
                     else
                     {
-                        Act_this_per_qty = 0;
+                        Act_reg_qty = 0;
+                       // Act_this_per_qty = 0;
                     }
                                                                            
                 }                

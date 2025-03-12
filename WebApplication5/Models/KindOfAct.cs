@@ -19,8 +19,9 @@ namespace WebApplication5.Models
             Name = name;
         }
 
-      
+        public static List<KindOfAct> GetAllKindOfAct(AppDbContext context)
+        {
+            return context.KindOfAct.ToList();
+        }
     }
-
-    
 }

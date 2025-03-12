@@ -22,14 +22,17 @@
     @foreach (var projectWithElemAmount in Model)
     {
         string avevaElemAmount = string.Empty;
-        if (projectWithElemAmount.AvevaElemAmount != 0) avevaElemAmount = projectWithElemAmount.AvevaElemAmount.ToString(); else avevaElemAmount = "Нет данных для отображения";
+        if (projectWithElemAmount.AvevaElemAmount != 0) { avevaElemAmount = projectWithElemAmount.AvevaElemAmount.ToString(); } else { avevaElemAmount = "Нет данных для отображения"; }
 <tr>
     <td>@projectWithElemAmount.Prj.AvevaAcronym</td>
     <td>@projectWithElemAmount.Prj.InternalNum</td>
     <td>@projectWithElemAmount.Prj.FullName</td>
     <td>@avevaElemAmount</td>
       
-          <td><a class="btn btn-default" asp-controller="Project" asp-action="Graphs" asp-route-prjAcr="@projectWithElemAmount.Prj.AvevaAcronym"><i></i>Детализировать</a> </td>
+    <td>
+        <a class="btn btn-default" asp-controller="Project" asp-action="Graphs" asp-route-prjAcr="@projectWithElemAmount.Prj.AvevaAcronym"><i></i>Детализировать</a><br>
+        
+    </td>
 </tr>
             }
         </table>

@@ -8,6 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\node_modules\**" />
+    <Content Remove="wwwroot\node_modules\**" />
+    <EmbeddedResource Remove="wwwroot\node_modules\**" />
+    <None Remove="wwwroot\node_modules\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Remove="launchSettings.json" />
     <Content Remove="wwwroot\Files\BIMPublisher.pdf" />
     <Content Remove="wwwroot\Files\propSet.txt" />
@@ -19,6 +26,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.2" PrivateAssets="All" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.1.14" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.9" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.1.0" />
     <PackageReference Include="System.DirectoryServices" Version="4.5.0" />
   </ItemGroup>
@@ -90,6 +98,13 @@
     <None Include="wwwroot\lib\bootstrap-5.0.2-dist\js\jquery-3.2.1.slim.min.js" />
     <None Include="wwwroot\lib\bootstrap-5.0.2-dist\js\jquery.js" />
     <None Include="wwwroot\lib\bootstrap-5.0.2-dist\js\popper.min.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Office.Interop.Excel">
+      <HintPath>..\..\..\..\..\Libs\ExcelInterop\Microsoft.Office.Interop.Excel.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
   </ItemGroup>
 
 </Project>

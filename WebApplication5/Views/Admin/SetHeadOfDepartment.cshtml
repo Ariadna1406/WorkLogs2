@@ -1,0 +1,105 @@
+﻿@model IEnumerable<IGrouping<Department, User>>
+@{
+    int count = 0;
+}
+<br>
+<br>
+
+@if (ViewData["SuccessMes"] != null)
+{
+    @Html.Partial("PartialInformation", ViewData["SuccessMes"]);
+}
+@if (ViewData["FailMes"] != null)
+{
+    @Html.Partial("PartialError", ViewData["FailMes"]);
+}
+
+<h3>Назначить начальников и аббривиатур отделов </h3>
+<p><a class="btn btn-success" asp-controller="Admin" asp-action="ExportHODToExcel"><i></i>Выгрузить файл Excel начальников отделов</a></p>
+<p><a class="btn btn-success" asp-controller="Admin" asp-action="FillHODAuto"><i></i>Заполнить начальников отдела автоматически</a></p>
+<p> Путь к файлу для обновления информации о начальниках отделов и аббривиатур отделов.</p>
+<p>Если файла по заданному пути не существует, то он создаётся со всеми имеющимися в базе данных записями.</p>
+<textarea cols="100" id="excelFileRef" name="myTextarea" rows="5">\\srv-ws\Общая\Отделы_НХП_Импорт.xlsx</textarea>
+<br>
+
+<a class="btn btn-danger" onclick="ImpCompToExcel()"><i></i>Импортировать данные по отделам</a>
+<br>
+<br>
+
+
+<form asp-action="UpdateHODPost" method="post">
+
+
+    <p><input class="btn btn-default" type="submit" value="Сохранить изменения в таблице" /></p>
+    <table id="tableHOD" border="1" align="center" width="100%">
+        <tr>
+            <th>№</th>
+            <th>Отдел</th>
+            <th>Начальник отдела</th>
+
+        </tr>
+        @if (Model.Count() > 0)
+        {
+            foreach (var depart in Model)
+            {
+                var hod = depart.Key.HeadOfDepartment != null ? depart.Key.HeadOfDepartment.FullName : "";
+                <tr>
+                    <td class="number">@count</td>
+                    @{
+                        string usListId = "userList" + count.ToString();
+                    }
+                    <td><input type="text" name="depart[@count]" value="@depart.Key.Name" size="80" id="num"></td>
+                    <td class="FullName">
+                        <input list="@usListId" name="hod[@count]" id="selectedHOD" value="@hod" autocomplete="off" size="80">
+                        <datalist id="@usListId">
+                            @foreach (var user in depart)
+                            {
+                                <option id="@user.Id">@user.FullName</option>
+                            }
+                        </datalist>
+                    </td>
+
+
+                </tr>
+                count++;
+            }
+        }
+        else
+        {
+            <tr width="100%">
+                Новых пользователей для импорта не найдено
+            </tr>
+        }
+
+
+    </table>
+</form>
+
+<style>
+    #tableHOD th {
+        background: #f5ffff;
+        border-collapse: collapse;
+        text-align: center;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .number {
+        text-align: center;
+        padding-top: 0px;
+        padding-bottom: 0px;
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+</style>
+
+<script>
+    function ImpCompToExcel() {
+        var val = document.getElementById('excelFileRef').value;
+        window.location.href = '/Admin/UpdateHeadOfDepartmentFromExcel/GetData?excelFileRef=' + val
+
+    }
+
+</script>

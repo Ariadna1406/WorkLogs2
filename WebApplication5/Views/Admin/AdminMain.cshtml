@@ -3,22 +3,83 @@
     ViewData["Title"] = "AdminMain";
     string logs = string.Empty;
     string logsForCheck = ViewData["Logs"] as string;
-    if (!string.IsNullOrEmpty(logsForCheck)) logs = logsForCheck;
+    string userDepartAcronym = ViewBag.UserDepartAcronym as string;
+    string taskCompInfo = ViewBag.TaskCompInfo as string;
+    string userFullName = ViewBag.UserFullName as string;
+    if (!string.IsNullOrEmpty(logsForCheck)) { logs = logsForCheck; }
 }
 
 <h3>Администрирование портала</h3>
 @if (ViewData["Information"] != null)
 {
-@Html.Partial("PartialInformation", ViewData["Information"]);
+    @Html.Partial("PartialInformation", ViewData["Information"]);
 }
 @if (ViewData["FailMes"] != null)
 {
-@Html.Partial("PartialError", ViewData["FailMes"]);
+    @Html.Partial("PartialError", ViewData["FailMes"]);
 }
-<a class="btn btn-default" asp-controller="Admin" asp-action="ImportUsersFromAD"><i></i>Импортировать пользователей</a>
-<a class="btn btn-default" asp-controller="Admin" asp-action="UploadToExcel"><i></i>Выгрузить пользователей из AD</a>
-<a class="btn btn-default" asp-controller="Admin" asp-action="UploadWorkLogs"><i></i>Выгрузить все поданные трудозатраты</a>
-<a class="btn btn-default" asp-controller="AvevaLic" asp-action="Index"><i></i>Добавить/Просмотреть хост для AvevaLic</a>
+<p><a class="btn btn-success" asp-controller="Admin" asp-action="ImportUsersFromAD"><i></i>Импортировать пользователей</a></p>
+<p><a class="btn btn-success" asp-controller="Admin" asp-action="TotalWLResult"><i></i>Сводная таблица трудозатрат за месяц</a></p>
+<p><a class="btn btn-success" asp-controller="Admin" asp-action="TotalAbsenceRes"><i></i>Сводная таблица отсутствий за месяц</a></p>
+<p><a class="btn btn-success" asp-controller="Admin" asp-action="SetHeadOfDepartment"><i></i>Назначить начальников отделов</a></p>
+<p hidden="hidden"><a class="btn btn-success" asp-controller="Admin" asp-action="ResetWorkLogsForNullUsers"><i></i>Переназначить трудозатраты пустых пользователей и удалить их</a></p>
+<p hidden="hidden"><a class="btn btn-success" asp-controller="Admin" asp-action="MergeTaskCompSameName"><i></i>Удалить дубликаты комплектов</a></p>
+<p hidden="hidden"><a class="btn btn-success" asp-controller="Admin" asp-action="RefreshUIDInExcelFile"><i></i>Переназначить UID для комплектов</a></p>
+<p><a class="btn btn-success" asp-controller="Admin" asp-action="UpdateFactWorkLogsAndExecutersInDatabase"><i></i>Обновить исполнителей и кол-во факт. трудозатрат</a></p>
+<p><a class="btn btn-default" asp-controller="Admin" asp-action="SetAdminList"><i></i>Назначить администраторов системы</a></p>
+<p><a class="btn btn-default" asp-controller="Admin" asp-action="SetDaysOff"><i></i>Назначить даты праздничных дней</a></p>
+<p><a class="btn btn-default" asp-controller="Admin" asp-action="UploadToExcel"><i></i>Выгрузить пользователей из AD</a></p>
+<!-- <a class="btn btn-default" asp-controller="Admin" asp-action="UploadWorkLogs"><i></i>Выгрузить все поданные трудозатраты</a>-->
+<!--<a class="btn btn-default" asp-controller="Admin" asp-action="SendMessage"><i></i>Отправить сообщение на email</a>-->
+<p><a class="btn btn-default" asp-controller="Admin" asp-action="SetExecuterByWL"><i></i>Прописать исполнителя по WorkLogs</a></p>
+<p> <a class="btn btn-default" asp-controller="Admin" asp-action="MyMethod"><i></i>Тестовая запись TXT</a></p>
+<p><a class="btn btn-danger" asp-controller="AvevaLic" asp-action="Index"><i></i>Добавить/Просмотреть хост для AvevaLic</a></p>
+<p><a class="btn btn-danger" asp-controller="Admin" asp-action="MatchTaskCompNameWithUIDFromDb"><i></i>Сопоставить имя комплекта с UID</a></p>
+<p><a class="btn btn-danger" asp-controller="Admin" asp-action="RefreshWorkLogsProjIdFromTaskComps"><i></i>Обновить WorkLogs.Proj_id из TaskComps</a></p>
+<p><a class="btn btn-danger" asp-controller="Admin" asp-action="DeleteDepartWithoutUsers"><i></i>Удалить отделы без пользователей</a></p>
 <br />
 <br />
+<h4>Проверить отдел пользователя</h4>
+    <table>
+        <tr>
+            <td>
+                <textarea rows="1" cols="68" name="comment" id="fullName">@userFullName</textarea>
+            </td>
+        </tr>
 
+        <tr><td> Отдел пользователя: <b>@userDepartAcronym</b> </td></tr>
+
+    </table>
+    <a class="btn btn-default" onclick="CheckUserDepartment()"><i></i>Проверить</a>
+
+    <p><h4>Проверить наличие комплекта/работы на портале </h4></p>
+    <table>
+        <tr>
+            <td>
+                <textarea rows="1" cols="68" name="comment" id="taskCompName"></textarea>
+            </td>
+        </tr>
+
+    </table>
+    <tr><td> Информация по комплекту: <b>@taskCompInfo</b> </td></tr>
+    <p><a class="btn btn-default" onclick="CheckTaskComp()"><i></i>Проверить</a></p>
+
+    <script>
+
+        function CheckUserDepartment() {
+
+            var val = document.getElementById('fullName').value;
+
+            window.location.href = '/Admin/CheckUserDepartment/GetData?fullName=' + val;
+
+        }
+
+        function CheckTaskComp() {
+
+            var val = document.getElementById('taskCompName').value;
+
+            window.location.href = '/Admin/CheckTaskComp/GetData?taskCompName=' + val;
+
+        }
+
+    </script>

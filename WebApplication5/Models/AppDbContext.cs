@@ -17,6 +17,8 @@ namespace WebApplication5.Models
         public DbSet<Corrections> Cors { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Project> ProjectSet { get; set; }
+        public DbSet<ProjectLinks> ProjectLinks { get; set; }
+
         public DbSet<Response> ResponseSet { get; set; }
 
         public DbSet<Department> Departments { get; set; }
@@ -31,6 +33,21 @@ namespace WebApplication5.Models
         public DbSet<Role> Roles { get; set; }
 
         public DbSet<AvevaPipeLength> avevaPipeLengths { get; set; }
+
+        public DbSet<TaskComp> TaskComps { get; set; }
+
+        public DbSet<DayOff> DayOffs { get; set; }
+
+        public DbSet<TaskCompRequest> TaskCompRequests { get; set; }
+
+        public DbSet<Absence> Absences { get; set; }
+
+        public DbSet<AbsenceReason> AbsenceReasons { get; set; }
+        public DbSet<UserSubs> UsersSubs { get; set; }
+
+        public DbSet<TaskCompPercentHistory> TaskCompPercentHistories { get; set; }
+
+        public DbSet<PlanTaskComp> PlanTaskComp { get; set; }
 
         //protected override void OnModelCreating(ModelBuilder builder)
         //{

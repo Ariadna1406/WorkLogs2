@@ -1,0 +1,446 @@
+﻿@using WebApplication5.Models.ExcelFiles;
+@model List<TaskComp>
+@{
+
+    var taskCompGroupedByProject = Model.GroupBy(x => x.ProjectNumber).OrderBy(x => x.Key);
+    Layout = @"_LayoutAlignLeft.cshtml";
+    ViewData["Title"] = "Комплекты/работы";
+    string showTaskCompCond = ViewData["ShowTaskCompCond"] as string;
+    string header = string.Empty;
+    //if (showTaskCompCond=="0") header = "Все комплекты/работы";
+    //else if (showTaskCompCond=="0") header = "Все комплекты/работы моего отдела";
+    //else header = "Все комплекты/работы моего отдела за текущий месяц";
+
+    bool isAdmin = (bool)ViewData["IsAdmin"];
+    bool isKSP = (bool)ViewData["isKSP"];
+    bool isGIP = (bool)ViewData["isGIP"];
+    string curUserId =(string)ViewData["curUserId"];
+}
+<!--<h3>Комплекты/работы</h3>-->
+<link rel="stylesheet" href="~/css/ProjectsIndex.css">
+@if (ViewData["SuccessMes"] != null)
+{
+    @Html.Partial("PartialInformation", ViewData["SuccessMes"]);
+}
+@if (ViewData["FailMes"] != null)
+{
+    @Html.Partial("PartialError", ViewData["FailMes"]);
+}
+
+<table id="TaskCompControl" width="100%">
+    <td width="400px">
+        @if (!isGIP)
+        {
+            <!--p><a id="filterAllTaskComp" asp-area="" asp-controller="ImportComp" asp-action="Index" asp-route-showTaskCompCond="0">Все работы</a></!--p>-->
+            <p><a id="filterMyDepartTaskComp" asp-area="" asp-controller="ImportComp" asp-action="Index" asp-route-showTaskCompCond="1">Работы моего отдела</a></p>
+            <p><a id="filterMyDepartTaskCompCurMonth" asp-area="" asp-controller="ImportComp" asp-action="Index" asp-route-showTaskCompCond="2">Работы моего отдела за текущий месяц</a></p>
+        }
+        else
+        {
+    <table>
+        <input id="curUserId" type="text" hidden="hidden" value="@curUserId">
+        <tr style="height:70px">
+            <td>
+                Проект:
+
+                <input list="projectList" name="selectedProject" id="SelectedProject" autocomplete="off" style="width:250px">
+                <datalist id="projectList">
+                    <option id="All_Proj">Все проекты</option>
+                    @foreach (var project in ViewData["CurProjects"] as List<string>)
+                    {
+                        <option id="@project">@project</option>
+                    }
+                </datalist>
+            </td>
+
+        </tr>
+        <tr><td> <p> <a class="btn btn-default" onclick="ExportProjectReport()"><i></i>Выгрузить отчёт для ГИПа</a> </p></td></tr>
+        <tr></tr>
+    </table>
+        }
+        <input id="curFilter" type="text" hidden="hidden" value="@showTaskCompCond">
+    </td>
+    <td align="left">
+        <p>Всего работ <b style="color:red"> @Model.Count.ToString()</b></p>
+        <p>
+            Всего работ по проектам:
+            @foreach (var taskCompGr in taskCompGroupedByProject)
+            {
+                <b onclick="SetProjNum(@taskCompGr.Key)" style="cursor: pointer;"> @taskCompGr.Key - </b> <b style="color:red"> @taskCompGr.Count()</b> <b> ;</b>
+
+            }
+        </p>
+    </td>
+</table>
+
+@if (isGIP)
+{
+
+<br>
+   
+}
+
+<table id="WorkLogs" class="QualityBook" width="80%">
+    <tbody id="WorkLogsTBody">
+        <tr class="header">
+            <th width="10px" style="padding: 10px 15px; text-align: center">Наименование проекта</th>
+            <th style="padding: 10px 15px; text-align: center; width: 20px;">Наименование работы</th>
+            <th width="20px" style="padding: 10px 15px; text-align: center">Ответственный отдел</th>
+            <th style="padding: 10px 15px; text-align: center">Исполнители</th>
+            <th style="padding: 10px 15px; text-align: center">Дата начала</th>
+            <th style="padding: 10px 15px; text-align: center">Дата окончания</th>
+            <th width="20px" style="padding: 10px 15px; text-align: center">Плановые трудозатраты</th>
+            <th width="20px" style="padding: 10px 15px; text-align: center"><nobr>Дата начала факт</nobr></th>
+            <th style="padding: 10px 15px; text-align: center">Процент завершения</th>
+            <th width="20px" style="padding: 10px 15px; text-align: center">Фактические трудозатраты</th>
+        </tr>
+        <tr class="filter">
+            <td style="padding: 10px 15px; text-align: center">
+                <input type="text" id="PrjNameSearch" oninput="FilterRows()" size="5px"><br><span style="font-size:smaller;">(фильтр)</span>
+            </td>
+            <td style="padding: 10px 50px; text-align: center"><input type="text" id="TaskNameSearch" oninput="FilterRows()"><br><span style="font-size:smaller;">(фильтр)</span></td>
+            <td style="padding: 10px 15px; text-align: center"><input type="text" id="DepartAcr" oninput="FilterRows()" size="7px"><br><span style="font-size:smaller;">(фильтр)</span></td>
+            <td style="padding: 10px 40px 10px 40px; text-align: center"><input type="text" id="ExecuterSearch" oninput="FilterRows()"><br><span style="font-size:smaller;">(фильтр)</td>
+            <td style="padding: 10px 15px; text-align: center">
+                <input type="date" id="StartDateSearch" oninput="FilterRows()"><br>
+                <span style="font-size:smaller;">ОТ (фильтр)</span><br>
+                <a class="btn btn-close" onclick="SortAscen('startDate')" id="startDateAscen"><i></i>По возрастанию</a><br>
+                <a class="btn btn-dark" onclick="SortDescen('startDate')" id="startDateDescen"><i></i>По убыванию</a>
+            </td>
+
+            <td style="padding: 10px 15px; text-align: center">
+                <input type="date" id="FinishDateSearch" oninput="FilterRows()"><br>
+                <span style="font-size:smaller;">ДО (фильтр) </span> <br>
+                <a class="btn btn-close" onclick="SortAscen('finishDate')" id="finishDateAscen"><i></i>По возрастанию</a> <br>
+                <a class="btn btn-dark" onclick="SortDescen('finishDate')" id="finishDateDescen"><i></i>По убыванию</a>
+            </td>
+            <td style="padding: 10px 15px; text-align: center">
+            </td>
+
+        </tr>
+
+        @foreach (var taskComp in Model)
+        {
+            var startFactDate = taskComp.StartFactDate?.ToShortDateString();
+            string executersStr = string.Empty;
+            var executers = taskComp.Executers;
+            List<string> executersAr = new List<string>();
+            if (!string.IsNullOrEmpty(executers))
+            {
+                executersAr.AddRange(taskComp.Executers.Split(';'));
+                foreach (var executer in executersAr)
+                {
+                    if (executer != executersAr.Last())
+                    { executersStr += $"{executer}; "; }
+                    else { executersStr += $"{executer}"; }
+
+                }
+            }
+            <tr class="realData">
+                <td class="prjName" style="text-align: center">@taskComp.ProjectNumber </td>
+                <td class="taskName" style="text-align: center">@taskComp.TaskCompName</td>
+                <td class="department" style="text-align: center">@taskComp.Department</td>
+                <td class="Executers">
+                    @foreach (var exec in executersAr)
+                    {<p>@exec</p>}
+                </td>
+                <td class="startDate" style="text-align: center">@taskComp.StartPlanDate?.ToShortDateString()</td>
+                <td class="finishDate" style="text-align: center">@taskComp.FinishPlanDate?.ToShortDateString()</td>
+                <td class="planWorkLog" style="text-align: center">@taskComp.PlanWorkLog</td>
+                <td class="startFactDate" style="text-align: center">@startFactDate</td>
+                <td class="completePercent" style="text-align: center">@taskComp.CompletePercent</td>
+                <td class="factWorkLogs" style="text-align: center">@taskComp.FactWorkLog</td>
+
+            </tr>
+        }
+    </tbody>
+</table>
+<br>
+
+@if (isAdmin || isKSP)
+{
+    <br>
+    <p> Путь к файлу для обновления</p>
+<textarea cols="100" id="excelFileRef" name="myTextarea" rows="5">@FilePath.path</textarea><div id="Waiting"></div>
+    <br>
+    <br>
+    <a class="btn btn-success" onclick="ImpCompToExcel()"><i></i>Импортировать работы</a>
+    <a class="btn btn-default" onclick="RefreshDataInExcel()"><i></i>Обновить данные в файле</a>
+}
+
+
+<script>
+
+</script>
+<script>
+    
+    function FilterRows() {
+
+        var taskForSearch = document.getElementById('TaskNameSearch').value;
+        var prjForSearch = document.getElementById('PrjNameSearch').value;
+        var departForSearch = document.getElementById('DepartAcr').value;
+        var executerForSearch = document.getElementById('ExecuterSearch').value;
+        var startDateSearch = new Date(document.getElementById('StartDateSearch').value);
+        var finishDateSearch = new Date(document.getElementById('FinishDateSearch').value);
+        var taskSet = document.getElementsByClassName('taskName')
+        var prjSet = document.getElementsByClassName('prjName')
+        var startDateSet = document.getElementsByClassName('startDate')
+        var finishDateSet = document.getElementsByClassName('finishDate')
+        var departSet = document.getElementsByClassName('department')
+        var executerSet = document.getElementsByClassName('Executers')
+
+        for (var i = 0; i < startDateSet.length; i++) {
+            startDateSet[i].parentElement.hidden = false
+        }
+
+
+        for (var i = 0; i < taskSet.length; i++) {
+            if (!(taskSet[i].textContent.toLowerCase().includes(taskForSearch.toLowerCase()) && taskSet[i].parentElement.hidden == false)) {
+                taskSet[i].parentElement.hidden = true
+            }
+            else {
+                taskSet[i].parentElement.hidden = false
+            }
+        }
+
+        for (var i = 0; i < departSet.length; i++) {
+            if (!(departSet[i].textContent.toLowerCase().includes(departForSearch.toLowerCase()) && taskSet[i].parentElement.hidden == false)) {
+                taskSet[i].parentElement.hidden = true
+            }
+            else {
+                taskSet[i].parentElement.hidden = false
+            }
+        }
+
+        for (var i = 0; i < executerSet.length; i++) {
+            if (!(executerSet[i].textContent.toLowerCase().includes(executerForSearch.toLowerCase()) && executerSet[i].parentElement.hidden == false)) {
+                taskSet[i].parentElement.hidden = true
+            }
+            else {
+                taskSet[i].parentElement.hidden = false
+            }
+        }
+
+        for (var i = 0; i < prjSet.length; i++) {
+            if (!(prjSet[i].textContent.toLowerCase().includes(prjForSearch.toLowerCase()) && prjSet[i].parentElement.hidden == false)) {
+                prjSet[i].parentElement.hidden = true
+            }
+            else {
+                prjSet[i].parentElement.hidden = false
+            }
+        }
+
+        if (startDateSearch.getDate() > 0) {
+            for (var i = 0; i < startDateSet.length; i++) {
+                var daAr = startDateSet[i].textContent.replace('.', '-').replace('.', '-').split('-')
+                var daStr = daAr[2] + '-' + daAr[1] + '-' + daAr[0]
+                var da = new Date(daStr)
+                if (startDateSearch < da && startDateSet[i].parentElement.hidden == false) {
+                    // alert("true --- " + i)
+                    startDateSet[i].parentElement.hidden = false
+                }
+                else {
+                    //  alert("false --- " + i)
+                    startDateSet[i].parentElement.hidden = true
+                }
+            }
+        }
+
+        if (finishDateSearch.getDate() > 0) {
+            for (var i = 0; i < finishDateSet.length; i++) {
+                var dateAr = finishDateSet[i].textContent.replace('.', '-').replace('.', '-').split('-')
+                var dateStr = dateAr[2] + '-' + dateAr[1] + '-' + dateAr[0]
+                var dateDa = new Date(dateStr)
+                if (dateDa < finishDateSearch && finishDateSet[i].parentElement.hidden == false) {
+                    finishDateSet[i].parentElement.hidden = false
+                }
+                else {
+                    finishDateSet[i].parentElement.hidden = true
+                }
+            }
+        }
+    }
+
+    function SortAscen(nameClass) {
+        highlightSort(nameClass, 0)
+        PElems = []
+        dateSetSorted = []
+        wl = document.getElementById('WorkLogsTBody')
+        var dateSet = document.getElementsByClassName(nameClass)
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSetSorted.push(dateSet[i])
+        }
+        dateSetSorted.sort(function (a, b) {
+            return getDate(a) - getDate(b)
+        })
+
+        for (var i = 0; i < dateSetSorted.length; i++) {
+            PElems.push(dateSetSorted[i].parentElement)
+        }
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSet[i].parentElement.remove();
+        }
+        for (var i = 0; i < PElems.length; i++) {
+            wl.appendChild(PElems[i])
+        }
+    }
+
+    function SortDescen(nameClass) {
+        highlightSort(nameClass, 1)
+        PElems = []
+        dateSetSorted = []
+        wl = document.getElementById('WorkLogsTBody')
+        var dateSet = document.getElementsByClassName(nameClass)
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSetSorted.push(dateSet[i])
+        }
+        dateSetSorted.sort(function (a, b) {
+            return getDate(b) - getDate(a)
+        })
+
+        for (var i = 0; i < dateSetSorted.length; i++) {
+            PElems.push(dateSetSorted[i].parentElement)
+        }
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSet[i].parentElement.remove();
+        }
+        for (var i = 0; i < PElems.length; i++) {
+            wl.appendChild(PElems[i])
+        }
+    }
+
+    function highlightSort(nameClass, cond) {
+        startDateAscen = document.getElementById('startDateAscen')
+        startDateDescen = document.getElementById('startDateDescen')
+        finishDateAscen = document.getElementById('finishDateAscen')
+        finishDateDescen = document.getElementById('finishDateDescen')
+        if (nameClass == 'startDate' && cond == 1) {
+            highlightElemFilter(startDateDescen);
+            arr = [startDateAscen, finishDateAscen, finishDateDescen]
+            UnhighLightElem(arr)
+        }
+        else if (nameClass == 'startDate' && cond == 0) {
+            highlightElemFilter(startDateAscen);
+            arr = [startDateDescen, finishDateAscen, finishDateDescen]
+            UnhighLightElem(arr)
+        }
+        else if (nameClass == 'finishDate' && cond == 1) {
+            highlightElemFilter(finishDateDescen);
+            arr = [startDateDescen, startDateAscen, finishDateAscen]
+            UnhighLightElem(arr)
+        }
+        else if (nameClass == 'finishDate' && cond == 0) {
+            highlightElemFilter(finishDateAscen);
+            arr = [startDateDescen, startDateAscen, finishDateDescen]
+            UnhighLightElem(arr)
+        }
+
+    }
+
+    function UnhighLightElem(elem) {
+        for (let i = 0; i < elem.length; i++) {
+            elem[i].style.fontWeight = 'normal';
+            elem[i].style.color = ''
+        }
+    }
+
+    function getDate(a) {
+        var dateAr = a.textContent.replace('.', '-').replace('.', '-').split('-')
+        var dateStr = dateAr[2] + '-' + dateAr[1] + '-' + dateAr[0]
+        return new Date(dateStr)
+    }
+
+    function ImpCompToExcel() {
+        var val = document.getElementById('excelFileRef').value;
+        var dataArray = [];
+        dataArray.push(val);
+        $.ajax({
+            url: '/ImportComp/ImportCompFromExcel',
+            type: 'POST',
+            data: JSON.stringify(dataArray),
+            contentType: 'application/json',
+            success: function (response) {
+                var whileWaitElem = document.getElementById('Waiting');
+                var mes = '';
+                if (response.isError == false) { mes = "УСПЕШНО! " + response.mes }
+                else { var mes = "ОШИБКА!! " + response.mes }
+                whileWaitElem.innerText = mes;
+                alert(mes);
+
+            }
+        })
+        var whileWaitElem = document.getElementById('Waiting');
+        var time = new Date();
+        time.setMinutes((time.getMinutes() + 3));
+
+        whileWaitElem.innerHTML = 'Импорт задач происходит в течении 2-3 минут... Ожидаемое время завершения: <b>' + time.toLocaleTimeString() + ' </b> . Не закрывайте страницу.'
+
+    }
+
+    function RefreshDataInExcel() {
+        var val = document.getElementById('excelFileRef').value;
+        var dataArray = [];
+        dataArray.push(val);
+        //window.location.href = '/ImportComp/RefreshDataInExcelFile/GetData?excelFileRef=' + val
+        $.ajax({
+            url: '/ImportComp/RefreshDataInExcelFile',
+            type: 'POST',
+            data: JSON.stringify(dataArray),
+            contentType: 'application/json',
+            success: function (response) {
+                var whileWaitElem = document.getElementById('Waiting');
+                whileWaitElem.innerText = response;
+                alert(response);
+
+            }
+        })
+        var whileWaitElem = document.getElementById('Waiting');
+        var time = new Date();
+        time.setMinutes((time.getMinutes() + 7));
+
+        whileWaitElem.innerHTML = 'Обновление файла происходит в течении 5-7 минут... Ожидаемое время завершения: <b>' + time.toLocaleTimeString() + ' </b> . Не закрывайте страницу.'
+
+    }
+
+    function ExportProjectReport() {
+        var projectName = document.getElementById('SelectedProject').value;
+        var curUserId = document.getElementById('curUserId').value;
+        //var fileRef = document.getElementById('FileRef').value;
+        window.location.href = '/ImportComp/ExportProjectReport/GetData?ProjectName=' + projectName + '&curUserId=' + curUserId
+    }
+
+
+
+    var curFilter = document.getElementById("curFilter");
+    highlightCurFilter(curFilter.value)
+
+    function highlightCurFilter(curFilter) {
+        elem = '';
+        switch (curFilter) {
+            case '0':
+                elem = document.getElementById("filterAllTaskComp");
+                break;
+            case '1':
+                elem = document.getElementById("filterMyDepartTaskComp");
+                break;
+            case '2':
+                elem = document.getElementById("filterMyDepartTaskCompCurMonth");
+                break;
+
+        }
+        if (elem != null && elem != '') highlightElemFilter(elem);
+    }
+
+    function highlightElemFilter(elem) {
+        elem.style.color = 'blue';
+        elem.style.fontWeight = "bold";
+    }
+
+    function SetProjNum(ProjNum) {
+        var prjForSearch = document.getElementById('PrjNameSearch');
+        prjForSearch.value = ProjNum;
+        FilterRows()
+    }
+
+    //asp - controller="ImportComp" asp - action="ImportCompFromExcel" asp - route - excelFilePath="getExcelFileRef()
+</script>

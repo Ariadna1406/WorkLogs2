@@ -26,45 +26,109 @@ namespace WebApplication5.Controllers
    
         [HttpGet]
         public ViewResult Index()
-        {
+        {           
             var curUser = WebApplication5.Models.User.GetUser(context, HttpContext);
+
+            if (curUser.Id == 263)
+            {
+                curUser = context.Users.First(x => x.Id == 1709);
+            }
+
+            if (curUser != null)
+            {
+                ViewData["IsHOD"] = curUser.isHeadOfDepartment(context);
+                ViewData["IsAdmin"] = curUser.IsAdmin(context);
+            }
+            ViewBag.UserSubs = UserSubs.GetUserSubs(context, curUser);
+            if (curUser.IsAdmin(context))
+            {
+                ViewBag.UserSubs = WebApplication5.Models.User.GetAllActiveUsers(context).ToList();
+            }
             ViewData["curUser"] = curUser;
-            ViewData["projectName"] = TempData["projectName"]; ViewData["selectedTaskList"] = TempData["selectedTaskList"]; ViewData["selectedKindOfAct"] = TempData["selectedKindOfAct"]; ViewData["workTimeHours"] = TempData["workTimeHours"]; ViewData["workTimeMinutes"] = TempData["workTimeMinutes"]; ViewData["comment"] = TempData["comment"];
+            ViewData["projectName"] = TempData["projectName"]; ViewData["selectedTaskList"] = TempData["selectedTaskList"]; ViewData["selectedKindOfAct"] = TempData["selectedKindOfAct"]; ViewData["workTimeHours"] = TempData["workTimeHours"]; ViewData["workTimeMinutes"] = TempData["workTimeMinutes"]; ViewData["comment"] = TempData["comment"]; ViewData["curPercent"] = TempData["curPercent"];
+            var dateOfReport =GetDate(TempData["DateOfReport"] as string);
+            //if (!string.IsNullOrEmpty(ViewData["selectedTaskList"] as string))
+            //{
+                
+            //}
+
+
+            ViewData["UserSubsSelected"] = TempData["UserSubsSelected"]; ViewBag.InputAnotherUserWL = TempData["InputAnotherUserWL"];
+            int month = 0;
+            if (TempData["Month"]!=null) month =(int)TempData["Month"];            
+            else month = DateTime.Now.Month;                
+            
+            var monthStr = GetCurMonth(month);
+            ViewBag.CurMonth = monthStr;
+            ViewBag.CurMonthInt = month;
+
+            Models.User userSubs = curUser;
+            var userSubsSelected = ViewData["UserSubsSelected"] as string;
+            if (!string.IsNullOrEmpty(userSubsSelected))
+            {
+                var userFound = Models.User.GetUserByFullName(context, userSubsSelected);
+                if (userFound != null)
+                {
+                    userSubs = userFound;
+                }
+            }
+            var year = dateOfReport.Year;
+            var workLogList = WorkLogs.GetWorkLogsByMonth(context, userSubs, month, year, out TimeSpan wlCurDay, out Dictionary<DateTime, TimeSpan> wlCurMonth, out Dictionary<DateTime, TimeSpan> wlCurPrevMonth);
             if (TempData["SuccessMes"] != null)
             {
                 //List<string> successMes = new List<string>();
-                var successAr = TempData["SuccessMes"] as string[];                
-                ViewData["SuccessMes"] = successAr.ToList();
+                var successAr = TempData["SuccessMes"] as string[];           
+                if (successAr!=null) ViewData["SuccessMes"] = successAr.ToList();
                 var winUs = GetLogin(HttpContext.User.Identity.Name);
-                ViewData["IsShowingBalance"] = true;              
-                
-                ViewData["WorkLogsLast30"] = GetWorkLogsLast30(curUser);
+                ViewData["IsShowingBalance"] = true;
+
+                ViewData["WorkLogsLast30"] = workLogList;
             }
             if (TempData["FailMes"] != null)
             {
                 //List<string> successMes = new List<string>();
-                var failAr = TempData["FailMes"] as string[];                 
-                ViewData["FailMes"] = failAr.ToList(); ;
+                var failAr = TempData["FailMes"] as string[];
+                if (failAr != null)
+                {
+                    ViewData["FailMes"] = failAr.ToList(); ;
+                }
             }
             if (ViewData["projectName"] != null)
             {
                 var selectedProject = ViewData["projectName"] as string;
-                ViewData["PrimaTask"] = PrimaTask.GetTasksFromPrima(selectedProject, curUser);//GetTasksFromPrima(selectedProject, curUser);
+                ViewData["TaskCompSet"] = TaskComp.GetAllTasksForMyDepartSelectedProject(curUser, selectedProject, context);
+
+                // ViewData["TaskCompSet"] = TaskComp.GetAllTasksForMyDepartment(curUser, context);  //TaskComp.GetTasksFromDb(selectedProject, curUser, context);//GetTasksFromPrima(selectedProject, curUser);
             }
             else
             {
                 ViewData["PrimaTask"] = new List<PrimaTask>();
             }
+            
             if (TempData["IsShowingBalance"] != null)
             {
                 ViewData["IsShowingBalance"] = TempData["IsShowingBalance"];
-                ViewData["WorkLogsLast30"] = GetWorkLogsLast30(curUser);
-            }            
-            ViewData["CurProjects"] = Project.GetProjectsFromPrima(curUser);
+                ViewData["WorkLogsLast30"] = workLogList;
+            }
+            else
+            {
+                ViewData["IsShowingBalance"] = true;
+                ViewData["WorkLogsLast30"] = workLogList;
+            }
+            ViewData["TodayWorkTimeAmount"] = wlCurDay;
+            ViewData["wlCurMonth"] = wlCurMonth;
+            ViewData["wlCurPrevMonth"] = wlCurPrevMonth;
+            ViewData["CurProjects"] = Project.GetProjectsForMyDepart(curUser, context); //фильтрация проектов, у кот. задач больше двух (Командировка и Работа Нач. Отдела)
             ViewData["KindOfAct"] = GetKindOfAct();
             ViewData["CurUser"] = curUser;
-            return View(new WorkLogs() {DateOfReport=DateTime.Now.Date});
+            ViewData["curPage"] = 3;
+            ViewData["tcReqCount"] = TaskCompRequest.GetAmountOfNewTaskCompRequestStr(context);
+            ViewData["isKSP"] = curUser.IsKSP(context);
+            
+            return View(new WorkLogs() {DateOfReport = dateOfReport });
         }
+
+
 
         public string GetLogin(string login)
         {
@@ -80,44 +144,131 @@ namespace WebApplication5.Controllers
             return View();
         }
 
-            public IActionResult SelectProject(string selectedProject, string DateOfReport, string dateOfReportVal, string selectedTaskList, string selectedKindOfAct, string workTimeHours, string workTimeMinutes, string comment)
+            public IActionResult SelectProject(string selectedProject, string DateOfReport, string dateOfReportVal, string selectedTaskList, string selectedKindOfAct, string workTimeHours, string workTimeMinutes, string comment, int month, string userSubsSelected, string inputAnotherUserWL)
         {
             var curUser = GetUser(context);
-            DateTime.TryParse(DateOfReport, out DateTime date);
-            ViewData["CurProjects"] = Project.GetProjectsFromPrima(curUser);
-            ViewData["KindOfAct"] = GetKindOfAct();
-            ViewData["CurUser"] = GetUser(context);
-            ViewData["PrimaTask"] = PrimaTask.GetTasksFromPrima(selectedProject, curUser); //GetTasksFromPrima(selectedProject, curUser); //context.ProjectSet.ToList();            
-            ViewData["projectName"] = selectedProject; ViewData["selectedTaskList"] = selectedTaskList; ViewData["selectedKindOfAct"] = selectedKindOfAct; ViewData["workTimeHours"] = workTimeHours; ViewData["workTimeMinutes"] = workTimeMinutes; ; ViewData["comment"] = comment;
-            return View("Index", new WorkLogs() { DateOfReport = GetDate(DateOfReport) });//, successMessage, failMessage);
-        }     
 
+            if (curUser.Id == 263)
+            {
+                curUser = context.Users.First(x => x.Id == 1709);
+            }
+
+            Models.User userSubs = curUser;
+
+            
+
+            //
+            //if (!string.IsNullOrEmpty(TempData["projectName"] as string))
+            //{
+            //    selectedProject = TempData["projectName"] as string;
+            //    DateOfReport = TempData["DateOfReport"] as string;
+            //    selectedTaskList = TempData["selectedTaskList"] as string;
+            //    workTimeHours = TempData["workTimeHours"] as string;
+            //    workTimeMinutes = TempData["workTimeMinutes"] as string;
+            //    comment = TempData["comment"] as string;
+
+
+            //}
+
+            if (!string.IsNullOrEmpty(userSubsSelected))
+            {
+                var userFound = Models.User.GetUserByFullName(context, userSubsSelected);
+                if (userFound != null)
+                {
+                    userSubs = userFound;
+                }
+                else
+                {
+                    TempData["FailMes"]=new string[]{ $"Пользователя \"{userSubsSelected}\" не существует." };
+                    userSubsSelected = string.Empty;
+                }
+            }            
+            //Месяц
+            if (month == 0)
+            {
+                month = DateTime.Now.Month;
+            }
+            var monthStr = GetCurMonth(month);
+            ViewBag.CurMonth = monthStr;
+            ViewBag.CurMonthInt = month;            
+            ControllerTemplate.ExecuteCommonFunctions(TempData, ViewData, context, HttpContext);
+            var resDateOfRep = DateTime.TryParse(DateOfReport, out DateTime date);
+            ViewData["CurProjects"] = Project.GetProjectsForMyDepart(userSubs , context); //Project.GetProjects(curUser, context);
+            ViewData["KindOfAct"] = GetKindOfAct();
+            ViewData["CurUser"] = curUser;
+           ViewData["TaskCompSet"] = TaskComp.GetAllTasksForMyDepartSelectedProject(userSubs, selectedProject, context); //TaskComp.GetTasksFromDb(selectedProject, curUser, context); //GetTasksFromPrima(selectedProject, curUser); //context.ProjectSet.ToList();            
+            ViewData["projectName"] = selectedProject; ViewData["selectedTaskList"] = selectedTaskList; ViewData["selectedKindOfAct"] = selectedKindOfAct; ViewData["workTimeHours"] = workTimeHours; ViewData["workTimeMinutes"] = workTimeMinutes; ; ViewData["comment"] = comment;
+            ViewData["curPage"] = 3;
+            int year;
+            if (resDateOfRep) { year = date.Year; } else { year = DateTime.Now.Year; }
+            var workLogList = WorkLogs.GetWorkLogsByMonth(context, userSubs, month, year, out TimeSpan wlCurDay, out Dictionary<DateTime, TimeSpan> wlCurMonth, out Dictionary<DateTime, TimeSpan> wlCurPrevMonth);
+            ViewData["WorkLogsLast30"] = workLogList;
+            ViewData["TodayWorkTimeAmount"] = wlCurDay;
+            ViewData["wlCurMonth"] = wlCurMonth;
+            ViewData["wlCurPrevMonth"] = wlCurPrevMonth;
+            ViewData["IsShowingBalance"] = true;
+            ViewData["UserSubsSelected"] = userSubsSelected;//UserSubs.GetInst(context, curUser, userSubsSelected);
+            ViewBag.InputAnotherUserWL = inputAnotherUserWL;
+            ViewBag.UserSubs = UserSubs.GetUserSubs(context, curUser);
+            return View("Index", new WorkLogs() { DateOfReport = GetDate(DateOfReport) });//, successMessage, failMessage);
+        }
+    
 
         [HttpPost]
-        public IActionResult SendWorkLogs(string projectName, string dateOfReportVal, string selectedTaskrsrcId , string selectedTaskList, string selectedKindOfAct, string workTimeHours, string workTimeMinutes, string comment)
+        public IActionResult SendWorkLogs(string projectName, string dateOfReportVal, string selectedTaskrsrcId , string selectedTaskList, string selectedKindOfAct, string workTimeHours, string workTimeMinutes, string comment, string kindOfActStr, string curPercent, string userSubsHidden)
         {
             try
             {
                 //string selectedTaskrsrcId = selectedTaskList;
                 if (ModelState.IsValid)
                 {
-                    var curUser = GetUser(context);
-                    var proj_Id = FindProjIdByName(projectName);
-                    var task_Id = FindTaskIdByTaskrsrcId(selectedTaskrsrcId);
+                    var error = new List<string>();
+                    var successMes = new List<string>();
+                    var curUser = GetUser(context);                 
+                    var proj_Id = projectName;
+                    var task_Id = selectedTaskrsrcId; //TaskCompId
                     //var task_rsc_Id = FindRscByTaskAndResName(task_Id, curUser.FullName);
                     var kindOfAct = GetKindOfAct(context, selectedKindOfAct);
                     var workTime = GetTimeSpan(workTimeHours, workTimeMinutes);
                     var dateOfReport = GetDate(dateOfReportVal);
-                    var user = GetUser(context);
-                    var res = CheckData(user, proj_Id, kindOfAct, dateOfReport, task_Id, workTime, comment, out List<string> error);
-                    if (res)
+                    Models.User user = curUser;
+                    if (!string.IsNullOrEmpty(userSubsHidden)) { 
+                        var userFound = Models.User.GetUserByFullName(context, userSubsHidden); 
+                        if (userFound != null)
+                        {
+                            user = userFound;                            
+                        }
+                        else
+                        {
+                            error.Add($"Пользователя \"{userSubsHidden}\" не существует.");
+                            userSubsHidden = string.Empty;
+                        }
+                    }
+                    var workTimeAmountSet = context.WorkLogs.Where(x => x.DateOfReport.Date == dateOfReport.Date && x.User == curUser);
+                    var workTimeAmount = workTimeAmountSet.Sum(x => x.WorkTime.TotalHours);
+                    var res = CheckData(context ,user, proj_Id, kindOfAct, dateOfReport, task_Id, workTime, comment, error, workTimeAmount);
+                    var percentRes = Models.CheckData.Percent.CheckPercent(curPercent, error);
+                    if (res && percentRes)
                     {
-                        WorkLogs workLog = new WorkLogs(user, proj_Id, kindOfAct, dateOfReport, selectedTaskrsrcId, workTime, comment, DateTime.Now);
+                        var taskCompIdStr = selectedTaskrsrcId; //Кривое название
+                        WorkLogs workLog = new WorkLogs(user, proj_Id, kindOfAct, dateOfReport, taskCompIdStr, workTime, comment, DateTime.Now, kindOfActStr);                       
                         context.WorkLogs.Add(workLog);
                         context.SaveChanges();
-                        TempData["SuccessMes"] = new List<string> { "Трудозатраты успешно добавлены" };
-                        var primaTaskrsrcExecute = new PrimaTaskrsrcExecute(Convert.ToInt32(selectedTaskrsrcId));
-                        primaTaskrsrcExecute.AddFact(workTime.TotalHours);
+                        var res_id = Int32.TryParse(taskCompIdStr, out int taskCompIdInt);
+                        if (res_id) {
+                            var taskCompSet = context.TaskComps.Where(x => x.Id == taskCompIdInt);
+                            if (taskCompSet.Count() > 0)
+                            {
+                                var taskComp = taskCompSet.First();
+                                user.AddUserToTask(taskComp);
+                                taskComp.SetPercent(context, curPercent, user, successMes, error);
+                                context.SaveChanges();                                
+                            }
+                                }
+                        successMes.Add("Трудозатраты успешно добавлены");
+                        TempData["SuccessMes"] = successMes;
+                       // var primaTaskrsrcExecute = new PrimaTaskrsrcExecute(Convert.ToInt32(selectedTaskrsrcId));
+                       // primaTaskrsrcExecute.AddFact(workTime.TotalHours);
                     }
                     else
                     {
@@ -132,7 +283,13 @@ namespace WebApplication5.Controllers
                 //ViewData["CurProjects"] = GetProjectsFromPrima();
                 //ViewData["KindOfAct"] = GetKindOfAct();
                 //ViewData["PrimaTask"] = GetTasksFromPrima(projectName);
-                TempData["projectName"] = projectName; TempData["selectedTaskList"] = selectedTaskList; TempData["selectedKindOfAct"] = selectedKindOfAct;  TempData["workTimeHours"] = workTimeHours; TempData["workTimeMinutes"] = workTimeMinutes; TempData["comment"] = comment;
+                if (!string.IsNullOrEmpty(userSubsHidden))
+                {
+                 TempData["UserSubsSelected"] = userSubsHidden;//UserSubs.GetInst(context, curUser, userSubsSelected);
+                 TempData["InputAnotherUserWL"] = "true"; 
+                }
+                TempData["projectName"] = projectName; TempData["selectedTaskList"] = selectedTaskList; TempData["selectedKindOfAct"] = selectedKindOfAct;  TempData["workTimeHours"] = workTimeHours; TempData["workTimeMinutes"] = workTimeMinutes; TempData["comment"] = comment; TempData["curPercent"] = curPercent;
+                TempData["DateOfReport"] = dateOfReportVal;
                 return RedirectToAction("Index");//, successMessage, failMessage);
             }
             catch (Exception ex)
@@ -148,29 +305,37 @@ namespace WebApplication5.Controllers
         ViewDataDictionary dataDictionary;
         string projectNameTr;
 
-        public bool CheckData(User user, string proj_Id, KindOfAct kindOfAct, DateTime dateOfReport, string task_Id, TimeSpan workTime, string comment , out List<string> error)
+        public bool CheckData(AppDbContext context ,User user, string proj_Id, KindOfAct kindOfAct, DateTime dateOfReport, string task_Id, TimeSpan workTime, string comment , List<string> error, double workTimeAmount)
         {
-            error = new List<string>();
+            //error = new List<string>();
             //if (user == null)
             //{
             //    error = "Вы не были импортированы в систему обратитесь, пож-та, в отдел ОСПР";
             //    return false;
             //}
-            if (new DateTime(2022,01,01)>dateOfReport.Date || dateOfReport> new DateTime(2023, 01, 01))
+            if (new DateTime(2022,01,01)>dateOfReport.Date || dateOfReport> new DateTime(2030, 01, 01))
             {
                 error.Add(" Дата отчёта должна находится в пределах текущего года.");
                 
             }
-            if (string.IsNullOrEmpty(proj_Id))
+            if (!string.IsNullOrEmpty(proj_Id))
             {
-                error.Add(" Введенного проекта не существует. " + Environment.NewLine);
-
+                var taskCompSet = context.TaskComps.Where(x => x.ProjectNumber == proj_Id);
+                if (taskCompSet.Count() == 0)
+                {
+                    error.Add(" Введенного проекта не существует. " + Environment.NewLine);
+                }
             }
-            if (string.IsNullOrEmpty(task_Id))
+            else
+            {
+                error.Add("Заполните поле проект. " + Environment.NewLine);
+            }
+                        
+            if (string.IsNullOrEmpty(task_Id) || task_Id=="undefined")
             {
                 error.Add(" Данная задача не относится к выбранному проекту или не существует " + Environment.NewLine);
                 
-            }
+            }           
             if (kindOfAct==null)
             {
                 error.Add("Введённый вид деятельности не существует." + Environment.NewLine);
@@ -178,13 +343,21 @@ namespace WebApplication5.Controllers
             }
             if (workTime==new TimeSpan() || workTime>new TimeSpan(12,0,0))
             {
-                error.Add(" Указанный формат рабочего времени не соответствует шаблону" + Environment.NewLine);
+                error.Add("Поле \"Фактические трудозатраты\" заполнено неверно." + Environment.NewLine);
                 
             }
             if (comment!=null && comment.Length>200)
             {
                 error.Add("Комментарий не должен превышать 200 символов " + Environment.NewLine);
 
+            }
+            if (string.IsNullOrEmpty(user.AD_GUID))
+            {
+                error.Add("Вы не были импортированы в систему. Обратитесь к администратору." + Environment.NewLine);
+            }
+            if (workTime.TotalHours + workTimeAmount > 12)
+            {
+                error.Add("Суммарное кол-во трудозатрат за день должно быть не более 12 часов.");
             }
             if (error.Count>0) return false; 
             return true;
@@ -223,7 +396,13 @@ namespace WebApplication5.Controllers
         public DateTime GetDate(string date)
         {
             var res = DateTime.TryParse(date, out DateTime dateTime);
-            return dateTime;
+            if (res) {
+                return dateTime;
+            }
+            else
+            {
+                return DateTime.Now.Date;
+            }
         }
 
         public User GetUser(AppDbContext context)
@@ -262,8 +441,9 @@ namespace WebApplication5.Controllers
             return RedirectToAction("Index");
         }
 
-        public IActionResult DeleteWorkLog(string IdStr, string projectName, string DateOfReport, string selectedTaskList, string selectedKindOfAct, string workTimeSpan, string isShowingBalance, string comment)
+        public IActionResult DeleteWorkLog(string IdStr, string projectName, string DateOfReport, string selectedTaskList, string selectedKindOfAct, string workTimeSpan, string isShowingBalance, string comment, string userSubsHidden, int month)
         {
+            TempData["Month"] = month;
             Int32.TryParse(IdStr, out int IdInt);           
             var workLogsSet = context.WorkLogs.Where(x => x.Id == IdInt);
             if (workLogsSet.Count() > 0)
@@ -273,41 +453,21 @@ namespace WebApplication5.Controllers
                 context.SaveChanges();
                 TempData["IsShowingBalance"] = true;
                 TempData["SuccessMes"] = new List<string> { "Трудозатраты успешно удалены" };
-                var primaTaskrsrcExecute = new PrimaTaskrsrcExecute(Convert.ToInt32(workLog.Taskrsrc_id));
-                primaTaskrsrcExecute.AddFact((-1)*workLog.WorkTime.TotalHours);
+                //var primaTaskrsrcExecute = new PrimaTaskrsrcExecute(Convert.ToInt32(workLog.TaskComp_id));
+                //primaTaskrsrcExecute.AddFact((-1)*workLog.WorkTime.TotalHours);
                 //ViewData["WorkLogsLast30"] = GetWorkLogsLast30(curUser);
                 TempData["projectName"] = projectName; TempData["selectedTaskList"] = selectedTaskList; TempData["selectedKindOfAct"] = selectedKindOfAct; TempData["workTimeSpan"] = workTimeSpan; TempData["comment"] = comment;
-            }            
+            }
+            if (!string.IsNullOrEmpty(userSubsHidden))
+            {
+                TempData["UserSubsSelected"] = userSubsHidden;//UserSubs.GetInst(context, curUser, userSubsSelected);
+                TempData["InputAnotherUserWL"] = "true";
+            }
             return RedirectToAction("Index");
 
-        }
+        }      
 
-        public List<WorkLogs> GetWorkLogsLast30(User curUser)
-        {
-            var startDate = DateTime.Now.AddDays(-30);
-            var workLogsSet= context.WorkLogs.Where(x => x.User == curUser).Where(x=>x.DateOfReport>startDate && x.DateOfReport<=DateTime.Now.Date);
-
-            foreach(var workLog in workLogsSet)
-            {
-                workLog.ProjName = FindProjById(workLog.Proj_id);
-                workLog.TaskName = FindTaskNameByTasktsrc_Id(workLog.Taskrsrc_id);
-            }
-            var workLogsList = workLogsSet.ToList();
-            workLogsList.Reverse();
-            ViewData["TodayWorkTimeAmount"] = SumWorkLogs(workLogsList.Where(x => x.DateOfReport.Date == DateTime.Now.Date));
-            return workLogsList;
-
-        }
-
-        public TimeSpan SumWorkLogs(IEnumerable<WorkLogs> workLogs)
-        {            
-            TimeSpan totalWorkTime = new TimeSpan();
-            foreach (var workLog in workLogs)
-            {
-                totalWorkTime += workLog.WorkTime;
-            }
-            return totalWorkTime;
-        }
+    
 
         public string FindProjById(string projId)
         {
@@ -323,7 +483,7 @@ namespace WebApplication5.Controllers
                 if (reader.HasRows) // если есть данные
                 {
                     reader.Read();
-                    projName = reader.GetValue(0).ToString();               
+                    projName = reader.GetValue(0).ToString();
                 }
                 reader.Close();
             }
@@ -371,5 +531,39 @@ namespace WebApplication5.Controllers
             }
             return taskName;
         }
+        public string GetCurMonth(int month)
+        {
+            switch (month)
+            {
+                case 1:
+                    return "Январь";
+                case 2:
+                    return "Февраль";
+                case 3:
+                    return "Март";
+                case 4:
+                    return "Апрель";
+                case 5:
+                    return "Май";
+                case 6:
+                    return "Июнь";
+                case 7:
+                    return "Июль";
+                case 8:
+                    return "Август";
+                case 9:
+                    return "Сентябрь";
+                case 10:
+                    return "Октябрь";
+                case 11:
+                    return "Ноябрь";
+                case 12:
+                    return "Декабрь";
+                default:
+                    return string.Empty;
+
+            }
+        }
+
     }
 }

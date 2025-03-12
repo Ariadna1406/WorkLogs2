@@ -1,0 +1,31 @@
+﻿@model List<User>
+@{
+    int count = 0;
+}
+<br>
+<br>
+
+@if (ViewData["SuccessMes"] != null)
+{
+    @Html.Partial("PartialInformation", ViewData["SuccessMes"]);
+}
+@if (ViewData["FailMes"] != null)
+{
+    @Html.Partial("PartialError", ViewData["FailMes"]);
+}
+<h3>Назначить администраторов.</h3>
+<p> Путь к файлу для обновления информации о пользователях с правами администратора</p>
+<p>Если файла по заданному пути не существует, то он создаётся со всеми имеющимися в базе данных записями.</p>
+<textarea cols="100" id="excelFileRef" name="myTextarea" rows="5">\\srv-ws\WsSettings\Admins.xlsx</textarea>
+<br>
+<br>
+<a class="btn btn-default" onclick="ImpCompToExcel()"><i></i>Импортировать данные по пользователям</a>
+
+<script>
+    function ImpCompToExcel() {
+        var val = document.getElementById('excelFileRef').value;
+        window.location.href = '/Admin/UpdateAdminList/GetData?excelFileRef=' + val
+
+    }
+
+</script>

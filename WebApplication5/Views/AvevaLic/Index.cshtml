@@ -4,7 +4,7 @@
 
     ViewData["Title"] = "Учёт лицензий в AVEVA";
     bool? filterRows=false;
-    if (ViewData["FilterRows"] != null) filterRows = ViewData["FilterRows"] as bool?;
+    if (ViewData["FilterRows"] != null) { filterRows = ViewData["FilterRows"] as bool?; }
     int counter = 1;
 }
 <br>

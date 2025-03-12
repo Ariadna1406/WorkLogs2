@@ -1,0 +1,117 @@
+﻿@using WebApplication5.Controllers;
+@model List<AvevaBoreReport>
+
+@{
+
+    String values = string.Empty;
+    string datesStr = string.Empty;
+    string dataSetList = string.Empty;
+    //List<string> dataSetList = new List<string>();
+    List<DateTime> dates = new List<DateTime>();
+    if (Model.Count > 0)
+    {
+
+        foreach (var elemAmGr in Model.GroupBy(x=>x.Bore))
+        {
+            foreach (var elemAm in elemAmGr)
+            {
+                datesStr += elemAm.Date.ToShortDateString();
+                dates.Add(elemAm.Date);
+                if (elemAm == Model.Last())
+                {
+                    //dates += String.Format("'{0}'", elemAm.Date.ToShortDateString());
+                    values += String.Format("{0}", elemAm.TotalLength);
+                }
+                else
+                {
+                    //dates += String.Format("'{0}', ", elemAm.Date.ToShortDateString());
+                    values += String.Format("{0}, ", elemAm.TotalLength);
+                }
+            }
+            string dataSet =String.Format(@"labels: {2},
+            datasets: [{
+            label: 'Диаметр {1}',
+                data: [{0}],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },",values, elemAmGr.Key, datesStr);
+            dataSetList += dataSet;
+        }
+
+    }
+    ViewData["Title"] = "Мониторинг активности по проекту";
+
+    //var a = Model.First().PipeLineAmount.ToString();
+}
+<br>
+<h3>Детализация по диаметрам трубопровода @ViewData["prjAcr"]</h3>
+@{
+
+    if (dates.Count > 0)
+    {
+        foreach (var d in dates)
+        {
+            <input type="hidden" value="@d.ToLongDateString()" class="datesTr" />
+            }
+        }
+    }
+<br>
+<link rel="stylesheet" href="~/css/ProjectsIndex.css">
+
+<script src="~/js/chart.js"></script>
+<!--<table>
+    <tr><td>222<canvas id="myChart" width="300" height="150"></canvas></td></tr>
+
+    <tr><td>111<canvas id="myChart1" width="300" height="150"></canvas></td></tr>
+</table>-->
+<div>
+    <canvas id="myChart" width="300" height="150"></canvas>
+</div>
+<div>
+    <canvas id="myChart1" width="300" height="150"></canvas>
+</div>
+<script>
+        let arrStr=[]
+        let arr = document.getElementsByClassName('datesTr');
+        for (let i = 0; i < arr.length; i++) {
+            arrStr.push(arr[i].value);
+        }
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const myChart = new Chart(ctx, {
+            type: 'line',
+                
+                
+                data: {@dataSetList
+        
+
+
+            
+
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+</script>
+
+

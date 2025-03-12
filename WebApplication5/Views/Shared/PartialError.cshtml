@@ -1,5 +1,6 @@
 ﻿@model List<string>
-
+@if (Model != null && Model.Count > 0)
+{
     <table class="alert" style="width: 100%; background-color:lightpink">
         <tbody>
             <tr>
@@ -9,10 +10,11 @@
                 <td align="left" style="font-weight:bold;width:100%;padding:5px; text-align : left">                                    
                   
                         @foreach (var line in Model)
-                 {
+                        {
      <p>@line</p>
-                 }
+                        }
                 </td>
             </tr>
         </tbody>
     </table>
+}

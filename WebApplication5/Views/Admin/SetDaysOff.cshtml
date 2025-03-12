@@ -1,0 +1,31 @@
+﻿@model List<User>
+@{
+    int count = 0;
+}
+<br>
+<br>
+
+@if (ViewData["SuccessMes"] != null)
+{
+    @Html.Partial("PartialInformation", ViewData["SuccessMes"]);
+}
+@if (ViewData["FailMes"] != null)
+{
+    @Html.Partial("PartialError", ViewData["FailMes"]);
+}
+<h3>Назначить праздничные дни</h3>
+<p>Праздничные дни нужны для получения необходимой нормы часов во вкладке "Мой отдел/Сводная таблицы трудозатрат"</p>
+
+<textarea cols="100" id="excelFileRef" name="myTextarea" rows="5">\\srv-ws\WsSettings\DaysOff.xlsx</textarea>
+<br>
+<br>
+<a class="btn btn-default" onclick="ImpCompToExcel()"><i></i>Импортировать праздничные даты</a>
+
+<script>
+    function ImpCompToExcel() {
+        var val = document.getElementById('excelFileRef').value;
+        window.location.href = '/Admin/UpdateDaysOffFromExcel/GetData?excelFileRef=' + val
+
+    }
+
+</script>

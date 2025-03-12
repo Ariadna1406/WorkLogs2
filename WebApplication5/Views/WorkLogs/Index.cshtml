@@ -5,28 +5,52 @@
     ViewData["Title"] = "Отчёт по трудозатратам";
 
     User curUser = ViewData["CurUser"] as User;
+    var userSubs = ViewBag.UserSubs as List<User>;
     var IsShowingBalance = ViewData["IsShowingBalance"] as bool?;
     var workLogsLast30 = ViewData["WorkLogsLast30"] as List<WorkLogs>;
     string dateTimeRightFormat = string.Empty;
+    int curMonthInt = ViewBag.CurMonthInt;
+    string curMonth = ViewBag.CurMonth;
+    string inputAnotherUserWL = ViewBag.InputAnotherUserWL as string;
     if (Model != null)
     {
         var date = Model.DateOfReport.Date;
         dateTimeRightFormat = String.Format("{0}-{1}-{2}T00:00:00.000", date.Year, date.Month < 10 ? "0" + date.Month.ToString() : date.Month.ToString(), date.Day < 10 ? "0" + date.Day.ToString() : date.Day.ToString());
     }
-    var primaTaskList = ViewData["PrimaTask"] as List<PrimaTask>;
-    //string prjName = string.Empty; var selectedTask = string.Empty; var kindOfAct = string.Empty; var workTimeSpan = "0:00"; string comment = string.Empty;
-    string prjName = ViewData["projectName"] as string ; string selectedTask = ViewData["selectedTaskList"] as string; string kindOfAct = ViewData["selectedKindOfAct"] as string ; string workTimeHours = ViewData["workTimeHours"] as string; string workTimeMinutes= ViewData["workTimeMinutes"] as string; string comment = ViewData["comment"] as string ;
+    var taskCompList = ViewData["TaskCompSet"] as List<TaskComp>; //primaTaskList
+                                                             //string prjName = string.Empty; var selectedTask = string.Empty; var kindOfAct = string.Empty; var workTimeSpan = "0:00"; string comment = string.Empty;
+    string prjName = ViewData["projectName"] as string; string selectedTask = ViewData["selectedTaskList"] as string; string kindOfAct = ViewData["selectedKindOfAct"] as string; string workTimeHours = ViewData["workTimeHours"] as string; string workTimeMinutes = ViewData["workTimeMinutes"] as string; string comment = ViewData["comment"] as string; string curPercent = ViewData["curPercent"] as string;
+    string userSubsSel = ViewData["UserSubsSelected"] as string;
     int count = 0;
-    var totalWorkTime= ViewData["TodayWorkTimeAmount"] as TimeSpan?;
-    bool? isShowingBalance=false;
-    if (ViewData["IsShowingBalance"]!=null) isShowingBalance = ViewData["IsShowingBalance"] as bool?;
+    var totalWorkTime = ViewData["TodayWorkTimeAmount"] as TimeSpan?;
+    var wlCurMonth = ViewData["wlCurMonth"] as Dictionary<DateTime, TimeSpan>;
+    var wlCurPrevMonth = ViewData["wlCurPrevMonth"] as Dictionary<DateTime, TimeSpan>;
+    bool? isShowingBalance = true;
+    //if (ViewData["IsShowingBalance"]!=null) isShowingBalance = ViewData["IsShowingBalance"] as bool?;
+
+    var kindOfActList = ViewData["KindOfAct"] as List<KindOfAct>;
+    var dif = kindOfActList.Single(x => x.Name == "Другое");
+    kindOfActList.Remove(dif);
+    kindOfActList.Add(dif);
 }
-<br>
+
 <h3>Отчёт по трудозатратам</h3>
-<br>
 <link rel="stylesheet" href="~/css/WorkLogsIndex.css">
 
 <p id="Welcome">Добрый день, @curUser.FullName !</p>
+@if (userSubs!=null && userSubs.Count() > 0) {
+       
+<p> Заполнить трудозатраты за пользователя: <input type="checkbox" id="InputAnotherUserWL" onchange="ShowInputAnotherUserWLOnClick()" value="@inputAnotherUserWL" />
+    <input list="userSubsList" name="userSubs" id="UserSubs" value="@userSubsSel" autocomplete="off" size="40" onchange="UserSubsHiddenEqToSel()">
+    
+    <datalist id="userSubsList">
+        @foreach (var userSub in userSubs)
+        {
+            <option id="@userSub.Id">@userSub.FullName</option>
+        }
+    </datalist>
+</p>
+}
 @if (ViewData["SuccessMes"] != null)
 {
     @Html.Partial("PartialInformation", ViewData["SuccessMes"]);
@@ -65,25 +89,27 @@
         <td>
             <input list="projectList" name="selectedProject" id="SelectedProject" value="@prjName" autocomplete="off">
             <datalist id="projectList">
-                @foreach (var project in ViewData["CurProjects"] as List<Project>)
-                    {
-                <option id="id_@project.Id">@String.Format("{0}", project.InternalNum, @project.ShortName)</option>
-                    }
+                @foreach (var project in ViewData["CurProjects"] as List<string>)
+                {
+                    <option id="@project">@project</option>
+                }
             </datalist>
-            <span asp-validation-for="Proj_id" class="text-danger"></span>
 
         </td>
     </tr>
 
     <form asp-controller="WorkLogs" asp-action="SendWorkLogs" method="post" enctype="multipart/form-data">
-    <tr>
-        <td>Наименование задачи:</td>
+    <tr>        
+        <td>Наименование работы:</td>
         <td>
-            <input list="TaskList" name="selectedTaskList" id="SelectedTaskList" value="@selectedTask" autocomplete="off">
+            <input list="TaskList" name="selectedTaskList" id="SelectedTaskList" value="@selectedTask" autocomplete="off" oninput="SetCurTaskPercent()">
             <datalist id="TaskList">
-                @foreach (var task in primaTaskList)
+                @if (taskCompList != null)
                 {
-                    <option class="@task.ProjId" id="@task.Taskrsrc_Id">@task.TaskName</option>
+                    foreach (var task in taskCompList)
+                    {
+                    <option class="@task.ProjectNumber" id="@task.Id">@task.TaskCompName<input type="text" hidden="hidden" id="taskPercent-@task.Id" value="@task.CompletePercent"></option>
+                    }
                 }
             </datalist>
             <span asp-validation-for="KindOfAct" class="text-danger"></span>
@@ -98,95 +124,223 @@
     <tr>
         <td>Вид деятельности:</td>
         <td>
-            <input list="KindOfAct" name="selectedKindOfAct" id="SelectedKindOfAct" value="@kindOfAct" autocomplete="off">
+            <input list="KindOfAct" name="selectedKindOfAct" id="SelectedKindOfAct" value="@kindOfAct" autocomplete="off" oninput="CheckIfElse()">
             <datalist id="KindOfAct">
-                @foreach (var kind in ViewData["KindOfAct"] as List<KindOfAct>)
+                @foreach (var kind in kindOfActList)
                 {
-                <option>@kind.Name</option>
+                    <option>@kind.Name</option>
                 }
             </datalist>
             <span asp-validation-for="KindOfAct" class="text-danger"></span>
         </td>
 
     <tr>
-        <td>Отработанное время:</td>
+    <tr id="KindOfActStrTr" hidden="hidden">
+        <td>Введите вид деятельности:</td>
         <td>
-            <span id="Hours"><span> <input type="text" size="5" name="workTimeHours" id="workTimeHours" value="@workTimeHours" /> ч. <input size="5" type="text" name="workTimeMinutes" id="workTimeMinutes" value="@workTimeMinutes" /> мм.    
-                
+            <input type="text" size="30" name="kindOfActStr" id="KindOfActStr">
+        </td>
+
+    <tr>
+        <td>Фактические трудозатраты:</td>
+        <td>
+            <span id="Hours"><span> <input type="text" size="5" name="workTimeHours" id="workTimeHours" value="@workTimeHours" /> ч. <input size="5" type="text" name="workTimeMinutes" id="workTimeMinutes" value="@workTimeMinutes" /> мм.
+
         </td>
     </tr>
+
+    <tr>
+        <td>Процент выполнения:</td>
+        <td>
+            <span>Текущий процент: <b id="curPercent">%</b>. Изменить </span> <input type="text" size="5" name="curPercent" id="curPercentInput" value="@curPercent" /> %
+
+        </td>
+    </tr>
+
     <tr>
         <td>Комментарий:</td>
         <td>
-            <textarea rows="3" cols="68" name="comment" id="comment">@comment</textarea>            
+            <textarea rows="3" cols="68" name="comment" id="comment">@comment</textarea>
             (Необязательное поле)
         </td>
     </tr>
-
+    <tr><td><input type="text" name="userSubsHidden" id="userSubsHidden" value="@userSubsSel" hidden="hidden" /></td></tr>
     <tr>
 
         <td>
-            <input type="submit" value="Подать трудозатраты" onclick="onclickProj()">
+            <input type="submit" value="Сохранить" onclick="onclickProj()">
         </td>
     </tr>
     </form>
 </table>
 <br>
+<p>Месяц мониторинга трудозатрат</p>
+<input hidden="hidden" id="curMonth" value="@curMonthInt" />
+<p>
+    <input class="text-box single-line" data-val="true" id="MonthOfReport" name="MonthOfReport" type="month" value="">
+    <a class="btn btn-default" onclick="OnSelMonth()"><i></i> Показать </a>
+</p>
 
-<a class="btn btn-default" onclick="Show()"><i></i> Показать баланс рабочего времени</a>
-<br>
 @if (IsShowingBalance.HasValue && IsShowingBalance.Value)
 {
-<br>
-<table class="QualityBook" width="84%"><tr><td style="font-size:16px; color:brown">Общее поданное время за текущий день:</td><td style="font-size:16px; color:brown; font-weight:bold ">@totalWorkTime.ToString()</td></tr></table>
-<br>
-<table id="WorkLogsLast30" class="QualityBook" width="100%">
-    <tr style="padding: 10px 15px;"  > 
-        <th width="10%" style="align-content: center; padding: 10px 15px;">Проект</th>
-        <th width="40%" style="align-content: center; padding: 10px 15px;">Наименование задачи</th>
-        <th width="15%" style="align-content: center; padding: 10px 15px;">Дата отчёта</th>
-        <th width="10%" style="align-content: center; padding: 10px 15px;">Кол-во списанного времени</th>
-        <th width="15%" style="align-content: center; padding: 10px 15px;">Комментарий</th>
-        <th width="10%" style="align-content: center; padding: 10px 15px;">Действия</th>
-    </tr>
-    @if (workLogsLast30.Count > 0) {
-    @foreach (var workLog in workLogsLast30)
-    {
-<tr>
-    <td>@workLog.ProjName</td>
-    <td>@workLog.TaskName</td>
-    <td>@workLog.DateOfReport.ToShortDateString()</td>
-    <td>@workLog.WorkTime</td>
-    <td>@workLog.Comment</td>
-    <td><a class="btn btn-default" onclick="Delete(@workLog.Id)"><i></i> Удалить </a></td>
-</tr>
-    }
-    }
-    else{
+    @if (!string.IsNullOrEmpty(userSubsSel))
+                {
+                    <h2>Показан отчёт по пользователю: <b style="color:red"> @userSubsSel</b></h2>
+                }
+    <table class="QualityBook" width="100%">
+        <tr>
+            <td width="300px" style="font-size:16px; color:brown">Трудозатраты за текущий день:</td>
+            <td style="font-size:16px; color:brown; font-weight:bold ">@totalWorkTime.ToString()</td>
+        </tr>
+        <tr>
+            <td style="font-size:16px; color:brown">Трудозатраты за @curMonth: </td>
+            <td style="font-size:16px; color:black; font-weight:bold ">
+                <p>
+                    @foreach (var wld in wlCurMonth)
+                    {
+                        var date = wld.Key;
+                        var workTime = wld.Value;
+                        var monthStr = date.Month < 10 ? "0" + date.Month.ToString() : date.Month.ToString();
+                        var dayStr = date.Day < 10 ? "0" + date.Day.ToString() : date.Day.ToString();
+                        var dateForJs = $"{date.Year}-{monthStr}-{dayStr}";
+                        var dateShort = wld.Key.ToShortDateString();
+                        var workTimeHoursStr = workTime.TotalHours < 10 ? "0" + workTime.TotalHours.ToString() : workTime.TotalHours.ToString();
+                        var workTimeMinutesStr = workTime.Minutes < 10 ? "0" + workTime.Minutes.ToString() : workTime.Minutes.ToString();
+                        var workTimeStr = $"{workTimeHoursStr}:{workTimeMinutesStr}";
+                        <b onclick="SetFilterDate('DateOfReportForSearch' ,'@dateForJs')" style="cursor: pointer;">@dateShort - </b>
+                        @if (workTime.Equals(new TimeSpan(8, 0, 0)))
+                        {
+                            <b style="color:green"> @workTimeStr</b><b>; </b>
+                        }
+                        else
+                        {
+                            <b style="color:red"> @workTimeStr</b><b>; </b>
+                        }
+                    }
+                </p>
+            </td>
+        </tr>
+        <tr>
+        </tr>
+    </table>
     <br>
-        <p id="Message"><b>У вас нет поданных трудозатрат за последние 30 дней</b></p>
-    <br>
-    }
-</table>        
+    <table id="WorkLogsLast30" class="QualityBook" width="100%">
+        <tr style="padding: 10px 15px;">
+            <th width="10%" style="align-content: center; padding: 10px 15px;">Проект</th>
+            <th width="20%" style="align-content: center; padding: 10px 15px;">Наименование работы</th>
+            <th width="20%" style="align-content: center; padding: 10px 15px;">Вид деятельности</th>
+            <th width="15%" style="align-content: center; padding: 10px 15px;">Дата отчёта</th>
+            <th width="10%" style="align-content: center; padding: 10px 15px;">Фактические трудозатраты</th>
+            <th width="15%" style="align-content: center; padding: 10px 15px;">Комментарий</th>
+            <th width="10%" style="align-content: center; padding: 10px 15px;">Действия</th>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td onclick="SetFilterText()" style="padding: 10px 15px; text-align: center">
+                <input type="date" id="DateOfReportForSearch" oninput="FilterRows()">
+                <br>
+                <span style="font-size:smaller;">(фильтр)</span>
+            </td>
+            <td></td>
+            <td></td>
+        </tr>
+        @if (workLogsLast30.Count > 0)
+        {
+            @foreach (var workLog in workLogsLast30)
+            {
+                <tr>
+                    <td>@workLog.ProjName</td>
+                    <td>@workLog.TaskName</td>
+                    @{
+                        string kindOfActString = string.Empty;
+                        if (workLog.KindOfAct.Name == "Другое")
+                        {
+                            if (workLog.KindOfActStr != null)
+                            {
+                                kindOfActString = workLog.KindOfActStr;
+                            }
+
+                        }
+                        else
+                        {
+                            kindOfActString = workLog.KindOfAct.Name;
+                        }
+                    }
+                    <td>@kindOfActString</td>
+                    <td class="DateOfReport">@workLog.DateOfReport.ToShortDateString()</td>
+                    <td>@workLog.WorkTime</td>
+                    <td>@workLog.Comment</td>
+                    <td><a class="btn btn-default" onclick="Delete(@workLog.Id)"><i></i> Удалить </a></td>
+                </tr>
+            }
+        }
+        else
+        {
+            <br>
+            <p id="Message"><b>У вас нет поданных трудозатрат в выбранном месяце</b></p>
+            <br>
+        }
+    </table>
+
 }
 
 <script>
 
     document.getElementById("SelectedProject").addEventListener("input", onSel, false);
+    ShowInputAnotherUserWLOnLoad()
+    //Заполняет текущий месяц мониторинга трудозатрат
+    var d = document.getElementById('curMonth').value
+    var dateOfReport = document.getElementById('MonthOfReport')
+    dateOfReport.value = SetDate(d)
+    console.log(d);
 
-    function onclickProj() {
+    function ShowInputAnotherUserWLOnClick() {
+        var val = document.getElementById('InputAnotherUserWL');
+        var userSubsHidden = document.getElementById('userSubsHidden')
+        var userSubs = document.getElementById('UserSubs');
+        if (val.checked) {
+            console.log('false111')
+            userSubs.hidden = false
+            userSubsHidden.value = userSubs.value
+        }
+        else {
+            console.log('true111')
+            userSubs.hidden = true
+            userSubs.value = ''
+            userSubsHidden.value = ''
 
-        var selProject = document.getElementById("SelectedProject").value;
-        document.getElementById("projectName").value = selProject;
+        }
+    }
 
-        document.getElementById("selectedTaskrsrcId").value = getIdFromSel();
-        
-        var dateOfRep = document.getElementById("DateOfReport").value;
-        document.getElementById("dateOfReportVal").value = dateOfRep;
-    };
+    function UserSubsHiddenEqToSel() {
+        var userSubs = document.getElementById('UserSubs');
+        var userSubsHidden = document.getElementById('userSubsHidden')
+        userSubsHidden.value = userSubs.value
+    }
 
-    function onSel() {
-        
+    function ShowInputAnotherUserWLOnLoad() {
+        var cb = document.getElementById('InputAnotherUserWL');
+        var userSubs = document.getElementById('UserSubs');
+        if (cb != null && userSubs != null) {
+            if (cb.value == 'true') {
+                cb.checked = true
+                userSubs.hidden = false
+            }
+            else {
+                cb.checked = false
+                userSubs.hidden = true
+            }
+        }
+    }
+
+    function OnSelMonth() {
+        console.log('onSelMonth')
+        var userSubsSel = document.getElementById('UserSubs')
+        if (userSubsSel != null) var userSubsSelected = document.getElementById('UserSubs').value; else var userSubsSelected = '';
+        var cbVa = document.getElementById('InputAnotherUserWL');
+        if (cbVa != null) var cbVal = document.getElementById('InputAnotherUserWL').checked; else var cbVal = ''
         var val = document.getElementById('SelectedProject').value;
         var date = document.getElementById('DateOfReport').value;
         var task = document.getElementById('SelectedTaskList').value;
@@ -194,17 +348,79 @@
         var workTimeHours = document.getElementById('workTimeHours').value;
         var workTimeMinutes = document.getElementById('workTimeMinutes').value;
         var comment = document.getElementById('comment').value;
+        var dateOfRep = document.getElementById('MonthOfReport').value;
+        datAr = dateOfRep.split('-');
+        monthInt = Number(datAr[1]);
+        window.location.href = '/WorkLogs/SelectProject/GetData?selectedProject=' + val + '&DateOfReport=' + date + '&selectedTaskList=' + task + '&selectedKindOfAct=' + kindOfAct + '&workTimeHours=' + workTimeHours + '&workTimeMinutes=' + workTimeMinutes + '&isShowingBalance=' + isShowingBalance + '&comment=' + comment + '&month=' + monthInt + '&userSubsSelected=' + userSubsSelected + '&inputAnotherUserWL=' + cbVal;
+
+    }
+
+
+    function CheckIfElse() {
+        var selKindOfAct = document.getElementById("SelectedKindOfAct").value;
+        if (selKindOfAct == 'Другое') {
+            document.getElementById("KindOfActStrTr").hidden = false;
+        }
+        else {
+            document.getElementById("KindOfActStrTr").hidden = true;
+        }
+
+    }
+
+    function onclickProj() {
+
+        var selProject = document.getElementById("SelectedProject").value;
+        document.getElementById("projectName").value = selProject;
+
+        document.getElementById("selectedTaskrsrcId").value = getIdFromSel();
+
+        var dateOfRep = document.getElementById("DateOfReport").value;
+        document.getElementById("dateOfReportVal").value = dateOfRep;
+    }
+
+    function onSel() {
+        console.log('onSel')
+        var userSubsSel = document.getElementById('UserSubs')
+        if (userSubsSel != null) var userSubsSelected = document.getElementById('UserSubs').value; else var userSubsSelected = '';
+        var cbVa = document.getElementById('InputAnotherUserWL');
+        if (cbVa != null) var cbVal = document.getElementById('InputAnotherUserWL').checked; else var cbVal = ''
+        var val = document.getElementById('SelectedProject').value;
+        var date = document.getElementById('DateOfReport').value;
+        var task = document.getElementById('SelectedTaskList').value;
+        var kindOfAct = document.getElementById('SelectedKindOfAct').value;
+        var workTimeHours = document.getElementById('workTimeHours').value;
+        var workTimeMinutes = document.getElementById('workTimeMinutes').value;
+        var comment = document.getElementById('comment').value;
+
+        var dateOfRep = document.getElementById('MonthOfReport').value;
+        datAr = dateOfRep.split('-');
+        monthInt = Number(datAr[1]);
         var listValue = document.getElementById('projectList').options;
         for (var i = 0; i < listValue.length; i++) {
             if (listValue[i].value == val) {
-                window.location.href = '/WorkLogs/SelectProject/GetData?selectedProject=' + val + '&DateOfReport=' + date + '&selectedTaskList=' + task + '&selectedKindOfAct=' + kindOfAct + '&workTimeHours=' + workTimeHours + '&workTimeMinutes=' + workTimeMinutes + '&isShowingBalance=' + isShowingBalance + '&comment=' + comment; //'http://localhost:4443/WorkLogs/SelectProject/GetData?selectedProject=' + val + '&DateOfReport=' + date; //  'https://report.oilpro.ru/WorkLogs/SelectProject/GetData?selectedProject=' + val + '&DateOfReport=27.05.2022'; //'WorkLogs/SelectProject/GetData?selectedProject=2600';// + val;
-                document.getElementById("ShowWorkLogsBalance").setAttribute("asp-route-projectName", val);
-               
+                window.location.href = '/WorkLogs/SelectProject/GetData?selectedProject=' + val + '&DateOfReport=' + date + '&selectedTaskList=' + task + '&selectedKindOfAct=' + kindOfAct + '&workTimeHours=' + workTimeHours + '&workTimeMinutes=' + workTimeMinutes + '&isShowingBalance=' + isShowingBalance + '&comment=' + comment + '&month=' + monthInt + '&userSubsSelected=' + userSubsSelected + '&inputAnotherUserWL=' + cbVal; // userSubsSelected 'http://localhost:4443/WorkLogs/SelectProject/GetData?selectedProject=' + val + '&DateOfReport=' + date; //  'https://report.oilpro.ru/WorkLogs/SelectProject/GetData?selectedProject=' + val + '&DateOfReport=27.05.2022'; //'WorkLogs/SelectProject/GetData?selectedProject=2600';// + val;
+                //document.getElementById("ShowWorkLogsBalance").setAttribute("asp-route-projectName", val);
+
             }
         }
-    };
+    }
 
-    function getIdFromSel(){
+
+
+    function SetDate(day) {
+        if (day < 10) {
+            day = '0' + day
+        }
+        var year = new Date().getFullYear();
+        var date = year + '-' + day;
+        return date;
+    }
+
+    function onSelMonth() {
+
+    }
+
+    function getIdFromSel() {
         var datalist = document.getElementById('TaskList')
         var selVal = document.getElementById('SelectedTaskList').value
         if (selVal != '') {
@@ -212,6 +428,24 @@
             for (let i = 0; i < optionsData.length; i++) {
                 if (datalist.options[i].value == selVal) {
                     return optionsData[i].id
+                }
+            }
+        }
+        else {
+            return '';
+        }
+    }
+
+    function getPercentFromSel() {
+        var datalist = document.getElementById('TaskList')
+        var selVal = document.getElementById('SelectedTaskList').value
+        if (selVal != '') {
+            var optionsData = datalist.options
+            for (let i = 0; i < optionsData.length; i++) {
+                if (datalist.options[i].value == selVal) {
+                    var curId = optionsData[i].id;
+                    var curPercent = document.getElementById('taskPercent-' + curId).value
+                    return curPercent
                 }
             }
         }
@@ -230,8 +464,8 @@
         var isShowingBalance = document.getElementById('isShowingBalance').value;
         var comment = document.getElementById('comment').value;
         window.location.href = '/WorkLogs/ShowWorkLogsBalance/GetData?projectName=' + val + '&DateOfReport=' + date + '&selectedTaskList=' + task + '&selectedKindOfAct=' + kindOfAct + '&workTimeHours=' + workTimeHours + '&workTimeMinutes=' + workTimeMinutes + '&isShowingBalance=' + isShowingBalance + '&comment=' + comment;
-        
-    };
+
+    }
 
     function Delete(Id) {
         var val = document.getElementById('SelectedProject').value;
@@ -242,26 +476,82 @@
         var workTimeMinutes = document.getElementById('workTimeMinutes').value;
         var isShowingBalance = document.getElementById('isShowingBalance').value;
         var comment = document.getElementById('comment').value;
-        window.location.href = '/WorkLogs/DeleteWorkLog/GetData?IdStr=' + Id + '&projectName=' + val + '&DateOfReport=' + date + '&selectedTaskList=' + task + '&selectedKindOfAct=' + kindOfAct + '&workTimeHours=' + workTimeHours + '&workTimeMinutes=' + workTimeMinutes + '&isShowingBalance=' + isShowingBalance + '&comment=' + comment;
+        var userSubsHidden = document.getElementById('userSubsHidden').value;
+        var dateOfRep = document.getElementById('MonthOfReport').value;
+        datAr = dateOfRep.split('-');
+        monthInt = Number(datAr[1]);
+        window.location.href = '/WorkLogs/DeleteWorkLog/GetData?IdStr=' + Id + '&projectName=' + val + '&DateOfReport=' + date + '&selectedTaskList=' + task + '&selectedKindOfAct=' + kindOfAct + '&workTimeHours=' + workTimeHours + '&workTimeMinutes=' + workTimeMinutes + '&isShowingBalance=' + isShowingBalance + '&comment=' + comment + '&userSubsHidden=' + userSubsHidden + '&month=' + monthInt;
 
-    };
+    }
+
+    function FilterRows() {
+
+        var dateSearch = new Date(document.getElementById('DateOfReportForSearch').value);
+        var dateOfReportSet = document.getElementsByClassName('DateOfReport')
+
+        if (dateSearch.getDate() > 0) {
+            for (var i = 0; i < dateOfReportSet.length; i++) {
+                var daAr = dateOfReportSet[i].textContent.replace('.', '-').replace('.', '-').split('-')
+                var daStr = daAr[2] + '-' + daAr[1] + '-' + daAr[0]
+                var da = new Date(daStr)
+                if (dateSearch.toString() == da.toString()) {
+                    // alert("true --- " + i)
+                    dateOfReportSet[i].parentElement.hidden = false
+                }
+                else {
+                    //  alert("false --- " + i)
+                    dateOfReportSet[i].parentElement.hidden = true
+                }
+            }
+        }
+        else {
+            for (var i = 0; i < dateOfReportSet.length; i++) {
+                dateOfReportSet[i].parentElement.hidden = false
+            }
+        }
 
 
 
+        //if (finishDateSearch.getDate() > 0) {
+        //    for (var i = 0; i < finishDateSet.length; i++) {
+        //        var dateAr = finishDateSet[i].textContent.replace('.', '-').replace('.', '-').split('-')
+        //        var dateStr = dateAr[2] + '-' + dateAr[1] + '-' + dateAr[0]
+        //        var dateDa = new Date(dateStr)
+        //        if (dateDa < finishDateSearch && finishDateSet[i].parentElement.hidden == false) {
+        //            finishDateSet[i].parentElement.hidden = false
+        //        }
+        //        else {
+        //            finishDateSet[i].parentElement.hidden = true
+        //        }
+        //    }
+        //}
+    }
+
+    function getDate(a) {
+        var dateAr = a.textContent.replace('.', '-').replace('.', '-').split('-')
+        var dateStr = dateAr[2] + '-' + dateAr[1] + '-' + dateAr[0]
+        return new Date(dateStr)
+    }
+
+    function getDateStr(a) {
+        var dateAr = a.split('.')
+        var dateStr = dateAr[2] + '-' + dateAr[1] + '-' + dateAr[0]
+        return dateStr
+    }
+
+    function SetFilterDate(elemid, value) {
+        var filterElem = document.getElementById(elemid);
+        filterElem.value = value;
+        FilterRows()
+    }
+
+    SetCurTaskPercent()
+
+    function SetCurTaskPercent() {
+        var curPercent = getPercentFromSel()
+        if (curPercent != undefined)
+            document.getElementById('curPercent').innerText = curPercent;
+    }
 
 
-    //$(document).on('change', 'input', function () {
-    //    var options = $('SelectedProject')[0].options;
-    //    var val = $(this).val();
-    //    for (var i = 0; i < options.length; i++) {
-    //        if (options[i].value === val) {
-    //            alert(val);
-    //            break;
-    //        }
-    //    }
-    //});
-
-    function Show1() {       
-       
-    };
 </script>
