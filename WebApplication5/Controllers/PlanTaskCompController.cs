@@ -51,7 +51,7 @@ namespace WebApplication5.Controllers
 
         // Добавление задачи
         [HttpPost("SaveTasks")]
-        public IActionResult SaveTasks([FromBody] PlanTaskCompJson[] planTaskCompJson)
+        public IActionResult SaveTasks([FromBody] List<PlanTaskCompJson> planTaskCompJson)
         {
             //var planTaskCompList= planTaskCompJson.Select(x=>(PlanTaskComp)x)
             //if (task == null) return BadRequest("Задача пуста");

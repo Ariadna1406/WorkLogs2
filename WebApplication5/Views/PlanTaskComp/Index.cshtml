@@ -504,13 +504,12 @@
                     });
                 })
                 //добавлен комментарий
-                console.log("Отправляемые данные для сохранения:", JSON.stringify(tasklist));
-                const newstr='111'
+                console.log("Отправляемые данные для сохранения:", (tasklist));
 
                 $.ajax({                    
                     url: '/PlanTaskComp/SaveTasks',
                     type: 'POST',
-                    data: newstr, //JSON.stringify(),
+                    data: JSON.stringify(tasklist),
                     contentType: 'application/json',
                     success: function (response) {
                         let message = response.iserror ? "Ошибка! " + response.mes : "Успешно! " + response.mes;

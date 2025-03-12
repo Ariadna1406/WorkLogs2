@@ -20,7 +20,7 @@ namespace WebApplication5.Models
         public int authorId { get; set; }
 
 
-        public PlanTaskCompJson() { }
+        //public PlanTaskCompJson() { }
     }
 
 }
