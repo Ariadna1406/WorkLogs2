@@ -75,7 +75,7 @@ namespace WebApplication5.Controllers
         //    TaskRepository.Delete(id);
         //    return Ok();
         //}
-
+        // 
         // Получение списка сотрудников отдела текущего пользователя
         [HttpGet("api/gantt/resources")]
         public IActionResult GetUsersFromMyDepartment()
