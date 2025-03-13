@@ -167,6 +167,16 @@ namespace WebApplication5.Models
             return null;
         }
 
+        public static User GetUserById(AppDbContext context, int Id)
+        {
+            var userSet = context.Users.Where(x => x.Id == Id);
+            if (userSet.Count() > 0)
+            {
+                return userSet.First();
+            }
+            return null;
+        }
+
         public static User GetUserByFullName(AppDbContext context, string fullName)
         {            
             var userSet = context.Users.Include(x => x.Department).Where(x => x.FullName == fullName);

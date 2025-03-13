@@ -12,6 +12,7 @@ namespace WebApplication5.Models
     public class PlanTaskCompJson
     {
         public int id { get; set; }
+        public int idDb { get; set; }
         public int taskCompId { get; set; }
         public string startPlanDate { get; set; }
         public string finishPlanDate { get; set; }

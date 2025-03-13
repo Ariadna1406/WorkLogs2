@@ -49,14 +49,22 @@ namespace WebApplication5.Controllers
             return Json(new { data = webApiTasks });
         }
 
+        [HttpGet("api/gantt/plantaskcomp")]
+        public IActionResult GetPlanTaskComp()
+        {
+            var curUser = WebApplication5.Models.User.GetUser(context, HttpContext);
+            var planTaskCompList = PlanTaskComp.GetPlanTaskCompCurUser(curUser, context);            
+            return Json(new { data = planTaskCompList });
+        }
+
         // Добавление задачи
         [HttpPost("SaveTasks")]
-        public IActionResult SaveTasks([FromBody] List<PlanTaskCompJson> planTaskCompJson)
+        public IActionResult SaveTasks([FromBody] List<PlanTaskCompJson> planTaskCompJsonList)
         {
-            //var planTaskCompList= planTaskCompJson.Select(x=>(PlanTaskComp)x)
-            //if (task == null) return BadRequest("Задача пуста");
-            //context.PlanTaskComp.Add(planTaskComp);
-            //context.SaveChanges();
+            var planTaskCompCreateList = planTaskCompJsonList.Where(x=>x.idDb==0).Select(x => PlanTaskComp.Create(x, context));
+            context.PlanTaskComp.AddRange(planTaskCompCreateList);
+            planTaskCompJsonList.Where(x => x.idDb != 0).ToList().ForEach(x => PlanTaskComp.Update(x, context));
+            context.SaveChanges();            
             return View("Index");
         }
 
