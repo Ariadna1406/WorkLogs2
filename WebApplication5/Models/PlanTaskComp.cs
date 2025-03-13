@@ -85,9 +85,9 @@ namespace WebApplication5.Models
             
         }
 
-        public static List<PlanTaskComp> GetPlanTaskCompCurUser(User curUser, AppDbContext context)
+        public static List<PlanTaskComp> GetPlanTaskCompCurUser(User curUser, int month ,AppDbContext context)
         {
-            var planTaskCompList = context.PlanTaskComp.Where(x => x.Author == curUser).ToList();
+            var planTaskCompList = context.PlanTaskComp.Where(x => x.Author == curUser && x.StartPlanDate.Month==month).ToList();
             return planTaskCompList;
         
         }

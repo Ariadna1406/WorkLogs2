@@ -35,7 +35,7 @@ namespace WebApplication5.Controllers
         public IActionResult Index()
         {
             var curUser = WebApplication5.Models.User.GetUser(context, HttpContext);
-            var taskComps = TaskComp.GetAllTasksForMyDepartmentCurMonth(curUser, context);
+            var taskComps = TaskComp.GetAllTasksForMyDepartmentCurMonth(curUser, context);            
             var webApiTasks = taskComps.Select(x => (WebApiTask)x);
             return View(webApiTasks);
         }
@@ -50,10 +50,10 @@ namespace WebApplication5.Controllers
         }
 
         [HttpGet("api/gantt/plantaskcomp")]
-        public IActionResult GetPlanTaskComp()
+        public IActionResult GetPlanTaskComp(int planMonth)
         {
             var curUser = WebApplication5.Models.User.GetUser(context, HttpContext);
-            var planTaskCompList = PlanTaskComp.GetPlanTaskCompCurUser(curUser, context);            
+            var planTaskCompList = PlanTaskComp.GetPlanTaskCompCurUser(curUser, planMonth, context);            
             return Json(new { data = planTaskCompList });
         }
 
