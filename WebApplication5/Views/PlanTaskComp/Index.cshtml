@@ -349,10 +349,8 @@
                         // Проверка, является ли день выходным или праздничным
                         if (dayOfWeek !== 0 && dayOfWeek !== 6 && !isHoliday(currentDate)) {
                             workingDays++;
-                            console.log("Рабочий день:", currentDate.toLocaleDateString());
                         }
                     }
-                    console.log("Итого рабочих дней:", workingDays);
                     return workingDays;
                 }
 
@@ -360,14 +358,31 @@
                 let totalWorkingHoursInMonth = workingHoursInMonth * 8;
 
                 gantt.eachTask(function(task) {
+
                     let taskStart = task.start_date;
+                    let taskEnd = task.end_date;
+
                     if (typeof taskStart === "String") {
                         taskStart = gantt.date.str_to_date("%d-%m-%Y")(task.start_date);
                     }
-                    
+
+                    if (typeof taskEnd === "String") {
+                        taskEnd = gantt.date.str_to_date("%d-%m-%Y")(task.end_date);
+                    }
+
                     // Попадает ли задача в выбранный месяц
                     if (taskStart >= monthStart && taskStart <= monthEnd) {
-                        let totalHours = task.duration * 8 * task.intensity;
+                        let totalHours = 0;
+                        let currentDate = new Date(taskStart);
+                        let intensity = task.intensity || 1.00;
+
+                        while (currentDate <= taskEnd) {
+                            if (gantt.isWorkTime(currentDate) && !isHoliday(currentDate)) {
+                                totalHours += 8 * intensity;
+                            }
+                            currentDate.setDate(currentDate.getDate() + 1);
+                        }
+
                         let resource = task.resources;
                         if (resource) {
 
@@ -403,22 +418,41 @@
                         totalTimeBalance += timeBalance;
                         totalTotalHours += totalHours;
 
+                        let backgroundColor = "";
+                        if (totalHours < timeBalance) {
+                            backgroundColor = "#FFFEAF";
+                        } else if (totalHours === timeBalance) {
+                            backgroundColor = "#C1ECB0";
+                        } else {
+                            backgroundColor = "#EC928C";
+                        }
+
                         let row = document.createElement("tr");
 
                         row.innerHTML = `
                         <td style="text-align: left;"">${resourceName}</td>
                         <td>${resource.timeBalance}</td>
-                        <td><strong>${totalHours}</strong></td>
+                        <td style="background-color: ${backgroundColor};"><strong>${totalHours}</strong></td>
                         `;
 
                         tbody.appendChild(row);
                     });
                     // Динамическое добавление строки Итого в конце таблицы
                     let totalRow = document.createElement("tr");
+
+                    let backgroundColor = "";
+                    if (totalTotalHours < totalTimeBalance) {
+                        backgroundColor = "#FFFEAF";
+                    } else if (totalTotalHours === totalTimeBalance) {
+                        backgroundColor = "#C1ECB0";
+                    } else {
+                        backgroundColor = "#EC928C";
+                    }
+
                     totalRow.innerHTML = `
                         <td style="text-align: right;"><strong>ИТОГО</strong></td>
                         <td>${totalTimeBalance}</td>
-                        <td><strong>${totalTotalHours}</strong></td>
+                        <td style="background-color: ${backgroundColor};"><strong>${totalTotalHours}</strong></td>
                     `;
                     tbody.appendChild(totalRow);
                 }
@@ -464,15 +498,9 @@
                 { name: "start_date", label: "Дата начала", align: "center", min_width: 80, editor: {type: "date", map_to: "start_date"}, template: function(task) {
                     return gantt.date.date_to_str("%d.%m.%Y")(task.start_date);
                 } },
-                { name: "end_date", label: "Дата окончания", align: "center", min_width: 80, template: function(task) {
-                    // Для того, чтобы дата окончания не прибавлялась на +1 день
-                    if (task.start_date && task.duration) {
-                        let calculatedEndDate = gantt.calculateEndDate(task.start_date, task.duration);
-                        calculatedEndDate.setDate(calculatedEndDate.getDate() - 1);
-                        return gantt.date.date_to_str("%d.%m.%Y")(calculatedEndDate);
-                    }
-                    return null;
-                }},
+                { name: "end_date", label: "Дата окончания", align: "center", min_width: 80, editor: {type: "date", map_to: "end_date"}, template: function(task) {
+                    return gantt.date.date_to_str("%d.%m.%Y")(task.end_date);
+                } },
                 { name: "duration", label: "Длительность", align: "center", min_width: 45, editor: {type: "number", map_to: "duration"} },
                 { name: "intensity", label: "Интенсивность", min_width: 48, align: "center", editor: {type: "select", map_to: "intensity", options: validValues.map(value => ({ key: value, label: value.toString() }))} },
                 { name: "planned_progress", label: "Планир. % выполнения", min_width: 60, align: "center", editor: {type: "number", map_to: "planned_progress" } },
@@ -498,7 +526,36 @@
                 {
                     calculateTotalHoursForResource(resources);
                 }
+                setEndDateToEndOfDay(task);
+                recalculateDuration(task);
             })
+
+            // Правильный перерасчет даты окончания
+            function setEndDateToEndOfDay(task) {
+                let correctedEndDate = new Date(task.end_date);
+                correctedEndDate.setHours(23,59,59,999);
+                task.end_date = correctedEndDate;
+            }
+
+            // Правильный перерасчет длительности
+            function recalculateDuration(task) {
+                if (task.start_date && task.end_date) {
+                    let startDate = new Date(task.start_date);
+                    let endDate = new Date(task.end_date);
+
+                    let workDaysCount = 0;
+                    let currentDate = new Date(startDate);
+
+                    while (currentDate <= endDate) {
+                        if (gantt.isWorkTime(currentDate) && !isHoliday(currentDate)) {
+                            workDaysCount++;
+                        }
+                        currentDate.setDate(currentDate.getDate() + 1);
+                    }
+
+                    task.duration = workDaysCount;
+                }
+            }
 
             // Обновление списка комплектов в зависимости от выбранного проекта
             function updateSetOptions(selectedProject) {
@@ -541,6 +598,8 @@
                         planned_progress: 100
                     };
                     gantt.addTask(newTask);
+                    setEndDateToEndOfDay(newTask);
+                    recalculateDuration(newTask);
                     gantt.render();
                 }
             });
@@ -636,7 +695,7 @@
             // Получение начала и конца месяца
             function getMonthStartEnd(year, month) {
                 var startDate = new Date(year, month, 1);
-                var endDate = new Date(year, month + 1, 0); // Для получения последнего дня месяца используется день "0" следующего месяца
+                var endDate = new Date(year, month + 1, 1); // Для получения последнего дня месяца используется день "0" следующего месяца
                 return { start: startDate, end: endDate};
             }
 
