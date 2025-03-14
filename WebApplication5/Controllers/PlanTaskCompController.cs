@@ -37,6 +37,7 @@ namespace WebApplication5.Controllers
             var curUser = WebApplication5.Models.User.GetUser(context, HttpContext);
             var taskComps = TaskComp.GetAllTasksForMyDepartmentCurMonth(curUser, context);
             var webApiTasks = taskComps.Select(x => (WebApiTask)x);
+            //var planTaskComp = PlanTaskComp.GetPlanTaskCompCurUser(curUser, context);
             return View(webApiTasks);
         }
 
@@ -53,19 +54,31 @@ namespace WebApplication5.Controllers
         public IActionResult GetPlanTaskComp()
         {
             var curUser = WebApplication5.Models.User.GetUser(context, HttpContext);
-            var planTaskCompList = PlanTaskComp.GetPlanTaskCompCurUser(curUser, context);            
+            var planTaskCompList = PlanTaskComp.GetPlanTaskCompCurUser(curUser, context);   
+            //planTaskCompList.Select(x=>x.)
             return Json(new { data = planTaskCompList });
         }
 
-        // Добавление задачи
+        // Сохранение задачи
         [HttpPost("SaveTasks")]
         public IActionResult SaveTasks([FromBody] List<PlanTaskCompJson> planTaskCompJsonList)
         {
-            var planTaskCompCreateList = planTaskCompJsonList.Where(x=>x.idDb==0).Select(x => PlanTaskComp.Create(x, context));
-            context.PlanTaskComp.AddRange(planTaskCompCreateList);
-            planTaskCompJsonList.Where(x => x.idDb != 0).ToList().ForEach(x => PlanTaskComp.Update(x, context));
-            context.SaveChanges();            
-            return View("Index");
+            if (planTaskCompJsonList == null || !planTaskCompJsonList.Any())
+            {
+                return BadRequest(new { success = false, message = "Список задач пуст или отсутствует" });
+            }
+            try
+            {
+                var planTaskCompCreateList = planTaskCompJsonList.Where(x => x.idDb == 0).Select(x => PlanTaskComp.Create(x, context));
+                context.PlanTaskComp.AddRange(planTaskCompCreateList);
+                planTaskCompJsonList.Where(x => x.idDb != 0).ToList().ForEach(x => PlanTaskComp.Update(x, context));
+                context.SaveChanges();
+                return Redirect("Index");// Ok(new { success = true, message = "Задачи успешно сохранены" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = "Ошибка сохранения задач", error = ex.Message });
+            }
         }
 
         //// Удаление задачи
@@ -75,7 +88,7 @@ namespace WebApplication5.Controllers
         //    TaskRepository.Delete(id);
         //    return Ok();
         //}
-        // 
+
         // Получение списка сотрудников отдела текущего пользователя
         [HttpGet("api/gantt/resources")]
         public IActionResult GetUsersFromMyDepartment()

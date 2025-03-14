@@ -33,11 +33,12 @@ namespace WebApplication5.Models
 
             return new PlanTaskComp()
             {                
-                TaskComp =taskComp,
-                StartPlanDate=startPlanDateParsed,
+                TaskComp = taskComp,
+                StartPlanDate = startPlanDateParsed,
                 FinishPlanDate = finishPlanDateParsed,
                 Author = author,
-                Executer = executer
+                Executer = executer,
+                Intencity = taskCompJson.intensity
             };
         }
 
@@ -88,12 +89,11 @@ namespace WebApplication5.Models
         public static List<PlanTaskComp> GetPlanTaskCompCurUser(User curUser, AppDbContext context)
         {
             var planTaskCompList = context.PlanTaskComp.Where(x => x.Author == curUser).ToList();
+
             return planTaskCompList;
         
         }
-
     }
-
 }
             
     

@@ -674,14 +674,9 @@
                         data: JSON.stringify(tasklist),
                         contentType: 'application/json',
                         success: function (response) {
-                            var mes = '';
-                            if (response.iserror == false)
-                            {
-                                mes = "Успешно!" /* + response.mes */
-                            }
-                            else {
-                                var mes = "Ошибка!" /* + response.mes */
-                            }
+                            console.log('Ответ сервера', response);
+
+                            let mes = response.success ? "Успешно!" : "Ошибка!";
                             alert(mes);
                         },
                         error: function(xhr, status, error) {
@@ -731,7 +726,7 @@
                 updateGanttMonth(currentYear, selectedMonth);
             })
 
-            // Получение задач через API
+            // Получение задач через API для загрузки проектов и комплектов
             fetch("/plantaskcomp/api/gantt/tasks")
                 .then(response => response.json())
                 .then(result => {
@@ -748,7 +743,31 @@
                     });
                     gantt.render();
                 })
-                .catch(error => console.error("Ошибка загрузки данных:", error));
+                .catch(error => console.error("Ошибка загрузки комплектов и проектов:", error));
+
+            // Загрузка задач
+            fetch("/plantaskcomp/api/gantt/plantaskcomp")
+                .then(response => response.json())
+                .then(result => {
+                    let tasks = result.data;
+                    console.log('Полученные задачи из базы данных:', tasks);
+
+                    let ganttTasks = tasks.map(task => {
+                        const startDate = new Date(task.StartPlanDate);
+                        const endDate = new Date(task.FinishPlanDate);
+
+                        // Форматирование даты в день-месяц-год
+                        const formatDate = (date) => {
+                            const d = new Date(date);
+                            const day = String(d.getDate()).padStart(2, '0');
+                            const month = String(d.getMonth() + 1).padStart(2, '0');
+                            const year = d.getFullYear();
+                            return `${day}-${month}-${year}`;
+                        };
+                    });
+                    console.log('Задачи для диаграммы:', ganttTasks);
+                })
+                .catch(error => console.error("Ошибка загрузки задач:", error));
 
             gantt.init("GanttChart");
         });
