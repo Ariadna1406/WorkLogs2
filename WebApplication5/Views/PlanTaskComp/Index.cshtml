@@ -658,9 +658,11 @@
                             id: task.id,
                             idDb: task.idDb,
                             taskCompId: task.text,
+                            // work: task.work,
                             startPlanDate: gantt.date.date_to_str("%Y-%m-%d")(task.start_date),
                             finishPlanDate: gantt.date.date_to_str("%Y-%m-%d")(calculatedEndDate),
                             intensity: task.intensity,
+                            // planned_progress: task.planned_progress,
                             executerId: task.resources,
                             authorId: currentUserId
                         });
@@ -668,21 +670,42 @@
 
                     console.log("Отправляемые данные для сохранения:", JSON.stringify(tasklist, null, 2));
                 
-                    $.ajax({                    
-                        url: '/PlanTaskComp/SaveTasks',
-                        type: 'POST',
-                        data: JSON.stringify(tasklist),
-                        contentType: 'application/json',
-                        success: function (response) {
-                            console.log('Ответ сервера', response);
-
-                            let mes = response.success ? "Успешно!" : "Ошибка!";
-                            alert(mes);
+                    fetch('/PlanTaskComp/SaveTasks', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
                         },
-                        error: function(xhr, status, error) {
-                            console.error("Ошибка при сохранении данных:", error);
+                        body: JSON.stringify(tasklist),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Успешно!');
+                            location.reload(); // Обновление страницы после сохранения
+                        } else {
+                            alert("Ошибка: " + data.message);
                         }
                     })
+                    .catch(error => {
+                        console.error("Ошибка при сохранении данных:", error);
+                        alert("Ошибка при сохранении данных:", error);
+                    })
+
+                    // $.ajax({                    
+                    //     url: '/PlanTaskComp/SaveTasks',
+                    //     type: 'POST',
+                    //     data: JSON.stringify(tasklist),
+                    //     contentType: 'application/json',
+                    //     success: function (response) {
+                    //         console.log('Ответ сервера', response);
+
+                    //         let mes = response.success ? "Успешно!" : "Ошибка!";
+                    //         alert(mes);
+                    //     },
+                    //     error: function(xhr, status, error) {
+                    //         console.error("Ошибка при сохранении данных:", error);
+                    //     }
+                    // })
                 })
                 .catch(error => console.error("Ошибка при получении Id пользователя:", error));   
             }
@@ -753,8 +776,8 @@
                     console.log('Полученные задачи из базы данных:', tasks);
 
                     let ganttTasks = tasks.map(task => {
-                        const startDate = new Date(task.StartPlanDate);
-                        const endDate = new Date(task.FinishPlanDate);
+                        const startDate = new Date(task.startPlanDate);
+                        const endDate = new Date(task.finishPlanDate);
 
                         // Форматирование даты в день-месяц-год
                         const formatDate = (date) => {
@@ -764,10 +787,30 @@
                             const year = d.getFullYear();
                             return `${day}-${month}-${year}`;
                         };
+
+                        return {
+                            id: task.id,
+                            idDb: task.id,
+                            start_date: formatDate(startDate),
+                            end_date: formatDate(endDate),
+                            authorId: task.author.id,
+                            intensity: task.intencity,
+                        }
                     });
+                    gantt.clearAll();
+
+                    gantt.parse({ data: ganttTasks });
+
+                    ganttTasks.forEach(task => {
+                        setEndDateToEndOfDay(task);
+                        recalculateDuration(task);
+                        gantt.updateTask(task.id);
+                    })
+
                     console.log('Задачи для диаграммы:', ganttTasks);
                 })
                 .catch(error => console.error("Ошибка загрузки задач:", error));
+
 
             gantt.init("GanttChart");
         });

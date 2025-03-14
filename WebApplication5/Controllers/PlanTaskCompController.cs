@@ -57,9 +57,9 @@ namespace WebApplication5.Controllers
         {
             if (planMonth == 0) planMonth = DateTime.Now.Month;
             var curUser = WebApplication5.Models.User.GetUser(context, HttpContext);
-            var planTaskCompJsonList = PlanTaskComp.GetPlanTaskCompCurUser(curUser, planMonth, context);
+            var planTaskCompJsonList = PlanTaskComp.GetPlanTaskCompCurUser(curUser, planMonth, context);   
+            //planTaskCompList.Select(x=>x.)
             return Json(new { data = planTaskCompJsonList });
-
         }
 
         // Сохранение задачи
@@ -76,7 +76,7 @@ namespace WebApplication5.Controllers
                 context.PlanTaskComp.AddRange(planTaskCompCreateList);
                 planTaskCompJsonList.Where(x => x.idDb != 0).ToList().ForEach(x => PlanTaskComp.Update(x, context));
                 context.SaveChanges();
-                return Redirect("Index");// Ok(new { success = true, message = "Задачи успешно сохранены" });
+                return Ok(new { success = true });
             }
             catch (Exception ex)
             {
