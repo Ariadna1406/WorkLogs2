@@ -1,5 +1,6 @@
 ﻿using Aspose.Cells;
 using DHX.Gantt.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -32,7 +33,7 @@ namespace WebApplication5.Models
             var executer = User.GetUserById(context, taskCompJson.executerId);
 
             return new PlanTaskComp()
-            {                
+            {
                 TaskComp = taskComp,
                 StartPlanDate = startPlanDateParsed,
                 FinishPlanDate = finishPlanDateParsed,
@@ -83,15 +84,39 @@ namespace WebApplication5.Models
                 return;
             }
             throw new Exception($"Задача с {planTaskCompId} не найдена");
-            
+
         }
 
-        public static List<PlanTaskComp> GetPlanTaskCompCurUser(User curUser, int month ,AppDbContext context)
+        public static List<PlanTaskCompJson> GetPlanTaskCompCurUser(User curUser, int month, AppDbContext context)
         {
-            var planTaskCompList = context.PlanTaskComp.Where(x => x.Author == curUser).ToList();
+            var planTaskCompSet = context.PlanTaskComp.Include(x => x.Author).Include(x => x.TaskComp).Include(x => x.Executer);
+            var planTaskCompSetFiltered = planTaskCompSet.Where(x => x.Author == curUser);
+            var planTaskCompJsonSet = planTaskCompSetFiltered.ToTaskCompJsonList();           
+            return planTaskCompJsonSet;
 
-            return planTaskCompList;
-        
+        }
+
+       
+    }
+
+    public static class ExtensionPlanTaskComp {
+        public static List<PlanTaskCompJson> ToTaskCompJsonList(this IQueryable<PlanTaskComp> planTaskCompList)
+        {
+            List<PlanTaskCompJson> planTaskCompJsonList = new List<PlanTaskCompJson>();
+            foreach (var planTaskComp in planTaskCompList)
+            {
+                planTaskCompJsonList.Add(new PlanTaskCompJson()
+                {
+                    idDb = planTaskComp.Id,
+                    authorId = planTaskComp.Author.Id,
+                    executerId = planTaskComp.Executer.Id,
+                    taskCompId = planTaskComp.TaskComp.Id,
+                    startPlanDate = planTaskComp.StartPlanDate.ToString("yyyy-MM-dd"),
+                    finishPlanDate = planTaskComp.FinishPlanDate.ToString("yyyy-MM-dd"),
+                    intensity = planTaskComp.Intencity
+                });
+            }
+            return planTaskCompJsonList;
         }
     }
 }

@@ -26,6 +26,7 @@ namespace WebApplication5.Controllers
     public class PlanTaskCompController : Controller
     {
         AppDbContext context;
+        //List<PlanTaskCompJson> planTaskCompJsonList = new List<PlanTaskCompJson>();
         public PlanTaskCompController(AppDbContext appDbContext, IHostingEnvironment appEnv)
         {
             context = appDbContext;
@@ -36,7 +37,8 @@ namespace WebApplication5.Controllers
         {
             var curUser = WebApplication5.Models.User.GetUser(context, HttpContext);
             var taskComps = TaskComp.GetAllTasksForMyDepartmentCurMonth(curUser, context);            
-            var webApiTasks = taskComps.Select(x => (WebApiTask)x);
+            var webApiTasks = taskComps.Select(x => (WebApiTask)x);           
+            //var planTaskCompJsonList = PlanTaskComp.GetPlanTaskCompCurUser(curUser, DateTime.Now.Month, context);
             //var planTaskComp = PlanTaskComp.GetPlanTaskCompCurUser(curUser, context);
             return View(webApiTasks);
         }
@@ -53,9 +55,11 @@ namespace WebApplication5.Controllers
         [HttpGet("api/gantt/plantaskcomp")]
         public IActionResult GetPlanTaskComp(int planMonth)
         {
+            if (planMonth == 0) planMonth = DateTime.Now.Month;
             var curUser = WebApplication5.Models.User.GetUser(context, HttpContext);
-            var planTaskCompList = PlanTaskComp.GetPlanTaskCompCurUser(curUser, planMonth, context);            
-            return Json(new { data = planTaskCompList });
+            var planTaskCompJsonList = PlanTaskComp.GetPlanTaskCompCurUser(curUser, planMonth, context);
+            return Json(new { data = planTaskCompJsonList });
+
         }
 
         // Сохранение задачи
