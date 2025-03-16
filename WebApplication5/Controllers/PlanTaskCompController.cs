@@ -65,7 +65,7 @@ namespace WebApplication5.Controllers
 
         // Сохранение задачи
         [HttpPost("SaveTasks")]
-        public IActionResult SaveTasks([FromBody] List<PlanTaskCompJson> planTaskCompJsonList)
+        public IActionResult SaveTasks([FromBody] List<PlanTaskCompJson> planTaskCompJsonList, bool sendToApprove)
         {
             if (planTaskCompJsonList == null || !planTaskCompJsonList.Any())
             {
@@ -77,6 +77,8 @@ namespace WebApplication5.Controllers
                 context.PlanTaskComp.AddRange(planTaskCompCreateList);
                 planTaskCompJsonList.Where(x => x.idDb != 0).ToList().ForEach(x => PlanTaskComp.Update(x, context));
                 context.SaveChanges();
+                //if (sendToApprove) 
+                //else
                 return Ok(new { success = true });
             }
             catch (Exception ex)
@@ -89,6 +91,21 @@ namespace WebApplication5.Controllers
         [HttpPost("SendToApprove")]
         public IActionResult SendToApprove([FromBody] ApprovePlanTaskCompJson approvePlanTaskCompJson)
         {
+            if (approvePlanTaskCompJson == null)
+            {
+                return BadRequest(new { success = false, message = "Список задач пуст или отсутствует" });
+            }
+            try
+            {
+                var approovePlanTaskComp = ApprovePlanTaskComp.ConvertFrom(approvePlanTaskCompJson, context);
+                context.ApprovePlanTaskComp.Add(approovePlanTaskComp);
+                context.SaveChanges();
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = "Ошибка сохранения задач", error = ex.Message });
+            }
             return View();
         }
             

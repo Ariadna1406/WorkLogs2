@@ -48,8 +48,17 @@ namespace WebApplication5.Models
             PlanMonth = planMonth;
             PlanYear = planYear;
             PlanTaskCompStatus = Status.New;
-        }  
-              
+        }
+
+        public static ApprovePlanTaskComp ConvertFrom(ApprovePlanTaskCompJson approvePlanTaskCompJson, AppDbContext appDbContext)
+        {
+            return new ApprovePlanTaskComp
+            {
+                UserCreatedRequest = User.GetUserById(appDbContext, approvePlanTaskCompJson.authorId),
+                PlanMonth = approvePlanTaskCompJson.planMonth,
+                PlanYear = approvePlanTaskCompJson.planYear
+            };
+        }
 
         static void FindTaskComp(int taskCompId, AppDbContext context, out TaskComp task)
         {

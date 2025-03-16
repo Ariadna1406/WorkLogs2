@@ -20,6 +20,8 @@ namespace WebApplication5.Models
 
 
         public ApprovePlanTaskCompJson() { }
+
+        
     }       
 }
             
