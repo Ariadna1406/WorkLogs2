@@ -69,7 +69,7 @@ namespace WebApplication5.Controllers
         {
             var result = PlanTaskComp.SavePlanTaskCompToDb(planTaskCompJsonList, context, out string errors);
             if (result) return Ok(new { success = true });
-            else return StatusCode(500, new { success = false, message = "Ошибка сохранения задач", error = errors);
+            else return StatusCode(500, new { success = false, message = "Ошибка сохранения задач", error = errors });
         }  
         
          // Сохранение задач и отправка на согласование
@@ -78,7 +78,7 @@ namespace WebApplication5.Controllers
         {
             var result = PlanTaskComp.SavePlanTaskCompToDb(planTaskCompJsonList, context, out string errors);
             if (result) return Ok(new { success = true });
-            else return StatusCode(500, new { success = false, message = "Ошибка сохранения задач", error = errors);
+            else return StatusCode(500, new { success = false, message = "Ошибка сохранения задач", error = errors });
             ApprovePlanTaskComp.SendToApprove(planTaskCompJsonList, context, out string errorsSendToApprove);           
             return View();
         }

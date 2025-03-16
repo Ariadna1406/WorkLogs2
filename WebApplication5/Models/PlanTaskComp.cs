@@ -118,6 +118,7 @@ namespace WebApplication5.Models
 
         public static bool SavePlanTaskCompToDb(List<PlanTaskCompJson> planTaskCompJsonList, AppDbContext context, out string errors)
         {
+            errors = string.Empty;
             if (planTaskCompJsonList == null || !planTaskCompJsonList.Any())
             {
                 errors = "Список задач пуст или отсутствует";
