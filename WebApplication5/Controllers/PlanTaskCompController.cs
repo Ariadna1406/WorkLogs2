@@ -82,10 +82,9 @@ namespace WebApplication5.Controllers
             ApprovePlanTaskComp.SendToApprove(planTaskCompJsonList, context, out string errorsSendToApprove);           
             return View();
         }
-            
-
-            // Получение списка сотрудников отдела текущего пользователя
-            [HttpGet("api/gantt/resources")]
+           
+        // Получение списка сотрудников отдела текущего пользователя
+        [HttpGet("api/gantt/resources")]
         public IActionResult GetUsersFromMyDepartment()
         {
             var users = WebApplication5.Models.User.GetUsersFromCurrentDepartment(context, HttpContext);

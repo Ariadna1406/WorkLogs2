@@ -120,17 +120,13 @@
             padding: 10px 20px;
             border: 1px solid #CCCCCC;
             border-radius: 3px;
-        }
-
-        #saveButton {
-            background-color: #C1ECB0;
-            color: #555D63;
-            font-weight: 600;
-        }
-
-        #sendButton {
-            background-color: #537CFA;
+            background-color: #537CFA; /* #EAF2FF */
             color: #FFFFFF;
+        }
+
+        #button-container {
+            display: flex;
+            gap: 30px;
         }
 
         #dataRes-table-container {
@@ -186,8 +182,10 @@
                     </tbody>
                 </table>
             </div>
-            <button id="sendButton">Отправить на согласование</button>
-            <button id="saveButton">Сохранить</button>
+            <div id="button-container">
+                <button id="saveButton">Сохранить</button>
+                <button id="sendButton">Сохранить и отправить на согласование</button>
+            </div>
         </div>
         <div id="legend-container">
             <div id="weekend-legend">
@@ -319,6 +317,9 @@
                 .then(result => {
                 
                     resources = result.data;
+
+                    resources.sort((a, b) => a.label.localeCompare(b.label, 'ru', { sensitivity: 'base' }));
+
                     console.log("Сотрудники:", result.data);
 
                     gantt.config.columns.forEach(column => {
@@ -479,6 +480,9 @@
                 .then(response => response.json())
                 .then(result => {
                     work = result.data;
+
+                    work.sort((a, b) => a.label.localeCompare(b.label, 'ru', { sensitivity: 'base' }));
+
                     console.log("Работа:", result.data);
 
                     gantt.config.columns.forEach(column => {
@@ -647,8 +651,14 @@
                 }
             })
 
+            // Кнопка Сохранить
             document.getElementById("saveButton").addEventListener("click", function() {
                 SaveTasks();
+            })
+
+            // Кнопка Отправить на согласование
+            document.getElementById("sendButton").addEventListener("click", function() {
+                SaveAndSendTasks();
             })
 
             // Сохранение задач
@@ -705,6 +715,62 @@
                     })
                 })
                 .catch(error => console.error("Ошибка при получении Id пользователя:", error));   
+            }
+
+            // Сохранение и отправка на согласование
+            function SaveAndSendTasks() {
+                // Получение текущего пользователя
+                fetch('/plantaskcomp/api/currentuserid')
+                    .then(response => response.json())
+                    .then(data => {
+                        let currentUserId = data.userId;
+                        let tasklist = [];
+
+                        gantt.eachTask(function(task) {
+                        let calculatedEndDate = null;
+                        if (task.start_date && task.duration) {
+                                calculatedEndDate = gantt.calculateEndDate(task.start_date, task.duration);
+                                calculatedEndDate.setDate(calculatedEndDate.getDate() - 1);
+                        }
+
+                        tasklist.push({
+                            id: task.id,
+                            idDb: task.idDb,
+                            taskCompId: task.text,
+                            kindofactId: task.work,
+                            startPlanDate: gantt.date.date_to_str("%Y-%m-%d")(task.start_date),
+                            finishPlanDate: gantt.date.date_to_str("%Y-%m-%d")(calculatedEndDate),
+                            intensity: task.intensity,
+                            percent: task.planned_progress,
+                            executerId: task.resources,
+                            authorId: currentUserId
+                        });
+                    })
+
+                    console.log("Отправляемые данные для сохранения и отправки на согласование:", JSON.stringify(tasklist, null, 2));
+
+                    fetch('/PlanTaskComp/SendToApprove', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(tasklist),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Успешно!');
+                            location.reload(); // Обновление страницы после сохранения
+                        } else {
+                            alert("Ошибка: " + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Ошибка при сохранении и отправки данных на согласование:", error);
+                        alert("Ошибка при сохранении и отправки данных на согласование:", error);
+                    })
+                })
+                .catch(error => console.error("Ошибка при получении Id пользователя:", error));
             }
 
             // Получение начала и конца месяца
