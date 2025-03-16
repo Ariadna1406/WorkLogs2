@@ -96,6 +96,38 @@ namespace WebApplication5.Models
 
         }
 
+        public static bool SendToApprove(List<PlanTaskCompJson> planTaskCompJsonList, AppDbContext context, out string errors)
+        {
+            errors = string.Empty;
+            if (planTaskCompJsonList.Count == 0) { 
+                errors += "Список задач для сохранения пуст";
+                return false;
+            }
+            var planTaskCompJsonFirst = planTaskCompJsonList.First();
+            DateTime.TryParse(planTaskCompJsonFirst.startPlanDate, out DateTime startPlanDateParsed);            
+            var author = User.GetUserById(context, planTaskCompJsonFirst.authorId);
+            var approvePlanTaskCompSet = context.ApprovePlanTaskComp.Where(x => x.UserCreatedRequest == author && x.PlanMonth == startPlanDateParsed.Month && x.PlanYear == startPlanDateParsed.Year);
+            if (approvePlanTaskCompSet.Count() > 0)
+            {
+                var aptc = approvePlanTaskCompSet.First();
+                aptc.UserCreatedRequest = author;
+                aptc.PlanTaskCompStatus = Status.New;
+            }
+            else
+            {
+                var newApprovePlanTaskComp = new ApprovePlanTaskComp()
+                {
+                    UserCreatedRequest = author,
+                    PlanMonth = startPlanDateParsed.Month,
+                    PlanYear = startPlanDateParsed.Year,
+                    PlanTaskCompStatus = Status.New
+                };
+                context.ApprovePlanTaskComp.Add(newApprovePlanTaskComp);
+            }
+            context.SaveChanges();
+            return true;
+        }
+
         //public static List<PlanTaskCompJson> GetApprovePlanTaskCompCurUser(User curUser, int month, AppDbContext context)
         //{
         //    var planTaskCompSet = context.ApprovePlanTaskComp.Include(x => x.Author).Include(x => x.TaskComp).Include(x => x.Executer).Include(x=>x.KindOfAct);

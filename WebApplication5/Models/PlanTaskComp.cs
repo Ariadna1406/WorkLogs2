@@ -116,6 +116,29 @@ namespace WebApplication5.Models
 
         }
 
+        public static bool SavePlanTaskCompToDb(List<PlanTaskCompJson> planTaskCompJsonList, AppDbContext context, out string errors)
+        {
+            if (planTaskCompJsonList == null || !planTaskCompJsonList.Any())
+            {
+                errors = "Список задач пуст или отсутствует";
+                return false;
+            }
+            try
+            {
+                var planTaskCompCreateList = planTaskCompJsonList.Where(x => x.idDb == 0).Select(x => PlanTaskComp.Create(x, context));
+                context.PlanTaskComp.AddRange(planTaskCompCreateList);
+                planTaskCompJsonList.Where(x => x.idDb != 0).ToList().ForEach(x => PlanTaskComp.Update(x, context));
+                context.SaveChanges();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                errors = ex.Message;
+                return false;
+            }
+            
+        }
+
        
     }
 

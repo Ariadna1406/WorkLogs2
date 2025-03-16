@@ -65,47 +65,21 @@ namespace WebApplication5.Controllers
 
         // Сохранение задачи
         [HttpPost("SaveTasks")]
-        public IActionResult SaveTasks([FromBody] List<PlanTaskCompJson> planTaskCompJsonList, bool sendToApprove)
+        public IActionResult SaveTasks([FromBody] List<PlanTaskCompJson> planTaskCompJsonList)
         {
-            if (planTaskCompJsonList == null || !planTaskCompJsonList.Any())
-            {
-                return BadRequest(new { success = false, message = "Список задач пуст или отсутствует" });
-            }
-            try
-            {
-                var planTaskCompCreateList = planTaskCompJsonList.Where(x => x.idDb == 0).Select(x => PlanTaskComp.Create(x, context));
-                context.PlanTaskComp.AddRange(planTaskCompCreateList);
-                planTaskCompJsonList.Where(x => x.idDb != 0).ToList().ForEach(x => PlanTaskComp.Update(x, context));
-                context.SaveChanges();
-                //if (sendToApprove) 
-                //else
-                return Ok(new { success = true });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { success = false, message = "Ошибка сохранения задач", error = ex.Message });
-            }
-        }
-
-        // Сохранение задачи
+            var result = PlanTaskComp.SavePlanTaskCompToDb(planTaskCompJsonList, context, out string errors);
+            if (result) return Ok(new { success = true });
+            else return StatusCode(500, new { success = false, message = "Ошибка сохранения задач", error = errors);
+        }  
+        
+         // Сохранение задач и отправка на согласование
         [HttpPost("SendToApprove")]
-        public IActionResult SendToApprove([FromBody] ApprovePlanTaskCompJson approvePlanTaskCompJson)
+        public IActionResult SendToApprove([FromBody] List<PlanTaskCompJson> planTaskCompJsonList)
         {
-            if (approvePlanTaskCompJson == null)
-            {
-                return BadRequest(new { success = false, message = "Список задач пуст или отсутствует" });
-            }
-            try
-            {
-                var approovePlanTaskComp = ApprovePlanTaskComp.ConvertFrom(approvePlanTaskCompJson, context);
-                context.ApprovePlanTaskComp.Add(approovePlanTaskComp);
-                context.SaveChanges();
-                return Ok(new { success = true });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { success = false, message = "Ошибка сохранения задач", error = ex.Message });
-            }
+            var result = PlanTaskComp.SavePlanTaskCompToDb(planTaskCompJsonList, context, out string errors);
+            if (result) return Ok(new { success = true });
+            else return StatusCode(500, new { success = false, message = "Ошибка сохранения задач", error = errors);
+            ApprovePlanTaskComp.SendToApprove(planTaskCompJsonList, context, out string errorsSendToApprove);           
             return View();
         }
             
