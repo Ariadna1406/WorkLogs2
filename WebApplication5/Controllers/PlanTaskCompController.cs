@@ -76,11 +76,10 @@ namespace WebApplication5.Controllers
         [HttpPost("SendToApprove")]
         public IActionResult SendToApprove([FromBody] List<PlanTaskCompJson> planTaskCompJsonList)
         {
-            var result = PlanTaskComp.SavePlanTaskCompToDb(planTaskCompJsonList, context, out string errors);
-            if (result) return Ok(new { success = true });
-            else return StatusCode(500, new { success = false, message = "Ошибка сохранения задач", error = errors });
-            ApprovePlanTaskComp.SendToApprove(planTaskCompJsonList, context, out string errorsSendToApprove);           
-            return View();
+            var result = PlanTaskComp.SavePlanTaskCompToDb(planTaskCompJsonList, context, out string errors);           
+            var result2 = ApprovePlanTaskComp.SendToApprove(planTaskCompJsonList, context, out string errorsSendToApprove);
+            if (result && result2) return Ok(new { success = true });
+            else return StatusCode(500, new { success = false, message = "Ошибка сохранения задач", error = errors });            
         }
            
         // Получение списка сотрудников отдела текущего пользователя
