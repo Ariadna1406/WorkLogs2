@@ -116,12 +116,20 @@
             display: inline-block;
         }
 
-        #saveButton {
+        #saveButton, #sendButton {
             padding: 10px 20px;
-            background-color: #537CFA;
-            border: 1px solid #919191;
+            border: 1px solid #CCCCCC;
             border-radius: 3px;
-/*             font-weight: 600; */
+        }
+
+        #saveButton {
+            background-color: #C1ECB0;
+            color: #555D63;
+            font-weight: 600;
+        }
+
+        #sendButton {
+            background-color: #537CFA;
             color: #FFFFFF;
         }
 
@@ -178,6 +186,7 @@
                     </tbody>
                 </table>
             </div>
+            <button id="sendButton">Отправить на согласование</button>
             <button id="saveButton">Сохранить</button>
         </div>
         <div id="legend-container">
