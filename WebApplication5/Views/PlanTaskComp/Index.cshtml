@@ -694,22 +694,6 @@
                         console.error("Ошибка при сохранении данных:", error);
                         alert("Ошибка при сохранении данных:", error);
                     })
-
-                    // $.ajax({                    
-                    //     url: '/PlanTaskComp/SaveTasks',
-                    //     type: 'POST',
-                    //     data: JSON.stringify(tasklist),
-                    //     contentType: 'application/json',
-                    //     success: function (response) {
-                    //         console.log('Ответ сервера', response);
-
-                    //         let mes = response.success ? "Успешно!" : "Ошибка!";
-                    //         alert(mes);
-                    //     },
-                    //     error: function(xhr, status, error) {
-                    //         console.error("Ошибка при сохранении данных:", error);
-                    //     }
-                    // })
                 })
                 .catch(error => console.error("Ошибка при получении Id пользователя:", error));   
             }
@@ -753,8 +737,9 @@
                 updateGanttMonth(currentYear, selectedMonth);
             })
 
-            // Получение задач через API для загрузки проектов и комплектов
-            fetch("/plantaskcomp/api/gantt/tasks")
+            // Получение задач для загрузки проектов и комплектов
+            function loadSetsAndProjects() {
+                return fetch("/plantaskcomp/api/gantt/tasks")
                 .then(response => response.json())
                 .then(result => {
                     var tasks = result.data;
@@ -771,37 +756,55 @@
                     gantt.render();
                 })
                 .catch(error => console.error("Ошибка загрузки комплектов и проектов:", error));
-
+            }
+            
             // Загрузка задач
-            fetch("/plantaskcomp/api/gantt/plantaskcomp")
+            function loadTasks() {
+                return fetch("/plantaskcomp/api/gantt/plantaskcomp")
                 .then(response => response.json())
                 .then(result => {
                     let tasks = result.data;
                     console.log('Полученные задачи из базы данных:', tasks);
 
+                    let idCounter = 1;
+
                     let ganttTasks = tasks.map(task => {
-                        const startDate = new Date(task.startPlanDate);
-                        const endDate = new Date(task.finishPlanDate);
+
+                        // Разбор даты вручную
+                        const parseDate = (dateStr) => {
+                            if (!dateStr) return null;
+                            const [day, month, year] = dateStr.split("-").map(Number);
+                            return new Date(year, month - 1, day);
+                        }
+
+                        const startDate = parseDate(task.startPlanDate);
+                        const endDate = parseDate(task.finishPlanDate);
 
                         // Форматирование даты в день-месяц-год
                         const formatDate = (date) => {
-                            const d = new Date(date);
-                            const day = String(d.getDate()).padStart(2, '0');
-                            const month = String(d.getMonth() + 1).padStart(2, '0');
-                            const year = d.getFullYear();
+                            if (!date) return "";
+                            const day = String(date.getDate()).padStart(2, '0');
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const year = date.getFullYear();
                             return `${day}-${month}-${year}`;
                         };
+
+                        // Поиск taskCompId в массиве ssets и установка project
+                        let foundSet = sets.find(set => set.key === task.taskCompId);
+                        let projectValue = foundSet ? foundSet.project : null;
 
                         return {
                             id: task.idDb,
                             idDb: task.idDb,
                             text: task.taskCompId,
                             work: task.kindofactId,
+                            resources: task.executerId,
                             start_date: formatDate(startDate),
                             end_date: formatDate(endDate),
-                            authorId: task.author.id,
-                            intensity: task.intencity,
-                            planned_progress: task.percent
+                            authorId: task.authorId,
+                            intensity: task.intensity,
+                            planned_progress: task.percent,
+                            project: projectValue
                         }
                     });
                     gantt.clearAll();
@@ -817,7 +820,12 @@
                     console.log('Задачи для диаграммы:', ganttTasks);
                 })
                 .catch(error => console.error("Ошибка загрузки задач:", error));
-
+            }
+            
+            // Сначала загрузка комплектов и проектов, затем - задач
+            loadSetsAndProjects().then(() => {
+                loadTasks();
+            })
 
             gantt.init("GanttChart");
         });
