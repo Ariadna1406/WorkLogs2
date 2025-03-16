@@ -15,9 +15,11 @@ namespace WebApplication5.Models
     {
         public int Id { get; set; }
         public TaskComp TaskComp { get; set; }
+        public KindOfAct KindOfAct { get; set; }
         public DateTime StartPlanDate { get; set; }
         public DateTime FinishPlanDate { get; set; }
         public double Intencity { get; set; }
+        public int Percent { get; set; }
         public User Executer { get; set; }
         public User Author { get; set; }
 
@@ -27,6 +29,7 @@ namespace WebApplication5.Models
         public static PlanTaskComp Create(PlanTaskCompJson taskCompJson, AppDbContext context)
         {
             FindTaskComp(taskCompJson.taskCompId, context, out TaskComp taskComp);
+            FindKindOfAct(taskCompJson.kindofactId, context, out KindOfAct kindOfAct);
             DateTime.TryParse(taskCompJson.startPlanDate, out DateTime startPlanDateParsed);
             DateTime.TryParse(taskCompJson.finishPlanDate, out DateTime finishPlanDateParsed);
             var author = User.GetUserById(context, taskCompJson.authorId);
@@ -39,7 +42,9 @@ namespace WebApplication5.Models
                 FinishPlanDate = finishPlanDateParsed,
                 Author = author,
                 Executer = executer,
-                Intencity = taskCompJson.intensity
+                Intencity = taskCompJson.intensity,
+                Percent= taskCompJson.percent,
+                KindOfAct=kindOfAct
             };
         }
 
@@ -47,6 +52,7 @@ namespace WebApplication5.Models
         {
             FindPlanTaskComp(taskCompJson.idDb, context, out PlanTaskComp planTaskComp);
             FindTaskComp(taskCompJson.taskCompId, context, out TaskComp taskComp);
+            FindKindOfAct(taskCompJson.kindofactId, context, out KindOfAct kindOfAct);
             DateTime.TryParse(taskCompJson.startPlanDate, out DateTime startPlanDateParsed);
             DateTime.TryParse(taskCompJson.finishPlanDate, out DateTime finishPlanDateParsed);
             var author = User.GetUserById(context, taskCompJson.authorId);
@@ -59,6 +65,8 @@ namespace WebApplication5.Models
             planTaskComp.Executer = executer;
             planTaskComp.Author = author;
             planTaskComp.Intencity = taskCompJson.intensity;
+            planTaskComp.Percent = taskCompJson.percent;
+            planTaskComp.KindOfAct = kindOfAct;
             context.SaveChanges();
 
         }
@@ -72,6 +80,18 @@ namespace WebApplication5.Models
                 return;
             }
             throw new Exception($"Задача с {taskCompId} не найдена");
+
+        }
+
+        static void FindKindOfAct(int kindOfActId, AppDbContext context, out KindOfAct kindOfAct)
+        {
+            var kindOfActSet = context.KindOfAct.Where(x => x.Id == kindOfActId);
+            if (kindOfActSet.Count() > 0)
+            {
+                kindOfAct = kindOfActSet.First();
+                return;
+            }
+            throw new Exception($"KindOfAct с {kindOfActId} не найден");
 
         }
 
@@ -89,7 +109,7 @@ namespace WebApplication5.Models
 
         public static List<PlanTaskCompJson> GetPlanTaskCompCurUser(User curUser, int month, AppDbContext context)
         {
-            var planTaskCompSet = context.PlanTaskComp.Include(x => x.Author).Include(x => x.TaskComp).Include(x => x.Executer);
+            var planTaskCompSet = context.PlanTaskComp.Include(x => x.Author).Include(x => x.TaskComp).Include(x => x.Executer).Include(x=>x.KindOfAct);
             var planTaskCompSetFiltered = planTaskCompSet.Where(x => x.Author == curUser);
             var planTaskCompJsonSet = planTaskCompSetFiltered.ToTaskCompJsonList();           
             return planTaskCompJsonSet;
@@ -111,9 +131,11 @@ namespace WebApplication5.Models
                     authorId = planTaskComp.Author.Id,
                     executerId = planTaskComp.Executer.Id,
                     taskCompId = planTaskComp.TaskComp.Id,
-                    startPlanDate = planTaskComp.StartPlanDate.ToString("yyyy-MM-dd"),
-                    finishPlanDate = planTaskComp.FinishPlanDate.ToString("yyyy-MM-dd"),
-                    intensity = planTaskComp.Intencity
+                    startPlanDate = planTaskComp.StartPlanDate.ToString("dd-MM-yyyy"),
+                    finishPlanDate = planTaskComp.FinishPlanDate.ToString("dd-MM-yyyy"),
+                    kindofactId = planTaskComp.KindOfAct.Id,
+                    intensity = planTaskComp.Intencity,
+                    percent = planTaskComp.Percent
                 });
             }
             return planTaskCompJsonList;

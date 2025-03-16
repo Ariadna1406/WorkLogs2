@@ -106,7 +106,7 @@ namespace WebApplication5.Controllers
         public IActionResult GetKindOfActs()
         {
             var kindOfActs = WebApplication5.Models.KindOfAct.GetAllKindOfAct(context);
-            var kindOfActList = kindOfActs.Select(ka => new { key = ka.Name, label = ka.Name }).ToList();
+            var kindOfActList = kindOfActs.Select(ka => new { key = ka.Id, label = ka.Name }).ToList();
             return Json(new { data = kindOfActList });
         }
 

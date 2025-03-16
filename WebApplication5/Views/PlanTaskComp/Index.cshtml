@@ -489,7 +489,11 @@
                     let matchingSet = sets.find(set => String(set.key) === String(task.text)); 
                     return matchingSet ? matchingSet.label : task.text;
                 } },
-                { name: "work", label: "Выполняемая работа", min_width: 150, align: "center", editor: {type: "select", map_to: "work", options: work} },
+                { name: "work", label: "Выполняемая работа", min_width: 150, align: "center", editor: {type: "select", map_to: "work", options: work}, template: function(task) {
+                    // Чтобы в ячейке отображался label работы, а не key
+                    let matchingWork = work.find(w => String(w.key) === String(task.work));
+                    return matchingWork ? matchingWork.label : task.work;
+                } },
                 { name: "resources", label: "Сотрудник", align: "center", min_width: 150, editor: {type: "select", map_to: "resources", options: resources}, template: function(task) {
                     // Чтобы в ячейке отображался label ресурса, а не key
                     let matchingRes = resources.find(res => String(res.key) === String(task.resources));
@@ -658,11 +662,11 @@
                             id: task.id,
                             idDb: task.idDb,
                             taskCompId: task.text,
-                            // work: task.work,
+                            kindofactId: task.work,
                             startPlanDate: gantt.date.date_to_str("%Y-%m-%d")(task.start_date),
                             finishPlanDate: gantt.date.date_to_str("%Y-%m-%d")(calculatedEndDate),
                             intensity: task.intensity,
-                            // planned_progress: task.planned_progress,
+                            percent: task.planned_progress,
                             executerId: task.resources,
                             authorId: currentUserId
                         });
@@ -789,12 +793,15 @@
                         };
 
                         return {
-                            id: task.id,
-                            idDb: task.id,
+                            id: task.idDb,
+                            idDb: task.idDb,
+                            text: task.taskCompId,
+                            work: task.kindofactId,
                             start_date: formatDate(startDate),
                             end_date: formatDate(endDate),
                             authorId: task.author.id,
                             intensity: task.intencity,
+                            planned_progress: task.percent
                         }
                     });
                     gantt.clearAll();

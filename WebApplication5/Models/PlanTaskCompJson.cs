@@ -14,11 +14,11 @@ namespace WebApplication5.Models
         public int id { get; set; }
         public int idDb { get; set; }
         public int taskCompId { get; set; }
-        //public string work { get; set; }
+        public int kindofactId { get; set; }
         public string startPlanDate { get; set; }
         public string finishPlanDate { get; set; }
         public double intensity { get; set; }
-        //public int planned_progress { get; set; }
+        public int percent { get; set; }
         public int executerId { get; set; }
         public int authorId { get; set; }
 
