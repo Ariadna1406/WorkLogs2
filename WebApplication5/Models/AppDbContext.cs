@@ -49,6 +49,8 @@ namespace WebApplication5.Models
 
         public DbSet<PlanTaskComp> PlanTaskComp { get; set; }
 
+        public DbSet<ApprovePlanTaskComp> ApprovePlanTaskComp { get; set; }
+
         //protected override void OnModelCreating(ModelBuilder builder)
         //{
         //    base.OnModelCreating(builder);
