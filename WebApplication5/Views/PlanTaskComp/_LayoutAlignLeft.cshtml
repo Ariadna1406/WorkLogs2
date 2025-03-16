@@ -73,7 +73,7 @@
                     </li>
                 }
 
-                @if (isAdmin)
+                @if (isAdmin || isHeadOfDepartment)
                 {
                     <li><a id="PlanTaskComp" asp-area="" asp-controller="PlanTaskComp" asp-action="Index">План комплектов/работ</a></li>
                 }
@@ -95,7 +95,7 @@
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; 2023 - АО "Нефтехимпроект"</p>
+            <p>&copy; 2025 - АО "Нефтехимпроект"</p>
         </footer>
     </div>
 

@@ -110,7 +110,7 @@ namespace WebApplication5.Models
         public static List<PlanTaskCompJson> GetPlanTaskCompCurUser(User curUser, int month, AppDbContext context)
         {
             var planTaskCompSet = context.PlanTaskComp.Include(x => x.Author).Include(x => x.TaskComp).Include(x => x.Executer).Include(x=>x.KindOfAct);
-            var planTaskCompSetFiltered = planTaskCompSet.Where(x => x.Author == curUser);
+            var planTaskCompSetFiltered = planTaskCompSet.Where(x => x.Author == curUser).Where(x=>x.StartPlanDate.Month==month);
             var planTaskCompJsonSet = planTaskCompSetFiltered.ToTaskCompJsonList();           
             return planTaskCompJsonSet;
 
