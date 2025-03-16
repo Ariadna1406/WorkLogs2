@@ -317,6 +317,9 @@
                 .then(result => {
                 
                     resources = result.data;
+
+                    resources.sort((a, b) => a.label.localeCompare(b.label, 'ru', { sensitivity: 'base' }));
+
                     console.log("Сотрудники:", result.data);
 
                     gantt.config.columns.forEach(column => {
