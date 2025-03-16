@@ -85,16 +85,16 @@ namespace WebApplication5.Controllers
             }
         }
 
-        //// Удаление задачи
-        //[HttpDelete("api/gantt/tasks/{id}")]
-        //public IActionResult DeleteTask(int id)
-        //{
-        //    TaskRepository.Delete(id);
-        //    return Ok();
-        //}
+        // Сохранение задачи
+        [HttpPost("SendToApprove")]
+        public IActionResult SendToApprove([FromBody] ApprovePlanTaskCompJson approvePlanTaskCompJson)
+        {
+            return View();
+        }
+            
 
-        // Получение списка сотрудников отдела текущего пользователя
-        [HttpGet("api/gantt/resources")]
+            // Получение списка сотрудников отдела текущего пользователя
+            [HttpGet("api/gantt/resources")]
         public IActionResult GetUsersFromMyDepartment()
         {
             var users = WebApplication5.Models.User.GetUsersFromCurrentDepartment(context, HttpContext);

@@ -37,11 +37,11 @@ namespace WebApplication5.Controllers
         {
             if (month == 0) month = DateTime.Now.Month;
             var curUser = WebApplication5.Models.User.GetUser(context, HttpContext);
-            var taskComps = ApprovePlanTaskComp.GetAllTasksForMyDepartmentCurMonth(curUser, context);            
-            var webApiTasks = taskComps.Select(x => (WebApiTask)x);           
+            //var taskComps = ApprovePlanTaskComp.GetAllTasksForMyDepartmentCurMonth(curUser, context);            
+            //var webApiTasks = taskComps.Select(x => (WebApiTask)x);           
             //var planTaskCompJsonList = PlanTaskComp.GetPlanTaskCompCurUser(curUser, DateTime.Now.Month, context);
             //var planTaskComp = PlanTaskComp.GetPlanTaskCompCurUser(curUser, context);
-            return View(webApiTasks);
+            return View();
         }
 
         [HttpGet("api/gantt/tasks")]
