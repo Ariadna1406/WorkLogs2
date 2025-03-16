@@ -120,16 +120,7 @@
             padding: 10px 20px;
             border: 1px solid #CCCCCC;
             border-radius: 3px;
-        }
-
-        #saveButton {
-            background-color: #C1ECB0;
-            color: #555D63;
-            font-weight: 600;
-        }
-
-        #sendButton {
-            background-color: #537CFA;
+            background-color: #537CFA; /* #EAF2FF */
             color: #FFFFFF;
         }
 
@@ -647,6 +638,7 @@
                 }
             })
 
+            // Кнопка Сохранить
             document.getElementById("saveButton").addEventListener("click", function() {
                 SaveTasks();
             })
@@ -705,6 +697,20 @@
                     })
                 })
                 .catch(error => console.error("Ошибка при получении Id пользователя:", error));   
+            }
+
+            // Кнопка Отправить на согласование
+            document.getElementById("sendButton").addEventListener("click", function() {
+                SendTasks();
+            })
+
+            function SendTasks() {
+
+                console.log('Задачи для отправки на согласование:', tasksToSend);
+
+                fetch('/PlanTaskComp/SendToApprove', {
+
+                })
             }
 
             // Получение начала и конца месяца

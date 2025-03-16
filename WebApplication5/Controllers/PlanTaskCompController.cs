@@ -108,10 +108,9 @@ namespace WebApplication5.Controllers
             }
             return View();
         }
-            
-
-            // Получение списка сотрудников отдела текущего пользователя
-            [HttpGet("api/gantt/resources")]
+           
+        // Получение списка сотрудников отдела текущего пользователя
+        [HttpGet("api/gantt/resources")]
         public IActionResult GetUsersFromMyDepartment()
         {
             var users = WebApplication5.Models.User.GetUsersFromCurrentDepartment(context, HttpContext);
