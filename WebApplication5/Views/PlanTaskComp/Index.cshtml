@@ -701,7 +701,7 @@
             // Получение начала и конца месяца
             function getMonthStartEnd(year, month) {
                 var startDate = new Date(year, month, 1);
-                var endDate = new Date(year, month + 1, 1); // Для получения последнего дня месяца используется день "0" следующего месяца
+                var endDate = new Date(year, month + 1, 0); // Для получения последнего дня месяца используется день "0" следующего месяца
                 return { start: startDate, end: endDate};
             }
 
@@ -722,11 +722,11 @@
 
             // Обновление отображения диграммы на выбранный месяц
             function updateGanttMonth(year, month) {
-                var dates = getMonthStartEnd(year, month);
-                gantt.config.start_date = dates.start;
-                gantt.config.end_date = dates.end;
-                gantt.config.min_date = dates.start;
-                gantt.config.max_date = dates.end;
+                const { start, end } = getMonthStartEnd(year, month);
+                gantt.config.start_date = start;
+                gantt.config.end_date = end;
+                gantt.config.min_date = start;
+                gantt.config.max_date = end;
 
                 gantt.render();
             }
@@ -734,9 +734,18 @@
             // Обработчик для выбора месяца
             document.getElementById("monthSelector").addEventListener("change", function() {
                 var selectedMonth = parseInt(this.value, 10);
+                localStorage.setItem('selectedMonth', selectedMonth); // Сохранение выбранного месяца
                 updateGanttMonth(currentYear, selectedMonth);
+                loadTasks(selectedMonth);
             })
 
+            // Восстановаление выбранного месяца при загрузке страницы
+            var savedMonth = localStorage.getItem('selectedMonth');
+            savedMonth = savedMonth !== null ? parseInt(savedMonth, 10) : currentMonth;
+
+            document.getElementById("monthSelector").value = savedMonth;
+            updateGanttMonth(currentYear, savedMonth);
+ 
             // Получение задач для загрузки проектов и комплектов
             function loadSetsAndProjects() {
                 return fetch("/plantaskcomp/api/gantt/tasks")
@@ -759,14 +768,22 @@
             }
             
             // Загрузка задач
-            function loadTasks() {
-                return fetch("/plantaskcomp/api/gantt/plantaskcomp")
+            function loadTasks(selectedMonth) {
+
+                if (isNaN(selectedMonth) || selectedMonth < 0 || selectedMonth > 11) {
+                    console.error("Неверный месяц:", selectedMonth);
+                    return;
+                }
+
+                // Получение начальной и конечной даты для выбранного месяца
+                const { start, end } = getMonthStartEnd(currentYear, selectedMonth);
+                console.log(`Загружаем задачи за месяц: ${selectedMonth + 1} (с ${start.toLocaleDateString()} по ${end.toLocaleDateString()})`);
+ 
+                return fetch(`/plantaskcomp/api/gantt/plantaskcomp?planMonth=${selectedMonth + 1}`)
                 .then(response => response.json())
                 .then(result => {
                     let tasks = result.data;
                     console.log('Полученные задачи из базы данных:', tasks);
-
-                    let idCounter = 1;
 
                     let ganttTasks = tasks.map(task => {
 
@@ -789,7 +806,7 @@
                             return `${day}-${month}-${year}`;
                         };
 
-                        // Поиск taskCompId в массиве ssets и установка project
+                        // Поиск taskCompId в массиве sets и установка project
                         let foundSet = sets.find(set => set.key === task.taskCompId);
                         let projectValue = foundSet ? foundSet.project : null;
 
@@ -824,7 +841,9 @@
             
             // Сначала загрузка комплектов и проектов, затем - задач
             loadSetsAndProjects().then(() => {
-                loadTasks();
+                var savedMonth = localStorage.getItem('selectedMonth');
+                savedMonth = savedMonth !== null ? parseInt(savedMonth, 10) : currentMonth;
+                loadTasks(savedMonth);
             })
 
             gantt.init("GanttChart");
