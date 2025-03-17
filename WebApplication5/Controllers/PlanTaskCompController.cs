@@ -54,13 +54,21 @@ namespace WebApplication5.Controllers
         }
 
         [HttpGet("api/gantt/plantaskcomp")]
-        public IActionResult GetPlanTaskComp(int planMonth)
+        public IActionResult GetPlanTaskComp(int planMonth, int planYear)
         {
             if (planMonth == 0) planMonth = DateTime.Now.Month;
             var curUser = WebApplication5.Models.User.GetUser(context, HttpContext);
             var planTaskCompJsonList = PlanTaskComp.GetPlanTaskCompCurUser(curUser, planMonth, context);   
             //planTaskCompList.Select(x=>x.)
             return Json(new { data = planTaskCompJsonList });
+        }
+
+        [HttpGet("api/gantt/getcurstatus")]
+        public IActionResult GetCurStatus(int planMonth, int planYear)
+        {
+           var curStatus= ApprovePlanTaskComp.GetApprovePlanTaskCompStatus(planMonth, planYear, context);
+            var statusStr = ApprovePlanTaskComp.GetStatusRus(curStatus);            
+            return Json(new { data = statusStr });
         }
 
         // Сохранение задачи

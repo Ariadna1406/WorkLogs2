@@ -21,14 +21,16 @@ namespace WebApplication5.Models
         public string RejectedUser { get; set; }
 
         public Status PlanTaskCompStatus { get; set; }
-        public enum Status { New, Read, Confirmed, Declined }
+        public enum Status { New, SentToApprove, Read, Confirmed, Declined }
 
         public string GetStatusRus()
         {
             switch (PlanTaskCompStatus)
             {
                 case Status.New:
-                    return "На согласовании";
+                    return "Новый";
+                case Status.SentToApprove:
+                    return "Отправлено на согласование";
                 case Status.Read:
                     return "Прочитано (решение не принято)";
                 case Status.Confirmed:
@@ -39,6 +41,23 @@ namespace WebApplication5.Models
             return string.Empty;
         }
 
+        public static string GetStatusRus(Status status)
+        {
+            switch (status)
+            {
+                case Status.New:
+                    return "Новый";
+                case Status.SentToApprove:
+                    return "Отправлено на согласование";
+                case Status.Read:
+                    return "Прочитано (решение не принято)";
+                case Status.Confirmed:
+                    return "Подтверждено (комплект создан)";
+                case Status.Declined:
+                    return "Отклонено";
+            }
+            return string.Empty;
+        }
 
         public ApprovePlanTaskComp() { }
 
@@ -106,12 +125,13 @@ namespace WebApplication5.Models
             var planTaskCompJsonFirst = planTaskCompJsonList.First();
             DateTime.TryParse(planTaskCompJsonFirst.startPlanDate, out DateTime startPlanDateParsed);            
             var author = User.GetUserById(context, planTaskCompJsonFirst.authorId);
+            //Ищем объект ApprovePlanTaskComp за необходимый месяц, если его нет, то создаём новую 
             var approvePlanTaskCompSet = context.ApprovePlanTaskComp.Where(x => x.UserCreatedRequest == author && x.PlanMonth == startPlanDateParsed.Month && x.PlanYear == startPlanDateParsed.Year);
             if (approvePlanTaskCompSet.Count() > 0)
             {
                 var aptc = approvePlanTaskCompSet.First();
                 aptc.UserCreatedRequest = author;
-                aptc.PlanTaskCompStatus = Status.New;
+                aptc.PlanTaskCompStatus = Status.SentToApprove;
             }
             else
             {
@@ -120,7 +140,7 @@ namespace WebApplication5.Models
                     UserCreatedRequest = author,
                     PlanMonth = startPlanDateParsed.Month,
                     PlanYear = startPlanDateParsed.Year,
-                    PlanTaskCompStatus = Status.New
+                    PlanTaskCompStatus = Status.SentToApprove
                 };
                 context.ApprovePlanTaskComp.Add(newApprovePlanTaskComp);
             }
@@ -128,6 +148,18 @@ namespace WebApplication5.Models
             return true;
         }
 
+        public static Status GetApprovePlanTaskCompStatus(int planMonth, int planYear, AppDbContext context)
+        {
+            var approvePlanTaskCompSet= context.ApprovePlanTaskComp.First(x => x.PlanMonth == planMonth && x.PlanYear == planYear);
+            if (approvePlanTaskCompSet == null)
+            {
+                return Status.New;
+            }
+            else
+            {
+                return approvePlanTaskCompSet.PlanTaskCompStatus;
+            }
+        }
         //public static List<PlanTaskCompJson> GetApprovePlanTaskCompCurUser(User curUser, int month, AppDbContext context)
         //{
         //    var planTaskCompSet = context.ApprovePlanTaskComp.Include(x => x.Author).Include(x => x.TaskComp).Include(x => x.Executer).Include(x=>x.KindOfAct);
