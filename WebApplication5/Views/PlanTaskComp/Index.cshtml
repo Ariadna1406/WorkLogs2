@@ -897,6 +897,33 @@
                 loadTasks(selectedMonth, selectedYear);
             })
  
+            // Получение выбранного месяца и года
+            function getSelectedMonthAndYear() {
+                const selectedMonth = parseInt(document.getElementById("monthSelector").value, 10);
+                const selectedYear = parseInt(document.getElementById("yearSelector").value, 10);
+                return { selectedMonth, selectedYear };
+            }
+
+            // Вызов функции для получения статуса при изменении месяца или года
+            document.getElementById("monthSelector").addEventListener("change", getStatus);
+            document.getElementById("yearSelector").addEventListener("change", getStatus);
+
+            // Функция получения статуса согласования
+            function getStatus() {
+                const { selectedMonth, selectedYear } = getSelectedMonthAndYear();
+                fetch(`/plantaskcomp/api/gantt/getcurstatus?planMonth=${selectedMonth + 1}&planYear=${selectedYear}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const status = data.data;
+                        console.log("Текущий статус:", status);
+                    })
+                    .catch(error => {
+                        console.error("Ошибка при получении статуса:", error);
+                    });
+            }
+
+            getStatus();
+
             // Получение задач для загрузки проектов и комплектов
             function loadSetsAndProjects() {
                 return fetch("/plantaskcomp/api/gantt/tasks")
@@ -917,7 +944,7 @@
                 })
                 .catch(error => console.error("Ошибка загрузки комплектов и проектов:", error));
             }
-            
+
             // Загрузка задач
             function loadTasks(selectedMonth, selectedYear) {
 
