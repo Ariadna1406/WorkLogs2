@@ -70,7 +70,7 @@
         }
 
         /* Выбор месяца */
-        #monthSelector {
+        #monthSelector, #yearSelector {
             font-family: Inter, Helvetica, Arial, sans-serif;
             font-weight: 500;
             width: max-content;
@@ -82,9 +82,9 @@
             border-radius: 3px;
         }
 
-        #monthSelector:focus {
-            outline: none;
-            border: 1px solid #ccc;
+        #year-month-selector {
+            display: flex;
+            gap: 15px;
         }
 
         /* Контейнер легенды */
@@ -124,9 +124,40 @@
             color: #FFFFFF;
         }
 
+        #status-box {
+            padding: 10px 20px;
+            border: 1px solid #CCCCCC;
+            border-radius: 3px;
+            color: #555D63; 
+            font-weight: 600;
+        }
+
+        .status-not-sent { 
+            background-color: #F4F4F4; /* Статус: Не отправлено */
+        }
+
+        .status-in-approval,
+        .status-read {
+            background-color: #FFF1A0; /* Статус: На согласовании и Прочитано */
+        }
+
+        .status-approved {
+            background-color: #C1ECB0; /* Статус: Согласовано */
+        }
+
+        .status-rejected {
+            background-color: #EC928C; /* Статус: Отклонено */
+        }
+
+        #button-status-container {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
         #button-container {
             display: flex;
-            gap: 30px;
+            gap: 15px;
         }
 
         #dataRes-table-container {
@@ -153,20 +184,23 @@
 <body>
     <div id="top-panel">  
         <div id="left-container">
-            <select id="monthSelector">
-                <option value="0">Январь</option>
-                <option value="1">Февраль</option>
-                <option value="2">Март</option>
-                <option value="3">Апрель</option>
-                <option value="4">Май</option>
-                <option value="5">Июнь</option>
-                <option value="6">Июль</option>
-                <option value="7">Август</option>
-                <option value="8">Сентябрь</option>
-                <option value="9">Октябрь</option>
-                <option value="10">Ноябрь</option>
-                <option value="11">Декабрь</option>
-            </select>
+            <div id="year-month-selector">
+                <select id="yearSelector"></select>
+                <select id="monthSelector">
+                    <option value="0">Январь</option>
+                    <option value="1">Февраль</option>
+                    <option value="2">Март</option>
+                    <option value="3">Апрель</option>
+                    <option value="4">Май</option>
+                    <option value="5">Июнь</option>
+                    <option value="6">Июль</option>
+                    <option value="7">Август</option>
+                    <option value="8">Сентябрь</option>
+                    <option value="9">Октябрь</option>
+                    <option value="10">Ноябрь</option>
+                    <option value="11">Декабрь</option>
+                </select>
+            </div>
             @*Контейнер для таблицы списка сотрудников *@
             <div id="dataRes-table-container">
                 <table id="dataRes-table">
@@ -182,9 +216,14 @@
                     </tbody>
                 </table>
             </div>
-            <div id="button-container">
-                <button id="saveButton">Сохранить</button>
-                <button id="sendButton">Сохранить и отправить на согласование</button>
+            <div id="button-status-container">
+                <div id="button-container">
+                    <button id="saveButton">Сохранить</button>
+                    <button id="sendButton">Сохранить и отправить на согласование</button>
+                </div>
+                <div id="status-box" class="status-not-sent">
+                    Не отправлено
+                </div>
             </div>
         </div>
         <div id="legend-container">
@@ -202,6 +241,7 @@
     <div id="GanttChart" style="width: 100%; height: 600px;"></div>
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', function () {
+
             var validValues = [0.10, 0.20, 0.25, 0.30, 0.40, 0.50, 1.00]; // Массив допустимых значений для интенсивности выполнения работ
         
             var holidays  = [
@@ -251,6 +291,7 @@
             gantt.config.bar_height = 25; // Высота полосок на диаграмме
             gantt.i18n.setLocale("ru"); // Русский язык
             gantt.config.lightbox = false;
+            // gantt.config.readonly = true;
 
             // Дни недели и число
             gantt.config.scales = [
@@ -341,7 +382,7 @@
                 let totalTotalHours = 0; // Сумма колонки Планир. ТЗ
 
                 let selectedMonth = parseInt(document.getElementById("monthSelector").value, 10);
-                let selectedYear = new Date().getFullYear();
+                let selectedYear = parseInt(document.getElementById("yearSelector").value, 10);
 
                 let monthStart = new Date(selectedYear, selectedMonth, 1);
                 let monthEnd = new Date(selectedYear, selectedMonth + 1, 0);
@@ -430,7 +471,7 @@
 
                         let backgroundColor = "";
                         if (totalHours < timeBalance) {
-                            backgroundColor = "#FFFEAF";
+                            backgroundColor = "#FFF1A0";
                         } else if (totalHours === timeBalance) {
                             backgroundColor = "#C1ECB0";
                         } else {
@@ -452,7 +493,7 @@
 
                     let backgroundColor = "";
                     if (totalTotalHours < totalTimeBalance) {
-                        backgroundColor = "#FFFEAF";
+                        backgroundColor = "#FFF1A0";
                     } else if (totalTotalHours === totalTimeBalance) {
                         backgroundColor = "#C1ECB0";
                     } else {
@@ -471,7 +512,19 @@
 
             // Обновление таблицы ресурсов при переключении между месяцами
             document.getElementById("monthSelector").addEventListener("change", function() {
+                let selectedYear = parseInt(document.getElementById("yearSelector").value, 10);
                 calculateTotalHoursForResource(resources);
+                updateGanttMonthYear(selectedYear, parseInt(this.value, 10));
+                loadTasks(parseInt(this.value, 10), selectedYear);
+            })
+
+            // Обновление таблицы ресурсов при переключении между годами
+            document.getElementById("yearSelector").addEventListener("change", function() {
+                let selectedYear = parseInt(this.value, 10);
+                let selectedMonth = parseInt(document.getElementById("monthSelector").value, 10);
+                calculateTotalHoursForResource(resources);
+                updateGanttMonthYear(selectedYear, selectedMonth);
+                loadTasks(selectedMonth, selectedYear);
             })
 
             // Выполняемые работы
@@ -597,7 +650,7 @@
             document.addEventListener("click", function(e) {
                 if ((e.target && e.target.classList.contains("add-task-btn")) || (e.target && e.target.id === "header-add-task-btn")) {
                     var selectedMonth = parseInt(document.getElementById("monthSelector").value, 10);
-                    var selectedYear = new Date().getFullYear();
+                    var selectedYear = parseInt(document.getElementById("yearSelector").value, 10);
                     var taskStartDate = new Date(selectedYear, selectedMonth, 1);
 
                     lastTaskId++;
@@ -761,6 +814,9 @@
                         if (data.success) {
                             alert('Успешно!');
                             location.reload(); // Обновление страницы после сохранения
+                            // Изменение статуса 
+                            document.getElementById("status-box").className = "status-in-approval";
+                            document.getElementById("status-box").innerText = "На согласовании";
                         } else {
                             alert("Ошибка: " + data.message);
                         }
@@ -773,6 +829,27 @@
                 .catch(error => console.error("Ошибка при получении Id пользователя:", error));
             }
 
+            // Выбор года (текущий + следующий)
+            let yearSelector = document.getElementById("yearSelector");
+
+            let curYear = new Date().getFullYear();
+            let savedYear = localStorage.getItem("selectedYear");
+            savedYear = savedYear ? parseInt(savedYear, 10) : curYear;
+
+            yearSelector.innerHTML = "";
+
+            for (let i = 0; i < 2; i++) {
+                let option = document.createElement("option");
+                option.value = curYear + i;
+                option.textContent = curYear + i;
+                yearSelector.appendChild(option);
+            }
+
+            // Выбор сохраненного года
+            yearSelector.value = savedYear;
+
+            let monthSelector = document.getElementById("monthSelector");
+
             // Получение начала и конца месяца
             function getMonthStartEnd(year, month) {
                 var startDate = new Date(year, month, 1);
@@ -780,23 +857,13 @@
                 return { start: startDate, end: endDate};
             }
 
-            // Установка начальных параметров (текущий месяц)
-            var currentDate = new Date();
-            var currentYear = currentDate.getFullYear();
-            var currentMonth = currentDate.getMonth();
-            var dates = getMonthStartEnd(currentYear, currentMonth);
+            // Восстановаление выбранного месяца при загрузке страницы
+            var savedMonth = localStorage.getItem('selectedMonth');
+            savedMonth = savedMonth !== null ? parseInt(savedMonth, 10) : currentMonth;
+            monthSelector.value = savedMonth;
 
-            // Установка текущего месяца по умолчанию в список
-            document.getElementById("monthSelector").value = currentMonth;
-
-            // Настройка диаграммы на выбранный период
-            gantt.config.start_date = dates.start;
-            gantt.config.end_date = dates.end;
-            gantt.config.min_date = dates.start;
-            gantt.config.max_date = dates.end;
-
-            // Обновление отображения диграммы на выбранный месяц
-            function updateGanttMonth(year, month) {
+            // Обновление отображения диграммы на выбранный месяц и год
+            function updateGanttMonthYear(year, month) { 
                 const { start, end } = getMonthStartEnd(year, month);
                 gantt.config.start_date = start;
                 gantt.config.end_date = end;
@@ -806,20 +873,29 @@
                 gantt.render();
             }
 
-            // Обработчик для выбора месяца
-            document.getElementById("monthSelector").addEventListener("change", function() {
-                var selectedMonth = parseInt(this.value, 10);
+            // Установка начальных параметров
+            updateGanttMonthYear(savedYear, savedMonth);
+            loadTasks(savedMonth, savedYear);
+
+            // Обработчик изменения месяца
+            monthSelector.addEventListener("change", function() {
+                let selectedMonth = parseInt(this.value, 10);
+                let selectedYear = parseInt(yearSelector.value, 10);
+
                 localStorage.setItem('selectedMonth', selectedMonth); // Сохранение выбранного месяца
-                updateGanttMonth(currentYear, selectedMonth);
-                loadTasks(selectedMonth);
+                updateGanttMonthYear(selectedYear, selectedMonth);
+                loadTasks(selectedMonth, selectedYear);
             })
 
-            // Восстановаление выбранного месяца при загрузке страницы
-            var savedMonth = localStorage.getItem('selectedMonth');
-            savedMonth = savedMonth !== null ? parseInt(savedMonth, 10) : currentMonth;
+            // Обработчик изменения года
+            yearSelector.addEventListener("change", function() {
+                let selectedYear = parseInt(this.value, 10);
+                let selectedMonth = parseInt(monthSelector.value, 10);
 
-            document.getElementById("monthSelector").value = savedMonth;
-            updateGanttMonth(currentYear, savedMonth);
+                localStorage.setItem('selectedYear', selectedYear); // Сохранение выбранного года
+                updateGanttMonthYear(selectedYear, selectedMonth);
+                loadTasks(selectedMonth, selectedYear);
+            })
  
             // Получение задач для загрузки проектов и комплектов
             function loadSetsAndProjects() {
@@ -843,7 +919,7 @@
             }
             
             // Загрузка задач
-            function loadTasks(selectedMonth) {
+            function loadTasks(selectedMonth, selectedYear) {
 
                 if (isNaN(selectedMonth) || selectedMonth < 0 || selectedMonth > 11) {
                     console.error("Неверный месяц:", selectedMonth);
@@ -851,10 +927,10 @@
                 }
 
                 // Получение начальной и конечной даты для выбранного месяца
-                const { start, end } = getMonthStartEnd(currentYear, selectedMonth);
-                console.log(`Загружаем задачи за месяц: ${selectedMonth + 1} (с ${start.toLocaleDateString()} по ${end.toLocaleDateString()})`);
+                const { start, end } = getMonthStartEnd(selectedYear, selectedMonth);
+                console.log(`Загружаем задачи за месяц: ${selectedMonth + 1}-${selectedYear} (с ${start.toLocaleDateString()} по ${end.toLocaleDateString()})`);
  
-                return fetch(`/plantaskcomp/api/gantt/plantaskcomp?planMonth=${selectedMonth + 1}`)
+                return fetch(`/plantaskcomp/api/gantt/plantaskcomp?planMonth=${selectedMonth + 1}&planYear=${selectedYear}`)
                 .then(response => response.json())
                 .then(result => {
                     let tasks = result.data;
@@ -916,9 +992,16 @@
             
             // Сначала загрузка комплектов и проектов, затем - задач
             loadSetsAndProjects().then(() => {
-                var savedMonth = localStorage.getItem('selectedMonth');
+                let savedMonth = localStorage.getItem('selectedMonth');
                 savedMonth = savedMonth !== null ? parseInt(savedMonth, 10) : currentMonth;
-                loadTasks(savedMonth);
+
+                let savedYear =  localStorage.getItem('selectedYear');
+                savedYear = savedYear !== null ? parseInt(savedYear, 10) : new Date().getFullYear();
+
+                document.getElementById("monthSelector").value = savedMonth;
+                document.getElementById("yearSelector").value = savedYear;
+
+                loadTasks(savedMonth, savedYear);
             })
 
             gantt.init("GanttChart");
