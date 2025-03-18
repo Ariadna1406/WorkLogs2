@@ -79,6 +79,12 @@ namespace WebApplication5.Models
             };
         }
 
+        public static List<ApprovePlanTaskComp> GetAllWithStatusSendToApprove(AppDbContext context)
+        {
+            var aptcForApprove= context.ApprovePlanTaskComp.Where(x => x.PlanTaskCompStatus == ApprovePlanTaskComp.Status.SentToApprove).ToList();
+            return aptcForApprove;
+        }
+
         static void FindTaskComp(int taskCompId, AppDbContext context, out TaskComp task)
         {
             var taskCompSet = context.TaskComps.Where(x => x.Id == taskCompId);
@@ -132,6 +138,7 @@ namespace WebApplication5.Models
                 var aptc = approvePlanTaskCompSet.First();
                 aptc.UserCreatedRequest = author;
                 aptc.PlanTaskCompStatus = Status.SentToApprove;
+                aptc.ChangeStatus(author, ApprovePlanTaskComp.Status.SentToApprove, context, out string errorChangeStatus);
             }
             else
             {
@@ -139,12 +146,21 @@ namespace WebApplication5.Models
                 {
                     UserCreatedRequest = author,
                     PlanMonth = startPlanDateParsed.Month,
-                    PlanYear = startPlanDateParsed.Year,
-                    PlanTaskCompStatus = Status.SentToApprove
+                    PlanYear = startPlanDateParsed.Year                    
                 };
+                newApprovePlanTaskComp.ChangeStatus(author, ApprovePlanTaskComp.Status.SentToApprove, context, out string errorChangeStatus);
                 context.ApprovePlanTaskComp.Add(newApprovePlanTaskComp);
             }
             context.SaveChanges();
+            return true;
+        }
+
+        public bool ChangeStatus(User user, ApprovePlanTaskComp.Status status, AppDbContext context, out string errors)
+        {
+            errors = string.Empty;
+            PlanTaskCompStatus = status;
+            var newHistRecord = new ApprovePlanTaskCompStatusHistory(this, status, user);
+            context.ApprovePlanTaskCompStatusHistories.Add(newHistRecord);
             return true;
         }
 

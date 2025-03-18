@@ -51,6 +51,8 @@ namespace WebApplication5.Models
 
         public DbSet<ApprovePlanTaskComp> ApprovePlanTaskComp { get; set; }
 
+        public DbSet<ApprovePlanTaskCompStatusHistory> ApprovePlanTaskCompStatusHistories { get; set; }
+
         //protected override void OnModelCreating(ModelBuilder builder)
         //{
         //    base.OnModelCreating(builder);

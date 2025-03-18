@@ -1,0 +1,112 @@
+﻿
+@model WorkLogs
+@{
+    ViewData["Title"] = "Отчёт по трудозатратам";
+
+    User curUser = ViewData["CurUser"] as User;
+
+    string dateTimeRightFormat = string.Empty;    
+        var date =DateTime.Now;
+        dateTimeRightFormat = String.Format("{0}-{1}-{2}T00:00:00.000", date.Year, date.Month < 10 ? "0" + date.Month.ToString() : date.Month.ToString(), date.Day < 10 ? "0" + date.Day.ToString() : date.Day.ToString());
+    
+}
+
+<br>
+<h3>Запрос на добавления комплекта/работы</h3>
+<br>
+<link rel="stylesheet" href="~/css/WorkLogsIndex.css">
+
+@if (ViewData["SuccessMes"] != null)
+{
+    @Html.Partial("PartialInformation", ViewData["SuccessMes"]);
+}
+@if (ViewData["FailMes"] != null)
+{
+    @Html.Partial("PartialError", ViewData["FailMes"]);
+}
+
+<table id="WorkLogs" class="QualityBook" width="100%">
+
+    <div asp-validation-summary="ModelOnly"></div>
+
+    <tr>
+        <td>Проект:</td>
+        <td>
+            <input list="projectList" name="selectedProject" id="SelectedProject" autocomplete="off">
+            <datalist id="projectList">
+                @foreach (var project in ViewData["CurProjects"] as List<string>)
+                {
+                    <option id="@project">@project</option>
+                }
+            </datalist>
+
+        </td>
+    </tr>
+    <tr>
+        <td>Наименование комплекта:</td>
+        <td>
+            <input type="text" id="taskCompName" size="65">
+
+        </td>
+    </tr>
+    <tr>
+        <td>Дата начала:</td>
+        <td>
+            <input class="text-box single-line" data-val="true" id="StartDate" name="DateOfReport" type="datetime-local" value="">
+            <p>(Необязательное поле)</p>
+        </td>
+</tr>
+    <tr>
+        <td>Дата окончания:</td>
+        <td>
+            <input class="text-box single-line" data-val="true" id="FinishDate" name="DateOfReport" type="datetime-local" value="">
+            <p>(Необязательное поле)</p>
+        </td>
+</tr>
+    <tr>
+        <td>Плановые трудозатраты:</td>
+        <td>
+            <input type="text" name="workLogPlan" size="65" id="WorkLogPlan">
+            <p>(Необязательное поле)</p>
+        </td>
+    </tr>
+    <tr>
+        <td>Комментарий:</td>
+        <td>
+            <textarea rows="3" cols="68" name="comment" id="comment"></textarea>
+            <br>(Необязательное поле)
+        </td>
+    </tr>
+
+    <tr>
+
+        <td>
+            <input type="submit" value="Отправить на рассмотрение" onclick="taskCompRequest()">
+        </td>
+    </tr>
+
+</table>
+<br>
+
+<script>
+    function taskCompRequest() {
+        var project = document.getElementById('SelectedProject').value;
+        var taskCompName = document.getElementById('taskCompName').value;
+        var startDate = document.getElementById('StartDate').value;
+        var finishDate = document.getElementById('FinishDate').value;
+        var workLogPlan = document.getElementById('WorkLogPlan').value;
+        var comment = document.getElementById('comment').value;
+        
+        window.location.href = '/ImportComp/SendTaskCompRequest/GetData?project=' + project + '&taskCompName=' + taskCompName + '&startDate=' + startDate +
+            '&finishDate=' + finishDate + '&workLogPlan=' + workLogPlan + '&comment=' + comment;
+        //console.log(str)
+        //var curPercent = document.getElementById('curPercent-' + taskCompId).value;
+        //var rsrcId = 'rsrc-' + taskCompId;
+        //var rsrcElem = document.getElementById(rsrcId);
+        //, string taskCompId
+        //taskCompDict[taskCompId]=curPercent
+        //window.location.href = '/MyDepartment/SetPercent/GetData?curPercent=' + curPercent + '&taskCompId=' + taskCompId;
+        //Home/GetData?items[germany]=berlin&items[france]=paris&items[spain]=madrid
+    }
+
+</script>

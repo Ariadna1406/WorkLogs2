@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebApplication5.Models;
 
 namespace WebApplication5.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250317080117__ApprovePlanTaskCompHistory")]
+    partial class _ApprovePlanTaskCompHistory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -80,29 +82,6 @@ namespace WebApplication5.Migrations
                     b.HasIndex("UserCreatedRequestId");
 
                     b.ToTable("ApprovePlanTaskComp");
-                });
-
-            modelBuilder.Entity("WebApplication5.Models.ApprovePlanTaskCompStatusHistory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int?>("ApprovePlanTaskCompId");
-
-                    b.Property<DateTime>("ChangedStatusDate");
-
-                    b.Property<int>("Status");
-
-                    b.Property<int?>("UserChangedStatusId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ApprovePlanTaskCompId");
-
-                    b.HasIndex("UserChangedStatusId");
-
-                    b.ToTable("ApprovePlanTaskCompStatusHistories");
                 });
 
             modelBuilder.Entity("WebApplication5.Models.AvevaElemAmount", b =>
@@ -664,17 +643,6 @@ namespace WebApplication5.Migrations
                     b.HasOne("WebApplication5.Models.User", "UserCreatedRequest")
                         .WithMany()
                         .HasForeignKey("UserCreatedRequestId");
-                });
-
-            modelBuilder.Entity("WebApplication5.Models.ApprovePlanTaskCompStatusHistory", b =>
-                {
-                    b.HasOne("WebApplication5.Models.ApprovePlanTaskComp", "ApprovePlanTaskComp")
-                        .WithMany()
-                        .HasForeignKey("ApprovePlanTaskCompId");
-
-                    b.HasOne("WebApplication5.Models.User", "UserChangedStatus")
-                        .WithMany()
-                        .HasForeignKey("UserChangedStatusId");
                 });
 
             modelBuilder.Entity("WebApplication5.Models.AvevaElemAmount", b =>

@@ -1,0 +1,386 @@
+﻿@using WebApplication5.Models.ExcelFiles
+@model ApprovePlanTaskComp[]
+@{
+    Layout = @"_LayoutAlignLeft.cshtml";
+    int count = 0;    
+    string tcrCond = string.Empty;
+    if (ViewData["tcrCond"] != null)
+    {
+        tcrCond = ViewData["tcrCond"] as string;
+    }
+    string filePath = ViewData["filePath"] as string;
+    if (string.IsNullOrEmpty(filePath))
+    {
+        filePath = FilePath.path;
+    }
+}
+<br>
+<br>
+<!-- <style>
+    .FullName {
+        width: 50px
+    }
+
+    td {
+        text-align: center;
+    }
+
+    th {
+        text-align: center;
+        color: brown;
+        font-size: large
+    }
+</style>-->
+<link rel="stylesheet" href="~/css/ProjectsIndex.css">
+@if (ViewData["SuccessMes"] != null)
+{
+    @Html.Partial("PartialInformation", ViewData["SuccessMes"]);
+}
+@if (ViewData["FailMes"] != null)
+{
+    @Html.Partial("PartialError", ViewData["FailMes"]);
+}
+
+
+<table width="80%">
+    <td width="500px">
+        <p>
+            <a id="filterAllTaskCompReq" asp-area="" asp-controller="ImportComp" asp-action="TaskCompReqApply" asp-route-tcrCond="4">Все запросы</a>/
+            <a id="filterTaskCompReqNew" asp-area="" asp-controller="ImportComp" asp-action="TaskCompReqApply" asp-route-tcrCond="0">Новые</a>/
+            <a id="filterTaskCompReqDecline" asp-area="" asp-controller="ImportComp" asp-action="TaskCompReqApply" asp-route-tcrCond="3">Отклоненные</a>
+        </p>
+        <p>
+            <a id="filterTaskCompReqRead" asp-area="" asp-controller="ImportComp" asp-action="TaskCompReqApply" asp-route-tcrCond="1">Прочитанные</a>/
+            <a id="filterTaskCompReqConfirmed" asp-area="" asp-controller="ImportComp" asp-action="TaskCompReqApply" asp-route-tcrCond="2">Подтверждённые</a>
+        </p>
+        <input id="curFilter" type="text" hidden="hidden" value="@tcrCond">
+    </td>
+    <td align="left">
+        <p>Всего работ <b style="color:red"> @Model.Length.ToString()</b></p>
+        <p>
+            Всего работ по проектам:
+            @foreach (var tcrGr in tcrGroupedByProject)
+            {
+                <b onclick="SetProjNum(@tcrGr.Key)" style="cursor: pointer;"> @tcrGr.Key - </b> <b style="color:red"> @tcrGr.Count()</b> <b> ;</b>
+
+            }
+        </p>
+    </td>
+
+</table>
+
+<form asp-action="CreateTaskCompFromRequest" method="post">
+
+    <table class="QualityBook" align="center">
+        <tbody id="WorkLogsTBody">
+            <tr>
+                <th width="50px"><input type="checkbox" id="CheckAll" /></th>
+                <th>№</th>
+                <th style="padding: 10px 15px; text-align: center">Наименование проекта</th>
+                <th style="padding: 10px 15px; text-align: center">Наименование работы</th>
+                <th style="padding: 10px 15px; text-align: center">Дата начала</th>
+                <th style="padding: 10px 15px; text-align: center">Дата окончания</th>
+                <th style="padding: 5px 15px; text-align: center max-width:50px">План. трудозатраты</th>
+                <th style="padding: 10px 15px; text-align: center; max-width:300px">Комментарий пользователя</th>
+                <th style="padding: 10px 15px; text-align: center">Дата создания запроса</th>
+                <th style="padding: 10px 15px; text-align: center">Пользователь создавший запрос</th>
+                <th style="padding: 10px 15px; text-align: center">Статус запроса</th>
+                <th style="padding: 10px 15px; text-align: center">Комментарий к отказу</th>
+            </tr>
+            <tr class="filter">
+                <td></td>
+                <td></td>
+                <td style="padding: 10px 15px; text-align: center">
+                    <input type="text" id="PrjNameSearch" oninput="FilterRows()" size="5px"><br><span style="font-size:smaller;">(фильтр)</span>
+                </td>
+                <td style="padding: 10px 50px; text-align: center"><input type="text" id="TaskNameSearch" oninput="FilterRows()"><br><span style="font-size:smaller;">(фильтр)</span></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td style="padding: 10px 100px; text-align: center"></td>
+                <td style="padding: 10px 15px; text-align: center">
+                    <input type="date" id="StartDateSearch" oninput="FilterRows()"><br>
+                    <span style="font-size:smaller;">ОТ (фильтр)</span><br>
+                    <a class="btn btn-close" onclick="SortAscen('startDate')" id="startDateAscen"><i></i>По возрастанию</a><br>
+                    <a class="btn btn-dark" onclick="SortDescen('startDate')" id="startDateDescen"><i></i>По убыванию</a>
+                </td>
+                <td style="padding: 10px 40px 10px 40px; text-align: center"><input type="text" id="ExecuterSearch" oninput="FilterRows()"><br><span style="font-size:smaller;">(фильтр)</td>
+                <td style="padding: 10px 15px; text-align: center">
+                </td>
+
+
+            </tr>
+            @if (Model.Length > 0)
+            {
+                foreach (var taskCompRequest in Model)
+                {
+                    var startDate = taskCompRequest.StartDate?.ToShortDateString();
+                    var finisDate = taskCompRequest.FinishDate?.ToShortDateString();
+                    var denyComment = taskCompRequest.DenyComment;
+                    <tr>
+                        <td><input type="checkbox" class="tcrIdsNTI" name="tcrAr[@count].NeedToImport" value="true" /></td>
+                        <td>@count <input class="tcrIds" name="tcrAr[@count].Id" type="text" hidden="hidden" value="@taskCompRequest.Id" /></td>
+                        <td class="ProjectNumber">@taskCompRequest.ProjectNumber <input name="tcrAr[@count].ProjectNumber" type="text" hidden="hidden" value="@taskCompRequest.ProjectNumber" /></td>
+                        <td class="taskName">@taskCompRequest.TaskCompName <input name="tcrAr[@count].TaskCompName" type="text" hidden="hidden" value="@taskCompRequest.TaskCompName" /></td>
+                        <td>@startDate<input name="tcrAr[@count].StartDate" type="text" hidden="hidden" value="@taskCompRequest.StartDate" /></td>
+                        <td>@finisDate<input name="tcrAr[@count].FinishDate" type="text" hidden="hidden" value="@taskCompRequest.FinishDate" /></td>
+                        <td>@taskCompRequest.PlanWorkLog<input name="tcrAr[@count].WorkLogPlan" type="text" hidden="hidden" value="@taskCompRequest.PlanWorkLog" /></td>
+                        <td style="max-width:10px">@taskCompRequest.Comment<input name="tcrAr[@count].Comment" type="text" hidden="hidden" value="@taskCompRequest.Comment" /></td>
+                        <td class="startDate">@taskCompRequest.DateOfRequest?.ToShortDateString() </td>
+                        <td class="Executers">@taskCompRequest.User?.FullName </td>
+                        <td>@taskCompRequest.GetStatusRus()</td>
+                        <td><textarea onmousemove="ResizeTA(@taskCompRequest.Id,0)" onmouseout="ResizeTA(@taskCompRequest.Id,1)" rows="1" cols="5" name="comment" id="tcrdc-@taskCompRequest.Id">@denyComment</textarea></td>
+
+                    </tr>
+                    count++;
+                }
+            }
+            else
+            {
+                <tr width="100%">
+                    Запросы на создание работ отсутствуют.
+                </tr>
+            }
+
+        </tbody>
+    </table>
+    <br />
+    <p><input type="text" name="filePath" value="@filePath" size="50" /> файл реестра</p>
+    <p>
+        <input class="btn btn-success" type="submit" value="Создать работы" style=" padding: 6px 50px; margin: 0px 0;" />
+        <!--<p><a class="btn btn-default" id="filterTaskCompCurMonth" asp-area="" asp-controller="ImportComp" asp-action="TaskCompRequest">Сообщить<br> об отсутствии комплекта</a></p>-->
+        <input class="btn btn-danger" value="Отклонить работы" onclick="DeclineTaskCompRequest()" />
+    </p>
+
+</form>
+
+<script src="~/js/jQ.js"></script>
+
+<script>
+    $('#CheckAll').click(function Check() {
+        if ($('#CheckAll').is(':checked')) {
+
+            // Отметить все
+            $('body input:checkbox').prop('checked', true);
+
+        } else {
+            // Снять все
+            $('body input:checkbox').prop('checked', false);
+        }
+    });
+
+
+    var curFilter = document.getElementById("curFilter");
+    highlightCurFilter(curFilter.value)
+
+    function highlightCurFilter(curFilter) {
+        elem = '';
+        switch (curFilter) {
+            case '4':
+                elem = document.getElementById("filterAllTaskCompReq");
+                break;
+            case '0':
+                elem = document.getElementById("filterTaskCompReqNew");
+                break;
+            case '3':
+                elem = document.getElementById("filterTaskCompReqDecline");
+                break;
+            case '1':
+                elem = document.getElementById("filterTaskCompReqRead");
+                break;
+            case '2':
+                elem = document.getElementById("filterTaskCompReqConfirmed");
+                break;
+        }
+        if (elem != null && elem != '') highlightElemFilter(elem);
+    }
+
+    function highlightElemFilter(elem) {
+        elem.style.color = 'blue';
+        elem.style.fontWeight = "bold";
+    }
+
+    function DeclineTaskCompRequest() {
+        var elemCol = document.getElementsByClassName('tcrIds')
+        let str = ''
+        let count = 0
+        for (let i = 0; i < elemCol.length; i++) {
+            var trElem = elemCol[i].parentElement.parentElement;
+            var nti = trElem.getElementsByClassName('tcrIdsNTI')
+            if (nti[0].checked) {
+                Id = elemCol[i].value;
+                var tcrdcId = 'tcrdc-' + Id
+                var denyComment = document.getElementById(tcrdcId).value
+                str += 'tcrAr[' + count + '].Id=' + Id + '&';
+
+                if (denyComment != null && denyComment != '') {
+                    str += 'tcrAr[' + count + '].DenyComment=' + denyComment + '&';
+                }
+                count++;
+            }
+        }
+        str = str.substring(0, str.length - 1);
+        var hrefBef = '/ImportComp/DeclineTaskCompRequest/GetData?' + str;
+        console.log(hrefBef)
+        window.location.href = '/ImportComp/DeclineTaskCompRequest/GetData?' + str;
+    }
+
+
+    function FilterRows() {
+
+        var taskForSearch = document.getElementById('TaskNameSearch').value;
+        var prjForSearch = document.getElementById('PrjNameSearch').value;
+        var executerForSearch = document.getElementById('ExecuterSearch').value;
+        var startDateSearch = new Date(document.getElementById('StartDateSearch').value);
+        var taskSet = document.getElementsByClassName('taskName')
+        var prjSet = document.getElementsByClassName('ProjectNumber')
+        var startDateSet = document.getElementsByClassName('startDate')
+        var executerSet = document.getElementsByClassName('Executers')
+
+        for (var i = 0; i < startDateSet.length; i++) {
+            startDateSet[i].parentElement.hidden = false
+        }
+
+        for (var i = 0; i < taskSet.length; i++) {
+            if (!(taskSet[i].textContent.includes(taskForSearch) && taskSet[i].parentElement.hidden == false)) {
+                taskSet[i].parentElement.hidden = true
+            }
+            else {
+                taskSet[i].parentElement.hidden = false
+            }
+        }
+
+        for (var i = 0; i < executerSet.length; i++) {
+            if (!(executerSet[i].textContent.includes(executerForSearch) && executerSet[i].parentElement.hidden == false)) {
+                taskSet[i].parentElement.hidden = true
+            }
+            else {
+                taskSet[i].parentElement.hidden = false
+            }
+        }
+
+        for (var i = 0; i < prjSet.length; i++) {
+            if (!(prjSet[i].textContent.includes(prjForSearch) && prjSet[i].parentElement.hidden == false)) {
+                prjSet[i].parentElement.hidden = true
+            }
+            else {
+                prjSet[i].parentElement.hidden = false
+            }
+        }
+
+        if (startDateSearch.getDate() > 0) {
+            for (var i = 0; i < startDateSet.length; i++) {
+                var daAr = startDateSet[i].textContent.replace('.', '-').replace('.', '-').split('-')
+                var daStr = daAr[2] + '-' + daAr[1] + '-' + daAr[0]
+                var da = new Date(daStr)
+                if (startDateSearch < da && startDateSet[i].parentElement.hidden == false) {
+                    // alert("true --- " + i)
+                    startDateSet[i].parentElement.hidden = false
+                }
+                else {
+                    //  alert("false --- " + i)
+                    startDateSet[i].parentElement.hidden = true
+                }
+            }
+        }
+
+    }
+
+    function SortAscen(nameClass) {
+        highlightSort(nameClass, 0)
+        PElems = []
+        dateSetSorted = []
+        wl = document.getElementById('WorkLogsTBody')
+        var dateSet = document.getElementsByClassName(nameClass)
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSetSorted.push(dateSet[i])
+        }
+        dateSetSorted.sort(function (a, b) {
+            return getDate(a) - getDate(b)
+        })
+
+        for (var i = 0; i < dateSetSorted.length; i++) {
+            PElems.push(dateSetSorted[i].parentElement)
+        }
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSet[i].parentElement.remove();
+        }
+        for (var i = 0; i < PElems.length; i++) {
+            wl.appendChild(PElems[i])
+        }
+    }
+
+    function SortDescen(nameClass) {
+        highlightSort(nameClass, 1)
+        PElems = []
+        dateSetSorted = []
+        wl = document.getElementById('WorkLogsTBody')
+        var dateSet = document.getElementsByClassName(nameClass)
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSetSorted.push(dateSet[i])
+        }
+        dateSetSorted.sort(function (a, b) {
+            return getDate(b) - getDate(a)
+        })
+
+        for (var i = 0; i < dateSetSorted.length; i++) {
+            PElems.push(dateSetSorted[i].parentElement)
+        }
+        for (var i = 0; i < dateSet.length; i++) {
+            dateSet[i].parentElement.remove();
+        }
+        for (var i = 0; i < PElems.length; i++) {
+            wl.appendChild(PElems[i])
+        }
+    }
+
+    function highlightSort(nameClass, cond) {
+        startDateAscen = document.getElementById('startDateAscen')
+        startDateDescen = document.getElementById('startDateDescen')
+        if (nameClass == 'startDate' && cond == 1) {
+            highlightElemFilter(startDateDescen);
+            arr = [startDateAscen]
+            UnhighLightElem(arr)
+        }
+        else if (nameClass == 'startDate' && cond == 0) {
+            highlightElemFilter(startDateAscen);
+            arr = [startDateDescen]
+            UnhighLightElem(arr)
+        }
+
+    }
+
+    function UnhighLightElem(elem) {
+        for (let i = 0; i < elem.length; i++) {
+            elem[i].style.fontWeight = 'normal';
+            elem[i].style.color = ''
+        }
+    }
+
+    function getDate(a) {
+        var dateAr = a.textContent.replace('.', '-').replace('.', '-').split('-')
+        var dateStr = dateAr[2] + '-' + dateAr[1] + '-' + dateAr[0]
+        return new Date(dateStr)
+    }
+
+    function SetProjNum(ProjNum) {
+        var prjForSearch = document.getElementById('PrjNameSearch');
+        prjForSearch.value = ProjNum;
+        FilterRows()
+    }
+
+    function ResizeTA(tcrdn, state) {
+        strId = "tcrdc-" + tcrdn;
+        var elem = document.getElementById(strId);
+        if (state == 0) {
+            elem.rows = 5
+            elem.cols = 30
+        }
+        else if (state == 1) {
+            if (elem.value == null || elem.value == "") {
+                elem.rows = 1
+                elem.cols = 5
+            }
+        }
+    }
+</script>

@@ -48,6 +48,14 @@ namespace WebApplication5.Models
             };
         }
 
+        public static bool Delete(PlanTaskCompJson taskCompJson, AppDbContext context)
+        {
+            FindPlanTaskComp(taskCompJson.idDb, context, out PlanTaskComp planTaskComp);
+            context.PlanTaskComp.Remove(planTaskComp);
+            context.SaveChanges();
+            return true;
+        }
+
         public static void Update(PlanTaskCompJson taskCompJson, AppDbContext context)
         {
             FindPlanTaskComp(taskCompJson.idDb, context, out PlanTaskComp planTaskComp);

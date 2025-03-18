@@ -44,6 +44,14 @@ namespace WebApplication5.Controllers
             return View(webApiTasks);
         }
 
+        [HttpGet("ApprovePlanTaskComp")]
+        public IActionResult ApprovePlanTaskComp()
+        {            
+            var curUser = WebApplication5.Models.User.GetUser(context, HttpContext);
+            var aptcList = Models.ApprovePlanTaskComp.GetAllWithStatusSendToApprove(context);    
+            return View(aptcList);
+        }
+
         [HttpGet("api/gantt/tasks")]
         public IActionResult GetTasks()
         {
@@ -66,8 +74,8 @@ namespace WebApplication5.Controllers
         [HttpGet("api/gantt/getcurstatus")]
         public IActionResult GetCurStatus(int planMonth, int planYear)
         {
-           var curStatus= ApprovePlanTaskComp.GetApprovePlanTaskCompStatus(planMonth, planYear, context);
-            var statusStr = ApprovePlanTaskComp.GetStatusRus(curStatus);            
+           var curStatus= Models.ApprovePlanTaskComp.GetApprovePlanTaskCompStatus(planMonth, planYear, context);
+            var statusStr = Models.ApprovePlanTaskComp.GetStatusRus(curStatus);            
             return Json(new { data = statusStr });
         }
 
@@ -78,14 +86,23 @@ namespace WebApplication5.Controllers
             var result = PlanTaskComp.SavePlanTaskCompToDb(planTaskCompJsonList, context, out string errors);
             if (result) return Ok(new { success = true });
             else return StatusCode(500, new { success = false, message = "Ошибка сохранения задач", error = errors });
-        }  
-        
-         // Сохранение задач и отправка на согласование
+        }
+
+        [HttpPost("DeleteTask")]
+        public IActionResult DeleteTask([FromBody] PlanTaskCompJson planTaskCompJson)
+        {
+            var result = PlanTaskComp.Delete(planTaskCompJson, context);
+            if (result) return Ok(new { success = true });
+            else return StatusCode(500, new { success = false, message = "Ошибка удаления задач"});
+        }
+
+        // Сохранение задач и отправка на согласование
         [HttpPost("SendToApprove")]
         public IActionResult SendToApprove([FromBody] List<PlanTaskCompJson> planTaskCompJsonList)
         {
+            var curUser = WebApplication5.Models.User.GetUser(context, HttpContext);
             var result = PlanTaskComp.SavePlanTaskCompToDb(planTaskCompJsonList, context, out string errors);           
-            var result2 = ApprovePlanTaskComp.SendToApprove(planTaskCompJsonList, context, out string errorsSendToApprove);
+            var result2 = Models.ApprovePlanTaskComp.SendToApprove(planTaskCompJsonList, context, out string errorsSendToApprove);
             if (result && result2) return Ok(new { success = true });
             else return StatusCode(500, new { success = false, message = "Ошибка сохранения задач", error = errors });            
         }

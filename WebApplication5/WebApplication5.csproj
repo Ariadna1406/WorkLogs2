@@ -60,6 +60,7 @@
 
   <ItemGroup>
     <Folder Include="Domain\" />
+    <Folder Include="Views\ApprovePlanTaskComp\" />
   </ItemGroup>
 
   <ItemGroup>

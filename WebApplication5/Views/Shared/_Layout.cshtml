@@ -73,7 +73,7 @@
                 }
                 else
                 {
-                <li><a id="myTaskCompRegistry" asp-area="" asp-controller="ImportComp" asp-action="Index">Реестр комплектов/работ</a></li>
+                    <li><a id="myTaskCompRegistry" asp-area="" asp-controller="ImportComp" asp-action="Index">Реестр комплектов/работ</a></li>
                 }
                 <li><a id="myAbsenceRequest" asp-area="" asp-controller="Absence" asp-action="AbsenceRequest">Отсутствия</a></li>
                 @if (isAdmin || (isBuh.HasValue && isBuh.Value))
@@ -95,6 +95,20 @@
                     <li>
                         <a id="taskCompReqApply" asp-area="" asp-controller="ImportComp" asp-action="TaskCompReqApply">
                             Реестр запросов
+                            @if (!string.IsNullOrEmpty(tcReqCount) && tcReqCount != "0")
+                            {
+                                <b style="color:red">(@tcReqCount)</b>
+                            }
+                        </a>
+                    </li>
+                    <li><a asp-area="" asp-controller="Admin" asp-action="AdminMain">Администрирование</a></li>
+                }
+
+                @if (isAdmin || (isKSP.HasValue && isKSP.Value))
+                {
+                    <li>
+                        <a id="planTaskCompReqApply" asp-area="" asp-controller="PlanTaskComp" asp-action="ApprovePlanTaskComp">
+                            Производственный план на месяц
                             @if (!string.IsNullOrEmpty(tcReqCount) && tcReqCount != "0")
                             {
                                 <b style="color:red">(@tcReqCount)</b>
