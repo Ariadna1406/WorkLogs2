@@ -834,7 +834,7 @@
 
             let curYear = new Date().getFullYear();
             let savedYear = localStorage.getItem("selectedYear");
-            savedYear = savedYear ? parseInt(savedYear, 10) : curYear;
+            savedYear = savedYear ? parseInt(savedYear, 10) : curYear; // Если сохраненного года нет, то устанавливается текущий
 
             yearSelector.innerHTML = "";
 
@@ -859,7 +859,7 @@
 
             // Восстановаление выбранного месяца при загрузке страницы
             var savedMonth = localStorage.getItem('selectedMonth');
-            savedMonth = savedMonth !== null ? parseInt(savedMonth, 10) : currentMonth;
+            savedMonth = savedMonth !== null ? parseInt(savedMonth, 10) : currentMonth; // Если сохраненного месяца нет, то устанавливается текущий
             monthSelector.value = savedMonth;
 
             // Обновление отображения диграммы на выбранный месяц и год
@@ -905,12 +905,18 @@
             }
 
             // Вызов функции для получения статуса при изменении месяца или года
-            document.getElementById("monthSelector").addEventListener("change", getStatus);
-            document.getElementById("yearSelector").addEventListener("change", getStatus);
+            // document.getElementById("monthSelector").addEventListener("change", getStatus);
+            // document.getElementById("yearSelector").addEventListener("change", getStatus);
 
             // Функция получения статуса согласования
             function getStatus() {
                 const { selectedMonth, selectedYear } = getSelectedMonthAndYear();
+
+                console.log("Отправляемый год и месяц для получения статуса:", {
+                    planMonth: selectedMonth + 1,
+                    planYear: selectedYear
+                });
+
                 fetch(`/plantaskcomp/api/gantt/getcurstatus?planMonth=${selectedMonth + 1}&planYear=${selectedYear}`)
                     .then(response => response.json())
                     .then(data => {
@@ -922,7 +928,7 @@
                     });
             }
 
-            getStatus();
+            // getStatus();
 
             // Получение задач для загрузки проектов и комплектов
             function loadSetsAndProjects() {
