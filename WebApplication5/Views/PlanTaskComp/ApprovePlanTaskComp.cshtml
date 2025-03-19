@@ -1,0 +1,299 @@
+﻿@using WebApplication5.Models
+@model List<ApprovePlanTaskComp>
+
+@* @{
+    Layout = @"_LayoutAlignLeft.cshtml";
+} *@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+
+        body {
+        font-family: Inter, Helvetica, Arial, sans-serif;
+        color: #555D63;
+        }
+
+        #top-panel {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        font-family: Inter, Helvetica, Arial, sans-serif;
+        font-size: 12px;
+        font-weight: 500;
+        color: #555D63;
+        margin-top: 30px;
+        margin-bottom: 30px;
+        margin-left: 20px;
+        margin-right: 20px;
+        }
+
+        #left-container {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 30px;
+        }
+
+        /* Выбор месяца */
+        #monthSelector, #yearSelector, #statusSelector {
+        font-family: Inter, Helvetica, Arial, sans-serif;
+        font-weight: 500;
+        width: max-content;
+        font-size: 12px;
+        color: #555D63;
+        border: 1px solid #ccc;
+        background-color: #f9f9f9;
+        padding: 7px 6px;
+        border-radius: 3px;
+        }
+
+        #year-month-selector {
+        display: flex;
+        gap: 15px;
+        }
+
+        #dataRes-table-container {
+            margin-bottom: 30px;
+        }
+
+        #dataRes-table {
+        border: 1px solid #ccc;
+        }
+
+        #dataRes-table th, #dataRes-table td {
+        border: 1px, solid #ccc;
+        padding: 8px;
+        text-align: center;
+        font-weight: 500;
+        }
+
+        #dataRes-table th {
+        background-color: #f4f4f4;
+        }
+
+        #approveButton, #declineButton {
+            padding: 8px 16px;
+            border: 1.5px solid #A9A9A9;
+            border-radius: 3px;
+            width: 150px;
+        }
+
+        #approveButton {
+            margin-left: 20px;
+            background-color: #C1ECB0;
+            margin-right: 20px;
+        }
+
+        #declineButton {
+            background-color: #EC928C;
+        }
+
+        /* Стиль для обычного чекбокса */
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            appearance: none; 
+            border: 1.5px solid #BBBBBB;
+            border-radius: 4px; 
+            background-color: #fff;
+            position: relative;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        /* Стиль для чекбокса, когда он выбран */
+        input[type="checkbox"]:checked {
+                background-color: #F4F4F4; 
+        }
+
+        /* Стиль для флажка внутри чекбокса, когда он выбран */
+        input[type="checkbox"]:checked::after {
+            content: '✔';
+            position: absolute;
+            font-size: 12px;
+            top: 50%;
+            left: 50%; 
+            width: 10px;
+            height: 10px;
+            transform: translate(-45%, -80%);
+        }
+
+        input[type="checkbox"]:focus {
+            outline: none;
+        }
+
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; font-size: 20px; margin-top: 40px">Согласование планов реализации на месяц</h1>
+    <div id="top-panel">
+        @* Выбор статус *@
+        <div id="status-container">
+            <select id="statusSelector">
+                <option value="All">Все</option>
+                <option value="SentToApprove">Новые</option>
+                <option value="Confirmed">Подтвержденные</option>
+                <option value="Declined">Отклоненные</option>
+            </select>
+        </div>
+        <div id="year-month-selector">
+            <select id="monthSelector">
+                <option value="1">Январь</option>
+                <option value="2">Февраль</option>
+                <option value="3">Март</option>
+                <option value="4">Апрель</option>
+                <option value="5">Май</option>
+                <option value="6">Июнь</option>
+                <option value="7">Июль</option>
+                <option value="8">Август</option>
+                <option value="9">Сентябрь</option>
+                <option value="10">Октябрь</option>
+                <option value="11">Ноябрь</option>
+                <option value="12">Декабрь</option>
+            </select>
+            <select id="yearSelector"></select>
+        </div>
+    </div>
+
+    @*Контейнер для таблицы план *@
+    <div id="dataRes-table-container">
+        <table id="dataRes-table">
+            <thead>
+                <tr>
+                    <th style="width: 50px">
+                        <input type="checkbox" id="selectAllCheckBox">
+                    </th>
+                    <th id="Number" style="width: 40px">№</th>
+                    <th id="Department" style="width: 500px">Отдел</th>
+                    <th id="PlanMonth" style="width: 150px">Месяц</th>
+                    <th id="UserCreatedRequest" style="width: 250px">Начальник отдела</th>
+                    <th id="LinkGantt" style="width: 200px">План комплектов/работ</th>
+                    <th id="Status" style="width: 150px">Статус</th>
+                </tr>
+            </thead>
+            <tbody>
+                @* Добавление строк *@
+                @if (Model != null && Model.Any())
+                {
+                    int rowNum = 1;
+                    @foreach (var task in Model)
+                    {
+                        <tr>
+                            <td><input type="checkbox" class="taskCheckBox" data-id="@task.Id"></td>
+                            <td>@rowNum</td>
+                            <td>@task.UserCreatedRequest?.Department?.Name</td>
+                            <td>@System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(task.PlanMonth)</td>
+                            <td>@task.UserCreatedRequest?.FullName</td>
+                            <td>
+                                <a href="@Url.Action("Index", "PlanTaskComp")">
+                                    Перейти к плану
+                                </a>
+                            </td>
+                            <td>@ApprovePlanTaskComp.GetStatusRus(task.PlanTaskCompStatus)</td>
+                        </tr>
+                        rowNum++;
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+    <div>
+        <button id="approveButton">Согласовать</button>
+        <button id="declineButton">Отклонить</button>
+    </div>
+   
+
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+
+            let monthSelector = document.getElementById("monthSelector");
+            let yearSelector = document.getElementById("yearSelector");
+            let statusSelector = document.getElementById("statusSelector");
+
+            let curYear = new Date().getFullYear();
+            let urlParams = new URLSearchParams(window.location.search);
+
+            let selectedMonth = urlParams.get("month") || new Date().getMonth() + 1;
+            let selectedYear = urlParams.get("year") || curYear;
+            let selectedStatus = urlParams.get("status") || "All";
+
+            monthSelector.value = selectedMonth;
+            statusSelector.value = selectedStatus;
+
+            // Заполнение списка годов
+            for (let i = 0; i < 2; i++) {
+                let option = document.createElement("option");
+                option.value = curYear + i;
+                option.textContent = curYear + i;
+                yearSelector.appendChild(option);
+            }
+
+            yearSelector.value = selectedYear;
+
+            // Обновление страницы при изменении параметров
+            function applyFilters() {
+                let month = monthSelector.value;
+                let year = yearSelector.value;
+                let status = statusSelector.value;
+                window.location.href = `/PlanTaskComp/ApprovePlanTaskComp?month=${month}&year=${year}&status=${status}`;
+            }
+
+            monthSelector.addEventListener("change", applyFilters);
+            yearSelector.addEventListener("change", applyFilters);
+            statusSelector.addEventListener("change", applyFilters);
+
+            // Чекбокс для выбора всех задач
+            document.getElementById("selectAllCheckBox").addEventListener("click", function() {
+                let checkboxes = document.querySelectorAll(".taskCheckBox");
+                checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+            });
+
+            document.getElementById("approveButton").addEventListener("click", function () {
+                handleButtonClick("Confirmed");
+            });
+
+            document.getElementById("declineButton").addEventListener("click", function () {
+                handleButtonClick("Declined");
+            });
+
+            // Изменение статуса у плана в зависимости от принятого решения
+            function handleButtonClick(status) {
+                let selectedTasks = [];
+                document.querySelectorAll(".taskCheckBox:checked").forEach(checkbox => {
+                    selectedTasks.push(checkbox.getAttribute("data-id"));
+                });
+
+                if (selectedTasks.length === 0) {
+                    alert("Пожалуйста, выберите хотя бы один план");
+                    return;
+                }
+
+                fetch(`/PlanTaskComp/UpdateStatus`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ taskIds: selectedTasks, status: status })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log("Статус успешно обновлен");
+                        location.reload();
+                    } else {
+                        console.error("Ошибка при обновлении статуса: ", data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error("Ошибка при отправке запроса: ", error);
+                })
+            }
+
+        });
+    </script>
+</body>
+</html>

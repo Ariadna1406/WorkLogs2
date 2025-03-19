@@ -1,5 +1,9 @@
 ﻿@{
     Layout = @"_LayoutAlignLeft.cshtml";
+    bool isAdmin = (bool)ViewData["IsAdmin"];
+    bool isKSP = (bool)ViewData["isKSP"];
+    bool isGIP = (bool)ViewData["isGIP"];
+    bool isHOD = (bool)ViewData["isHOD"];
 }
 <!DOCTYPE html>
 <html lang="ru">
@@ -10,173 +14,188 @@
     <link href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css" rel="stylesheet">
     <style>
         .gantt_grid_head_cell {
-            font-weight: 500 !important;
-            background-color: #F3F3F3;
-            border-right: 1px solid #DFE0E1;
+        font-weight: 500 !important;
+        background-color: #F3F3F3;
+        border-right: 1px solid #DFE0E1;
         }
 
         .gantt_grid_scale .gantt_grid_head_cell {
-            white-space: normal !important;
-            word-wrap: break-word;
-            text-align: center;
-            line-height: 1.2;
-            padding: 5px;
+        white-space: normal !important;
+        word-wrap: break-word;
+        text-align: center;
+        line-height: 1.2;
+        padding: 5px;
         }
 
         /* Вертикальные линии в таблице */
         .gantt_grid .gantt_cell {
-            border-right: 1px solid #F0F0F0;
+        border-right: 1px solid #F0F0F0;
         }
 
         /* Масштаб страницы */
         body {
-            transform: scale(0.9);
-            transform-origin: top left;
-            width: 111%;
+        transform: scale(0.9);
+        transform-origin: top left;
+        width: 111%;
         }
 
         .holiday {
-            background-color: #eaf2ff;
+        background-color: #eaf2ff;
         }
 
         .weekend {
-            background-color: #ececec;
+        background-color: #ececec;
         }
 
         /* Размер шрифта на странице */
         :root {
-            --dhx-gantt-font-size: 12px;
+        --dhx-gantt-font-size: 12px;
         }
 
         #top-panel {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            position: relative;
-            margin-bottom: 30px;
-            font-family: Inter, Helvetica, Arial, sans-serif;
-            font-size: 12px;
-            font-weight: 500;
-            color: #555D63;
-            margin-top: 30px;
-            margin-left: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        position: relative;
+        margin-bottom: 30px;
+        font-family: Inter, Helvetica, Arial, sans-serif;
+        font-size: 12px;
+        font-weight: 500;
+        color: #555D63;
+        margin-top: 30px;
+        margin-left: 20px;
         }
 
         #left-container {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 30px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 30px;
         }
 
         /* Выбор месяца */
         #monthSelector, #yearSelector {
-            font-family: Inter, Helvetica, Arial, sans-serif;
-            font-weight: 500;
-            width: max-content;
-            font-size: 12px;
-            color: #555D63;
-            border: 1px solid #ccc;
-            background-color: #f9f9f9;
-            padding: 7px 6px;
-            border-radius: 3px;
+        font-family: Inter, Helvetica, Arial, sans-serif;
+        font-weight: 500;
+        width: max-content;
+        font-size: 12px;
+        color: #555D63;
+        border: 1px solid #ccc;
+        background-color: #f9f9f9;
+        padding: 7px 6px;
+        border-radius: 3px;
         }
 
         #year-month-selector {
-            display: flex;
-            gap: 15px;
+        display: flex;
+        gap: 15px;
         }
 
         /* Контейнер легенды */
         #legend-container {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
         }
 
         #weekend-legend,
         #holiday-legend {
-            display: flex;
-            align-items: center;
+        display: flex;
+        align-items: center;
         }
 
         .legend-color {
-            width: 20px;
-            height: 20px;
-            border: 1px solid #ccc;
-            margin-right: 5px;
+        width: 20px;
+        height: 20px;
+        border: 1px solid #ccc;
+        margin-right: 5px;
         }
 
         .legend-text {
-            margin-left: 7px;
-            min-width: 120px;
-            display: inline-block;
+        margin-left: 7px;
+        min-width: 120px;
+        display: inline-block;
         }
 
         #saveButton, #sendButton {
+        padding: 10px 20px;
+        border: 1px solid #CCCCCC;
+        border-radius: 3px;
+        background-color: #537CFA; 
+        color: #FFFFFF;
+        }
+
+        #approveButton, #declineButton {
             padding: 10px 20px;
             border: 1px solid #CCCCCC;
             border-radius: 3px;
-            background-color: #537CFA; /* #EAF2FF */
-            color: #FFFFFF;
+            color: #555D63;
+            width: 130px;
+        }
+
+        #approveButton {
+            background-color: #C1ECB0;
+        }
+
+        #declineButton {
+            background-color: #EC928C;
         }
 
         #status-box {
-            padding: 10px 20px;
-            border: 1px solid #CCCCCC;
-            border-radius: 3px;
-            color: #555D63; 
-            font-weight: 600;
+        padding: 10px 20px;
+        border: 1px solid #CCCCCC;
+        border-radius: 3px;
+        color: #555D63; 
+        font-weight: 600;
         }
 
         .status-not-sent { 
-            background-color: #F4F4F4; /* Статус: Не отправлено */
+        background-color: #F4F4F4; /* Статус: Не отправлено */
         }
 
-        .status-in-approval,
-        .status-read {
-            background-color: #FFF1A0; /* Статус: На согласовании и Прочитано */
+        .status-in-approval {
+            background-color: #FFF1A0; /* Статус: Отправлено на согласование */
         }
 
         .status-approved {
-            background-color: #C1ECB0; /* Статус: Согласовано */
+            background-color: #C1ECB0; /* Статус: Подтверждено (комплект создан) */
         }
 
         .status-rejected {
-            background-color: #EC928C; /* Статус: Отклонено */
+        background-color: #EC928C; /* Статус: Отклонено */
         }
 
         #button-status-container {
-            display: flex;
-            align-items: center;
-            gap: 30px;
+        display: flex;
+        align-items: center;
+        gap: 30px;
         }
 
         #button-container {
-            display: flex;
-            gap: 15px;
+        display: flex;
+        gap: 20px;
         }
 
         #dataRes-table-container {
-            border-collapse:collapse;
+        border-collapse:collapse;
         }
 
         #dataRes-table {
-            border: 1px solid #ccc;
+        border: 1px solid #ccc;
         }
 
         #dataRes-table th, #dataRes-table td {
-            border: 1px, solid #ccc;
-            padding: 8px;
-            text-align: center;
-            font-weight: 500;
+        border: 1px, solid #ccc;
+        padding: 8px;
+        text-align: center;
+        font-weight: 500;
         }
 
         #dataRes-table th {
-            background-color: #f4f4f4;
+        background-color: #f4f4f4;
         }
 
     </style>
@@ -218,12 +237,20 @@
             </div>
             <div id="button-status-container">
                 <div id="button-container">
-                    <button id="saveButton">Сохранить</button>
-                    <button id="sendButton">Сохранить и отправить на согласование</button>
+                    @if (isAdmin)
+                    {
+                        <button id="saveButton">Сохранить</button>
+                        <button id="sendButton">Сохранить и отправить на согласование</button>
+                    }
+                    @if (isHOD)
+                    {
+                        <button id="approveButton">Согласовать</button>
+                        <button id="declineButton">Отклонить</button>
+                    }
                 </div>
-                <div id="status-box" class="status-not-sent">
-                    Не отправлено
-                </div>
+                    <div id="status-box" class="status-not-sent">
+                        Не отправлено
+                    </div>
             </div>
         </div>
         <div id="legend-container">
@@ -240,6 +267,7 @@
 
     <div id="GanttChart" style="width: 100%; height: 600px;"></div>
     <script type="text/javascript">
+
         document.addEventListener('DOMContentLoaded', function () {
 
             var validValues = [0.10, 0.20, 0.25, 0.30, 0.40, 0.50, 1.00]; // Массив допустимых значений для интенсивности выполнения работ
@@ -283,7 +311,6 @@
             gantt.config.row_height = 40;   // Высота строк
             gantt.config.date_format = "%d-%m-%Y";   // Формат даты
             gantt.config.show_grid = true; // Отображение сетки
-            gantt.config.show_add_button = true; // Отображение кнопки добавления (плюсик)
             gantt.config.work_time = true; // Учет только рабочих дней при расчете длительности
             // gantt.config.resize_rows = true; // Изменение высоты строк в таблице
             gantt.config.sort = true; // Сортировка столбцов
@@ -291,7 +318,7 @@
             gantt.config.bar_height = 25; // Высота полосок на диаграмме
             gantt.i18n.setLocale("ru"); // Русский язык
             gantt.config.lightbox = false;
-            // gantt.config.readonly = true;
+            // gantt.config.readonly = true; // Запрет редактирования колонок
 
             // Дни недели и число
             gantt.config.scales = [
@@ -583,7 +610,7 @@
                     return "<button class='add-task-btn' style='border:none; background:none; cursor:pointer; font-size: 28px; font-family: Inter, Helvetica, Arial, sans-serif; color: #9F9FA0;'>+</button>"
                 }}, // Колонка для кнопки добавления
                 { name: "delete_Task", label: "", min_width: 65, align: "center", template: function(task){
-                    return "<button class='delete-task-btn' data-id='" + task.id + "' style='border:none; background:none; cursor:pointer; font-size: 12px; font-weight: 500; font-family: Inter, Helvetica, Arial, sans-serif; color: #909090; padding: 0; margin: 0'>Удалить</button>"
+                    return "<button class='delete-task-btn' data-id='" + task.id + "' data-idDb='" + task.idDb + "' style='border:none; background:none; cursor:pointer; font-size: 12px; font-weight: 500; font-family: Inter, Helvetica, Arial, sans-serif; color: #909090; padding: 0; margin: 0'>Удалить</button>"
                 }} // Колонка для удаления
             ];
 
@@ -678,26 +705,40 @@
             document.addEventListener("click", function(e) {
                 if (e.target && e.target.classList.contains("delete-task-btn")) {
 
+                    // Получение внутреннего Id задачи и Id из бд
                     var taskId = e.target.getAttribute('data-id');
+                    var taskIdDb = e.target.getAttribute('data-idDb');
                     gantt.message({
                         text: "Вы уверены, что хотите удалить эту задачу?",
                         type: "confirm",
                         callback: function(result) {
                             if (result) {
-                        //         fetch(`/api/gantt/tasks/${taskId}`, {
-                        //             method: 'DELETE'
-                        //         })
-                        //         .then(response => {
-                        //             if (response.ok) {
-                                        gantt.deleteTask(taskId);
+                                // Если задача еще не сохранена в бд, но добавлена в таблицу
+                                if (parseInt(taskIdDb, 10) == 0) {
+                                    gantt.deleteTask(taskId);
+                                    calculateTotalHoursForResource(resources);
+                                    console.log(`Задача с IdDb ${taskIdDb} успешно удалена`);
+                                } else {
+                                    fetch(`/plantaskcomp/DeleteTask`, {
+                                    method: 'POST',
+                                    headers: {
+                                        "Content-Type": "application/json"
+                                    },
+                                    body: JSON.stringify({ idDb: taskIdDb })
+                                })
+                                .then(response => {
+                                    if (response.ok) {
+                                        gantt.deleteTask(taskIdDb);
                                         calculateTotalHoursForResource(resources);
-                                //     } else {
-                                //     console.error('Ошибка при удалении задачи с сервера');
-                                //     }
-                                // })
-                                // .catch(error => {
-                                //     console.error('Ошибка при удалении задачи:', error);
-                                // });
+                                        console.log(`Задача с IdDb ${taskIdDb} успешно удалена`);
+                                    } else {
+                                    console.error('Ошибка при удалении задачи с сервера');
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Ошибка при удалении задачи:', error);
+                                });
+                                }
                             }
                         }
                     })
@@ -705,14 +746,37 @@
             })
 
             // Кнопка Сохранить
-            document.getElementById("saveButton").addEventListener("click", function() {
-                SaveTasks();
-            })
+            var saveButton = document.getElementById("saveButton");
+            if (saveButton) {
+                saveButton.addEventListener("click", SaveTasks);
+            }
 
             // Кнопка Отправить на согласование
-            document.getElementById("sendButton").addEventListener("click", function() {
-                SaveAndSendTasks();
-            })
+            var sendButton = document.getElementById("sendButton");
+            if (sendButton) {
+                sendButton.addEventListener("click", SaveAndSendTasks);
+            }
+            
+            // Кнопка Согласовать
+            var approveButton = document.getElementById("approveButton");
+            if (approveButton) {
+                approveButton.addEventListener("click", function () {
+                    UpdateStatusTasks(Confirmed);
+                }) 
+            }
+
+            // Кнопка Отклонить
+            var declineButton = document.getElementById("declineButton");
+            if (declineButton) {
+                declineButton.addEventListener("click", function () {
+                    UpdateStatusTasks(Declined);
+                })
+            }
+
+            // Обновление статуса в зависимости от принятого решения
+            function UpdateStatusTasks(Status) {
+
+            }
 
             // Сохранение задач
             function SaveTasks() {
@@ -815,8 +879,8 @@
                             alert('Успешно!');
                             location.reload(); // Обновление страницы после сохранения
                             // Изменение статуса 
-                            document.getElementById("status-box").className = "status-in-approval";
-                            document.getElementById("status-box").innerText = "На согласовании";
+                            // document.getElementById("status-box").className = "status-in-approval";
+                            // document.getElementById("status-box").innerText = "На согласовании";
                         } else {
                             alert("Ошибка: " + data.message);
                         }
@@ -905,8 +969,8 @@
             }
 
             // Вызов функции для получения статуса при изменении месяца или года
-            // document.getElementById("monthSelector").addEventListener("change", getStatus);
-            // document.getElementById("yearSelector").addEventListener("change", getStatus);
+            document.getElementById("monthSelector").addEventListener("change", getStatus);
+            document.getElementById("yearSelector").addEventListener("change", getStatus);
 
             // Функция получения статуса согласования
             function getStatus() {
@@ -922,13 +986,38 @@
                     .then(data => {
                         const status = data.data;
                         console.log("Текущий статус:", status);
+                        updateStatusBox(status);
                     })
                     .catch(error => {
                         console.error("Ошибка при получении статуса:", error);
                     });
             }
 
-            // getStatus();
+            function updateStatusBox(status) {
+                const statusBox = document.getElementById("status-box");
+                statusBox.classList.remove("status-not-sent", "status-in-approval", "status-approved", "status-rejected"); // Сначала очистка
+
+                switch (status) {
+                    case "Новый":
+                        statusBox.textContent = "Не отправлено"
+                        statusBox.classList.add("status-not-sent");
+                        break;
+                    case "Отправлено на согласование":
+                        statusBox.textContent = "Отправлено на согласование"
+                        statusBox.classList.add("status-in-approval");
+                        break;
+                    case "Подтверждено (комплект создан)":
+                        statusBox.textContent = "Подтверждено (комплект создан)"
+                        statusBox.classList.add("status-approved");
+                        break;
+                    case "Отклонено":
+                        statusBox.textContent = "Отклонено"
+                        statusBox.classList.add("status-rejected");
+                        break;
+                }
+            }
+
+            getStatus();
 
             // Получение задач для загрузки проектов и комплектов
             function loadSetsAndProjects() {

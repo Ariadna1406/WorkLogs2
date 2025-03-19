@@ -19,6 +19,7 @@ using System.Reflection.Emit;
 using System.Data.OleDb;
 using static Microsoft.AspNetCore.Hosting.Internal.HostingApplication;
 using DHX.Gantt.Models;
+using System.Drawing;
 
 namespace WebApplication5.Controllers
 {
@@ -37,6 +38,13 @@ namespace WebApplication5.Controllers
         {
             if (month == 0) month = DateTime.Now.Month;
             var curUser = WebApplication5.Models.User.GetUser(context, HttpContext);
+            if (curUser != null)
+            {
+                ViewData["IsHOD"] = curUser.isHeadOfDepartment(context);
+                ViewData["IsAdmin"] = curUser.IsAdmin(context);
+                ViewData["IsGIP"] = curUser.IsGIP;
+                ViewData["IsKSP"] = curUser.IsKSP(context);
+            }
             var taskComps = TaskComp.GetAllTasksForMyDepartmentCurMonth(curUser, context);            
             var webApiTasks = taskComps.Select(x => (WebApiTask)x);           
             //var planTaskCompJsonList = PlanTaskComp.GetPlanTaskCompCurUser(curUser, DateTime.Now.Month, context);
@@ -45,12 +53,36 @@ namespace WebApplication5.Controllers
         }
 
         [HttpGet("ApprovePlanTaskComp")]
-        public IActionResult ApprovePlanTaskComp()
-        {            
+        public IActionResult ApprovePlanTaskComp(int? month, int? year, string status)
+        {
+            if (!month.HasValue) month = DateTime.Now.Month;
+            if (!year.HasValue) year = DateTime.Now.Year;
+
             var curUser = WebApplication5.Models.User.GetUser(context, HttpContext);
-            var aptcList = Models.ApprovePlanTaskComp.GetAllWithStatusSendToApprove(context);    
+
+            // Получение задач по выбранному месяцу и году
+            var aptcList = Models.ApprovePlanTaskComp.GetAllWithStatusSendToApprove(context).
+                Where(t => t.PlanMonth == month.Value && t.PlanYear == year.Value)
+                .ToList();        
+            
+            if (!string.IsNullOrEmpty(status) && status != "All")
+            {
+                ApprovePlanTaskComp.Status selectedStatus = Enum.Parse<ApprovePlanTaskComp.Status>(status);
+                aptcList = aptcList.Where(t => t.PlanTaskCompStatus == selectedStatus).ToList();
+            }
+
+            foreach (var task in aptcList)
+            {
+                task.UserCreatedRequest.Department = task.UserCreatedRequest.GetDepartment(context);  // Получение отдела
+            }
+
             return View(aptcList);
         }
+
+        //[HttpPost("UpdateStatus")]
+        //public IActionResult UpdateStatus()
+        //{
+        //}
 
         [HttpGet("api/gantt/tasks")]
         public IActionResult GetTasks()

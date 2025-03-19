@@ -8,9 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Views\Новая папка1\**" />
     <Compile Remove="wwwroot\node_modules\**" />
+    <Content Remove="Views\Новая папка1\**" />
     <Content Remove="wwwroot\node_modules\**" />
+    <EmbeddedResource Remove="Views\Новая папка1\**" />
     <EmbeddedResource Remove="wwwroot\node_modules\**" />
+    <None Remove="Views\Новая папка1\**" />
     <None Remove="wwwroot\node_modules\**" />
   </ItemGroup>
 
@@ -60,7 +64,6 @@
 
   <ItemGroup>
     <Folder Include="Domain\" />
-    <Folder Include="Views\ApprovePlanTaskComp\" />
   </ItemGroup>
 
   <ItemGroup>

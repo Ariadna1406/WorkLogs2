@@ -31,8 +31,6 @@ namespace WebApplication5.Models
                     return "Новый";
                 case Status.SentToApprove:
                     return "Отправлено на согласование";
-                case Status.Read:
-                    return "Прочитано (решение не принято)";
                 case Status.Confirmed:
                     return "Подтверждено (комплект создан)";
                 case Status.Declined:
@@ -49,8 +47,6 @@ namespace WebApplication5.Models
                     return "Новый";
                 case Status.SentToApprove:
                     return "Отправлено на согласование";
-                case Status.Read:
-                    return "Прочитано (решение не принято)";
                 case Status.Confirmed:
                     return "Подтверждено (комплект создан)";
                 case Status.Declined:
@@ -81,7 +77,14 @@ namespace WebApplication5.Models
 
         public static List<ApprovePlanTaskComp> GetAllWithStatusSendToApprove(AppDbContext context)
         {
-            var aptcForApprove= context.ApprovePlanTaskComp.Where(x => x.PlanTaskCompStatus == ApprovePlanTaskComp.Status.SentToApprove).ToList();
+            var validStatuses = new[]
+            {
+                ApprovePlanTaskComp.Status.SentToApprove,
+                ApprovePlanTaskComp.Status.Confirmed,
+                ApprovePlanTaskComp.Status.Declined
+            };
+
+            var aptcForApprove= context.ApprovePlanTaskComp.Where(x => validStatuses.Contains(x.PlanTaskCompStatus)).ToList();
             return aptcForApprove;
         }
 
@@ -166,7 +169,7 @@ namespace WebApplication5.Models
 
         public static Status GetApprovePlanTaskCompStatus(int planMonth, int planYear, AppDbContext context)
         {
-            var approvePlanTaskCompSet= context.ApprovePlanTaskComp.First(x => x.PlanMonth == planMonth && x.PlanYear == planYear);
+            var approvePlanTaskCompSet= context.ApprovePlanTaskComp.FirstOrDefault(x => x.PlanMonth == planMonth && x.PlanYear == planYear);
             if (approvePlanTaskCompSet == null)
             {
                 return Status.New;
@@ -184,11 +187,7 @@ namespace WebApplication5.Models
         //    return planTaskCompJsonSet;
 
         //}
-
-       
     }
-
-   
 }
             
     
