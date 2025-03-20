@@ -130,7 +130,7 @@
 
         #approveButton, #declineButton {
             padding: 10px 20px;
-            border: 1px solid #CCCCCC;
+            border: 1px solid #A9A9A9;
             border-radius: 3px;
             color: #555D63;
             width: 130px;
@@ -177,6 +177,7 @@
         #button-container {
         display: flex;
         gap: 20px;
+        margin-right: 10px;
         }
 
         #dataRes-table-container {
@@ -235,6 +236,8 @@
                     </tbody>
                 </table>
             </div>
+            <input type="hidden" id="isHOD" value="@isHOD" />
+            
             <div id="button-status-container">
                 <div id="button-container">
                     @if (isAdmin)
@@ -269,6 +272,16 @@
     <script type="text/javascript">
 
         document.addEventListener('DOMContentLoaded', function () {
+
+            var isAdmin = @isAdmin.ToString().ToLower();
+            const isKSP = @Json.Serialize(isKSP);
+            const isGIP = @Json.Serialize(isGIP);
+            const isHOD = @Json.Serialize(isHOD);
+
+            console.log("isAdmin:", isAdmin);
+            console.log("isKSP:", isKSP);
+            console.log("isGIP:", isGIP);
+            console.log("isHOD:", isHOD);
 
             var validValues = [0.10, 0.20, 0.25, 0.30, 0.40, 0.50, 1.00]; // Массив допустимых значений для интенсивности выполнения работ
         
@@ -318,7 +331,10 @@
             gantt.config.bar_height = 25; // Высота полосок на диаграмме
             gantt.i18n.setLocale("ru"); // Русский язык
             gantt.config.lightbox = false;
-            // gantt.config.readonly = true; // Запрет редактирования колонок
+
+            if (isHOD) {
+                gantt.config.readonly = true; // Запрет редактирования колонок
+            }
 
             // Дни недели и число
             gantt.config.scales = [
@@ -577,9 +593,9 @@
             // Колонки в таблице
             gantt.config.columns = [
                 { name: "project", label: "Проект", min_width: 55, align: "center", editor: {type: "select", map_to: "project", options: projects} },
-                { name: "text", label: "Комплект", min_width: 150, align: "center", editor: {type: "select", map_to: "text", options: sets }, template: function(task) {
+                { name: "text", label: "Комплект", min_width: 150, align: "center", editor: {type: "select", map_to: "text", options: [] }, template: function(task) {
                     // Чтобы в ячейке отображался label комплекта, а не key
-                    let matchingSet = sets.find(set => String(set.key) === String(task.text)); 
+                    let matchingSet = sets.find(set => String(set.key) === String(task.text));
                     return matchingSet ? matchingSet.label : task.text;
                 } },
                 { name: "work", label: "Выполняемая работа", min_width: 150, align: "center", editor: {type: "select", map_to: "work", options: work}, template: function(task) {
@@ -605,27 +621,41 @@
                     let duration = task.duration || 0;
                     let intensity = task.intensity || 1.00;
                     return (duration * 8 * intensity);
-                }},
+                }}
+            ];
+
+            if (isKSP) {
+                gantt.config.columns.push(
                 { name: "add_Task", min_width: 35, label: "<div style='text-align:center'><button id='header-add-task-btn' style='border:none; background:none; cursor:pointer; font-size: 28px; font-family: Inter, Helvetica, Arial, sans-serif; color: #9F9FA0;'>+</button></div>", min_width: 44, align: "center", template: function(){
                     return "<button class='add-task-btn' style='border:none; background:none; cursor:pointer; font-size: 28px; font-family: Inter, Helvetica, Arial, sans-serif; color: #9F9FA0;'>+</button>"
                 }}, // Колонка для кнопки добавления
                 { name: "delete_Task", label: "", min_width: 65, align: "center", template: function(task){
                     return "<button class='delete-task-btn' data-id='" + task.id + "' data-idDb='" + task.idDb + "' style='border:none; background:none; cursor:pointer; font-size: 12px; font-weight: 500; font-family: Inter, Helvetica, Arial, sans-serif; color: #909090; padding: 0; margin: 0'>Удалить</button>"
                 }} // Колонка для удаления
-            ];
+                )
+            }
 
             gantt.attachEvent("onAfterTaskUpdate", function (id, task) {
-                // Обновление списка комлпектов после выбора проекта 
                 if (task.project) {
-                    updateSetOptions(task.project);
+                    updateSetOptions(task);
                 }
-                if (task.resources || task.duration || task.intensity)
-                {
+                if (task.resources || task.duration || task.intensity) {
                     calculateTotalHoursForResource(resources);
                 }
                 setEndDateToEndOfDay(task);
                 recalculateDuration(task);
-            })
+            });
+
+            function updateSetOptions(task) {
+                if (task.project) {
+                    let filteredSets = sets.filter(set => set.project === task.project);
+                    
+                    gantt.config.columns.find(col => col.name === "text").editor.options = filteredSets.map(set => ({ key: set.key, label: set.label }));
+
+                    console.log(`Обрабатываем задачу: ID=${task.id}, Проект=${task.project}`);
+                    console.log(`Доступные комплекты:`, filteredSets.map(set => set.label));
+                }
+            }
 
             // Правильный перерасчет даты окончания
             function setEndDateToEndOfDay(task) {
@@ -652,23 +682,6 @@
 
                     task.duration = workDaysCount;
                 }
-            }
-
-            // Обновление списка комплектов в зависимости от выбранного проекта
-            function updateSetOptions(selectedProject) {
-                let filteredSets = sets.filter(set => set.project === selectedProject);
-
-                if (filteredSets.length === 0) {
-                    filteredSets.push({ label: "Нет комплектов", key: "Нет комплектов", projects: selectedProject });
-                }
-
-                gantt.config.columns.forEach(column => {
-                    if (column.name === "text") {
-                        column.editor = { type: "select", map_to: "text", options: filteredSets };
-                    }
-                });
-
-                gantt.render();
             }
 
             let lastTaskId = 0;
@@ -939,7 +952,6 @@
 
             // Установка начальных параметров
             updateGanttMonthYear(savedYear, savedMonth);
-            loadTasks(savedMonth, savedYear);
 
             // Обработчик изменения месяца
             monthSelector.addEventListener("change", function() {
@@ -1020,10 +1032,10 @@
             getStatus();
 
             // Получение задач для загрузки проектов и комплектов
-            function loadSetsAndProjects() {
-                return fetch("/plantaskcomp/api/gantt/tasks")
-                .then(response => response.json())
-                .then(result => {
+            async function loadSetsAndProjects() {
+                try {
+                    const response = await fetch("/plantaskcomp/api/gantt/tasks");
+                    const result = await response.json()
                     var tasks = result.data;
                     const updatedData = updateProjectAndSetOptions(tasks);
 
@@ -1036,12 +1048,13 @@
                         }
                     });
                     gantt.render();
-                })
-                .catch(error => console.error("Ошибка загрузки комплектов и проектов:", error));
+                } catch(error) { 
+                    console.error("Ошибка загрузки комплектов и проектов:", error);
+                }
             }
 
             // Загрузка задач
-            function loadTasks(selectedMonth, selectedYear) {
+            async function loadTasks(selectedMonth, selectedYear) {
 
                 if (isNaN(selectedMonth) || selectedMonth < 0 || selectedMonth > 11) {
                     console.error("Неверный месяц:", selectedMonth);
@@ -1052,9 +1065,9 @@
                 const { start, end } = getMonthStartEnd(selectedYear, selectedMonth);
                 console.log(`Загружаем задачи за месяц: ${selectedMonth + 1}-${selectedYear} (с ${start.toLocaleDateString()} по ${end.toLocaleDateString()})`);
  
-                return fetch(`/plantaskcomp/api/gantt/plantaskcomp?planMonth=${selectedMonth + 1}&planYear=${selectedYear}`)
-                .then(response => response.json())
-                .then(result => {
+                try {
+                    const response = await fetch(`/plantaskcomp/api/gantt/plantaskcomp?planMonth=${selectedMonth + 1}&planYear=${selectedYear}`);
+                    const result = await response.json();
                     let tasks = result.data;
                     console.log('Полученные задачи из базы данных:', tasks);
 
@@ -1100,31 +1113,43 @@
                     gantt.clearAll();
 
                     gantt.parse({ data: ganttTasks });
-
+                    
                     ganttTasks.forEach(task => {
+                        updateSetOptions(task);
                         setEndDateToEndOfDay(task);
                         recalculateDuration(task);
                         gantt.updateTask(task.id);
                     })
 
                     console.log('Задачи для диаграммы:', ganttTasks);
-                })
-                .catch(error => console.error("Ошибка загрузки задач:", error));
+                }
+                catch(error) {
+                    console.error("Ошибка загрузки задач:", error);
+                }
             }
             
-            // Сначала загрузка комплектов и проектов, затем - задач
-            loadSetsAndProjects().then(() => {
-                let savedMonth = localStorage.getItem('selectedMonth');
-                savedMonth = savedMonth !== null ? parseInt(savedMonth, 10) : currentMonth;
+            async function loadData() {
+                try {
+                    // Сначала загрузка комплектов и проектов, затем - задач
+                    await loadSetsAndProjects();
 
-                let savedYear =  localStorage.getItem('selectedYear');
-                savedYear = savedYear !== null ? parseInt(savedYear, 10) : new Date().getFullYear();
+                    let savedMonth = localStorage.getItem('selectedMonth');
+                    savedMonth = savedMonth !== null ? parseInt(savedMonth, 10) : currentMonth;
 
-                document.getElementById("monthSelector").value = savedMonth;
-                document.getElementById("yearSelector").value = savedYear;
+                    let savedYear =  localStorage.getItem('selectedYear');
+                    savedYear = savedYear !== null ? parseInt(savedYear, 10) : new Date().getFullYear();
 
-                loadTasks(savedMonth, savedYear);
-            })
+                    document.getElementById("monthSelector").value = savedMonth;
+                    document.getElementById("yearSelector").value = savedYear;
+
+                    await loadTasks(savedMonth, savedYear);
+                   
+                } catch (error) {
+                    console.error("Ошибка загрузки данных:", error);
+                }
+            }
+            
+            loadData();
 
             gantt.init("GanttChart");
         });

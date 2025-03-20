@@ -27,6 +27,7 @@ namespace WebApplication5.Controllers
     public class PlanTaskCompController : Controller
     {
         AppDbContext context;
+
         //List<PlanTaskCompJson> planTaskCompJsonList = new List<PlanTaskCompJson>();
         public PlanTaskCompController(AppDbContext appDbContext, IHostingEnvironment appEnv)
         {
@@ -79,10 +80,49 @@ namespace WebApplication5.Controllers
             return View(aptcList);
         }
 
-        //[HttpPost("UpdateStatus")]
-        //public IActionResult UpdateStatus()
-        //{
-        //}
+        [HttpPost("UpdateStatus")]
+        public IActionResult UpdateStatus([FromBody] UpdateStatusRequest request)
+        {
+            var curUser = WebApplication5.Models.User.GetUser(context, HttpContext);
+            Models.ApprovePlanTaskComp.Status appliedStatus=Models.ApprovePlanTaskComp.GetStatusFromStr(request.Status);
+
+            var result = new { success = false, message = "Что-то пошло не так(" };
+
+            try
+            {
+                foreach (int aptcId in request.AptcIds)
+                {
+                    ApprovePlanTaskComp aptc = Models.ApprovePlanTaskComp.FindById(aptcId, context, out string errors);
+                    if (aptc != null)
+                    {
+                        aptc.ChangeStatus(curUser, appliedStatus, context, out string errorsChangeStatus);
+                    }
+                }
+                context.SaveChanges();
+
+                result = new { success = true, message = "Статус успешно обновлен" };
+            }
+            catch (Exception ex)
+            {
+                result = new { success = false, message = ex.Message };
+            }
+
+            return Json(result);
+        }
+
+        [HttpPost("UploadPlanTaskCompExcel")]
+        public IActionResult UploadPlanTaskCompExcel([FromBody] int planMonth, int planYear, Models.User author)
+        {
+
+            return Ok(new { success = true });
+        }
+
+
+        public class UpdateStatusRequest
+        {
+            public List<int> AptcIds { get; set; }
+            public string Status { get; set; }
+        }
 
         [HttpGet("api/gantt/tasks")]
         public IActionResult GetTasks()

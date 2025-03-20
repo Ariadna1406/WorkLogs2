@@ -253,11 +253,11 @@
             });
 
             document.getElementById("approveButton").addEventListener("click", function () {
-                handleButtonClick("Confirmed");
+                handleButtonClick("Подтверждено (комплект создан)");
             });
 
             document.getElementById("declineButton").addEventListener("click", function () {
-                handleButtonClick("Declined");
+                handleButtonClick("Отклонено");
             });
 
             // Изменение статуса у плана в зависимости от принятого решения
@@ -277,7 +277,7 @@
                     headers: {
                         "Content-Type": "application/json"
                     },
-                    body: JSON.stringify({ taskIds: selectedTasks, status: status })
+                    body: JSON.stringify({ aptcIds: selectedTasks, status: status })
                 })
                 .then(response => response.json())
                 .then(data => {

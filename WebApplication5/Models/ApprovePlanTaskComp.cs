@@ -19,9 +19,11 @@ namespace WebApplication5.Models
         public int PlanYear { get; set; }
         public string RejectComment { get; set; }
         public string RejectedUser { get; set; }
+        //public string SEDLink { get; set; }
 
-        public Status PlanTaskCompStatus { get; set; }
-        public enum Status { New, SentToApprove, Read, Confirmed, Declined }
+
+        public Status PlanTaskCompStatus { get; private set; }
+        public enum Status { New, SentToApprove, Read, Confirmed, Declined, NotFound }
 
         public string GetStatusRus()
         {
@@ -51,8 +53,9 @@ namespace WebApplication5.Models
                     return "Подтверждено (комплект создан)";
                 case Status.Declined:
                     return "Отклонено";
+                default:
+                    return string.Empty;
             }
-            return string.Empty;
         }
 
         public ApprovePlanTaskComp() { }
@@ -63,6 +66,32 @@ namespace WebApplication5.Models
             PlanMonth = planMonth;
             PlanYear = planYear;
             PlanTaskCompStatus = Status.New;
+        }
+
+        public static Models.ApprovePlanTaskComp.Status GetStatusFromStr(string status)
+        {
+            switch (status)
+            {
+                case "Неутверждённый":
+                    return Status.New;
+                case "Отправлен на утверждение":
+                    return Status.SentToApprove;
+                case "Утверждён" :
+                    return Status.Confirmed;
+                case "Отклонен":
+                    return Status.Declined;
+                default:
+                    return Status.NotFound;
+            }
+           
+        }
+
+        public static ApprovePlanTaskComp FindById(int id, AppDbContext context, out string errors)
+        {
+            errors = string.Empty;
+            var aptc = context.ApprovePlanTaskComp.First(x => x.Id == id);
+            if (aptc == null) errors += $"Не найден ApprovePlanTaskComp с id {id.ToString()}";
+            return aptc;
         }
 
         public static ApprovePlanTaskComp ConvertFrom(ApprovePlanTaskCompJson approvePlanTaskCompJson, AppDbContext appDbContext)
@@ -84,7 +113,7 @@ namespace WebApplication5.Models
                 ApprovePlanTaskComp.Status.Declined
             };
 
-            var aptcForApprove= context.ApprovePlanTaskComp.Where(x => validStatuses.Contains(x.PlanTaskCompStatus)).ToList();
+            var aptcForApprove= context.ApprovePlanTaskComp.Include(x=>x.UserCreatedRequest).Where(x => validStatuses.Contains(x.PlanTaskCompStatus)).ToList();
             return aptcForApprove;
         }
 
@@ -140,7 +169,7 @@ namespace WebApplication5.Models
             {
                 var aptc = approvePlanTaskCompSet.First();
                 aptc.UserCreatedRequest = author;
-                aptc.PlanTaskCompStatus = Status.SentToApprove;
+                
                 aptc.ChangeStatus(author, ApprovePlanTaskComp.Status.SentToApprove, context, out string errorChangeStatus);
             }
             else
@@ -160,7 +189,7 @@ namespace WebApplication5.Models
 
         public bool ChangeStatus(User user, ApprovePlanTaskComp.Status status, AppDbContext context, out string errors)
         {
-            errors = string.Empty;
+            errors = string.Empty;            
             PlanTaskCompStatus = status;
             var newHistRecord = new ApprovePlanTaskCompStatusHistory(this, status, user);
             context.ApprovePlanTaskCompStatusHistories.Add(newHistRecord);
