@@ -21,6 +21,7 @@ namespace WebApplication5.Models
         public int percent { get; set; }
         public int executerId { get; set; }
         public int authorId { get; set; }
+        public string SEDLink { get; set; }
 
 
         //public PlanTaskCompJson() { }

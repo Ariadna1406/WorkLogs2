@@ -136,7 +136,7 @@
             <select id="statusSelector">
                 <option value="All">Все</option>
                 <option value="SentToApprove">Новые</option>
-                <option value="Confirmed">Подтвержденные</option>
+                <option value="Confirmed">Утвержденные</option>
                 <option value="Declined">Отклоненные</option>
             </select>
         </div>
@@ -253,11 +253,11 @@
             });
 
             document.getElementById("approveButton").addEventListener("click", function () {
-                handleButtonClick("Подтверждено (комплект создан)");
+                handleButtonClick("Утверждён");
             });
 
             document.getElementById("declineButton").addEventListener("click", function () {
-                handleButtonClick("Отклонено");
+                handleButtonClick("Отклонен");
             });
 
             // Изменение статуса у плана в зависимости от принятого решения

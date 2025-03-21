@@ -120,7 +120,7 @@
         display: inline-block;
         }
 
-        #saveButton, #sendButton {
+        #saveButton, #approvalButton, #uploadButton {
         padding: 10px 20px;
         border: 1px solid #CCCCCC;
         border-radius: 3px;
@@ -134,6 +134,24 @@
             border-radius: 3px;
             color: #555D63;
             width: 130px;
+        }
+
+        #approvalLink {
+            width: 300px;
+            padding: 10px;
+            border: 1px solid #CCCCCC;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        #approvalLink:focus {
+            border-color: #555D63;
+        }
+
+        #error-message {
+            transform: translateY(25%);
+            color: #F96262;
+            display: none;
         }
 
         #approveButton {
@@ -152,25 +170,26 @@
         font-weight: 600;
         }
 
-        .status-not-sent { 
-        background-color: #F4F4F4; /* Статус: Не отправлено */
+        .status-not-sent {
+            background-color: #F3F3F3; /* Статус: Неутверждённый */
         }
 
         .status-in-approval {
-            background-color: #FFF1A0; /* Статус: Отправлено на согласование */
+            background-color: #FFF1A0; /* Статус: Отправлен на утверждение */
         }
 
         .status-approved {
-            background-color: #C1ECB0; /* Статус: Подтверждено (комплект создан) */
+            background-color: #C1ECB0; /* Статус: Утверждён */
         }
 
         .status-rejected {
-        background-color: #EC928C; /* Статус: Отклонено */
+        background-color: #EC928C; /* Статус: Отклонен */
         }
 
         #button-status-container {
         display: flex;
-        align-items: center;
+        flex-direction: column;
+        align-items: flex-start;
         gap: 30px;
         }
 
@@ -243,7 +262,10 @@
                     @if (isAdmin)
                     {
                         <button id="saveButton">Сохранить</button>
-                        <button id="sendButton">Сохранить и отправить на согласование</button>
+                        <button id="uploadButton">Выгрузить "План работы отдела"</button>
+                        <button id="approvalButton">Утверждение плана</button>
+                        <input id="approvalLink" type="text" placeholder="Ссылка на СЭД Практика" title="Введите ссылку на СЭД Практика">
+                        <span id="error-message"></span>
                     }
                     @if (isHOD)
                     {
@@ -252,7 +274,7 @@
                     }
                 </div>
                     <div id="status-box" class="status-not-sent">
-                        Не отправлено
+                        Неутверждённый
                     </div>
             </div>
         </div>
@@ -593,7 +615,7 @@
             // Колонки в таблице
             gantt.config.columns = [
                 { name: "project", label: "Проект", min_width: 55, align: "center", editor: {type: "select", map_to: "project", options: projects} },
-                { name: "text", label: "Комплект", min_width: 150, align: "center", editor: {type: "select", map_to: "text", options: [] }, template: function(task) {
+                { name: "text", label: "Комплект", min_width: 150, align: "center", editor: {type: "select", map_to: "text", options: sets }, template: function(task) {
                     // Чтобы в ячейке отображался label комплекта, а не key
                     let matchingSet = sets.find(set => String(set.key) === String(task.text));
                     return matchingSet ? matchingSet.label : task.text;
@@ -636,9 +658,7 @@
             }
 
             gantt.attachEvent("onAfterTaskUpdate", function (id, task) {
-                if (task.project) {
-                    updateSetOptions(task);
-                }
+                updateSetOptions(task);
                 if (task.resources || task.duration || task.intensity) {
                     calculateTotalHoursForResource(resources);
                 }
@@ -652,8 +672,8 @@
                     
                     gantt.config.columns.find(col => col.name === "text").editor.options = filteredSets.map(set => ({ key: set.key, label: set.label }));
 
-                    console.log(`Обрабатываем задачу: ID=${task.id}, Проект=${task.project}`);
-                    console.log(`Доступные комплекты:`, filteredSets.map(set => set.label));
+                    // console.log(`Обрабатываем задачу: ID=${task.id}, Проект=${task.project}`);
+                    // console.log(`Доступные комплекты:`, filteredSets.map(set => set.label));
                 }
             }
 
@@ -764,12 +784,59 @@
                 saveButton.addEventListener("click", SaveTasks);
             }
 
-            // Кнопка Отправить на согласование
-            var sendButton = document.getElementById("sendButton");
-            if (sendButton) {
-                sendButton.addEventListener("click", SaveAndSendTasks);
-            }
+            // Кнопка Утверждение плана
+            const approvalLinkInput = document.getElementById("approvalLink");
+            const errorMessage = document.getElementById("error-message");
+            var approvalButton = document.getElementById("approvalButton");
+            if (approvalButton) {
+                approvalButton.addEventListener("click", function () {
+                    const linkValue = approvalLinkInput.value.trim();
+                    if (!linkValue) {
+                        errorMessage.textContent = "Введите ссылку на СЭД Пратика";
+                        errorMessage.style.display = "block";
+                    } else if (!(linkValue.startsWith("https://doc.tatneft.ru"))) {
+                        errorMessage.textContent = "Ссылка должна начинаться с https://doc.tatneft.ru";
+                        errorMessage.style.display = "block";
+                    } else {
+                        errorMessage.style.display = "none";
+                        console.log("Ссылка корректна:", linkValue);
+                        SaveAndSendTasks(linkValue);
+                    }
+                }); 
+            };
             
+            // Кнопка Выгрузить План работы отдела
+             var uploadButton = document.getElementById("uploadButton");
+            if (uploadButton) {
+                uploadButton.addEventListener("click", function()  {
+                    let tasks = [];
+
+                    gantt.eachTask(function(task) {
+                        tasks.push(task);
+                    })
+
+                    if (tasks.length === 0) {
+                        alert("Нет задач для выгрузки!");
+                        return;
+                    }
+
+                    const firstTask = tasks[0];
+                    
+                    const startDate = new Date(firstTask.start_date);
+                    const planMonth = startDate.getMonth() + 1;
+                    const planYear = startDate.getFullYear();
+
+                    const authorId = firstTask.authorId;
+
+                    console.log("Данные для выгрузки плана:", {
+                        planMonth: planMonth,
+                        planYear: planYear,
+                        authorId: authorId
+                    });
+                    UploadPlan(planMonth, planYear, authorId);
+                });
+            }
+
             // Кнопка Согласовать
             var approveButton = document.getElementById("approveButton");
             if (approveButton) {
@@ -789,6 +856,31 @@
             // Обновление статуса в зависимости от принятого решения
             function UpdateStatusTasks(Status) {
 
+            }
+
+            // Функция кнопки Выгрузить План работы отдела
+            async function UploadPlan(planMonth, planYear, authorId) {
+                try {
+                    const response = await fetch('/PlanTaskComp/UploadPlanTaskCompExcel', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            planMonth: planMonth,
+                            planYear: planYear,
+                            authorId: authorId
+                        })
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        console.log('План работы успешно выгружен');
+                    } else {
+                        console.error('Произошла ошибка при выгрузке');
+                    }
+                } catch (error) {
+                    console.error('Ошибка при отправке данных на сервер:', error);
+                }
             }
 
             // Сохранение задач
@@ -847,8 +939,8 @@
                 .catch(error => console.error("Ошибка при получении Id пользователя:", error));   
             }
 
-            // Сохранение и отправка на согласование
-            function SaveAndSendTasks() {
+            // Сохранение и отправка на утверждение
+            function SaveAndSendTasks(linkValue) {
                 // Получение текущего пользователя
                 fetch('/plantaskcomp/api/currentuserid')
                     .then(response => response.json())
@@ -873,7 +965,8 @@
                             intensity: task.intensity,
                             percent: task.planned_progress,
                             executerId: task.resources,
-                            authorId: currentUserId
+                            authorId: currentUserId,
+                            SEDLink: linkValue
                         });
                     })
 
@@ -1010,20 +1103,20 @@
                 statusBox.classList.remove("status-not-sent", "status-in-approval", "status-approved", "status-rejected"); // Сначала очистка
 
                 switch (status) {
-                    case "Новый":
-                        statusBox.textContent = "Не отправлено"
+                    case "Неутверждённый":
+                        statusBox.textContent = "Неутверждённый"
                         statusBox.classList.add("status-not-sent");
                         break;
-                    case "Отправлено на согласование":
-                        statusBox.textContent = "Отправлено на согласование"
+                    case "Отправлен на утверждение":
+                        statusBox.textContent = "Отправлен на утверждение"
                         statusBox.classList.add("status-in-approval");
                         break;
-                    case "Подтверждено (комплект создан)":
-                        statusBox.textContent = "Подтверждено (комплект создан)"
+                    case "Утверждён":
+                        statusBox.textContent = "Утверждён"
                         statusBox.classList.add("status-approved");
                         break;
-                    case "Отклонено":
-                        statusBox.textContent = "Отклонено"
+                    case "Отклонен":
+                        statusBox.textContent = "Отклонен"
                         statusBox.classList.add("status-rejected");
                         break;
                 }

@@ -30,13 +30,13 @@ namespace WebApplication5.Models
             switch (PlanTaskCompStatus)
             {
                 case Status.New:
-                    return "Новый";
+                    return "Неутверждённый";
                 case Status.SentToApprove:
-                    return "Отправлено на согласование";
+                    return "Отправлен на утверждение";
                 case Status.Confirmed:
-                    return "Подтверждено (комплект создан)";
+                    return "Утверждён";
                 case Status.Declined:
-                    return "Отклонено";
+                    return "Отклонен";
             }
             return string.Empty;
         }
@@ -46,13 +46,13 @@ namespace WebApplication5.Models
             switch (status)
             {
                 case Status.New:
-                    return "Новый";
+                    return "Неутверждённый";
                 case Status.SentToApprove:
-                    return "Отправлено на согласование";
+                    return "Отправлен на утверждение";
                 case Status.Confirmed:
-                    return "Подтверждено (комплект создан)";
+                    return "Утверждён";
                 case Status.Declined:
-                    return "Отклонено";
+                    return "Отклонен";
                 default:
                     return string.Empty;
             }
